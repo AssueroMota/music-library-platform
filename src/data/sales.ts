@@ -5,7 +5,7 @@ export const salesFaqs = [
   ],
   [
     'Qual a diferença entre os planos?',
-    'O Básico reúne os materiais de um instrumento. O Completo inclui as bibliotecas dos seis instrumentos e repertórios por ocasião.',
+    'O Básico reúne os materiais de um instrumento. O Completo inclui as bibliotecas dos seis instrumentos, repertórios por ocasião e organização por música: você escolhe a faixa e encontra a partitura e o acompanhamento juntos.',
   ],
   [
     'Como recebo o acesso?',

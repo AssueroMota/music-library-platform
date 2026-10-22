@@ -111,6 +111,7 @@ export const plans: Plan[] = [
       'Partituras e backing tracks reunidos',
       'Repertórios para diferentes ocasiões',
       'Pastas por instrumento e tipo de material',
+      'Organização por música: partitura e acompanhamento juntos',
     ],
   },
 ]
