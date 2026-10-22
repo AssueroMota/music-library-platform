@@ -1,17 +1,32 @@
 import { useState } from 'react'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { expect, it, vi } from 'vitest'
 import { LibraryPreview } from '../components/LibraryPreview'
 import { InstrumentSelector } from '../components/InstrumentSelector'
-import { Header } from '../components/Header'
 import { PricingSection } from '../components/PricingSection'
 import { InfoDialog } from '../components/InfoDialog'
 import { AudioPlayer } from '../components/AudioPlayer'
 import type { InstrumentId } from '../types'
 import App from '../App'
 
-it('monta a landing completa com animações e destinos de navegação válidos', () => {
+function LibraryDemo({
+  initialInstrument = null,
+  withSelector = false,
+}: {
+  initialInstrument?: InstrumentId | null
+  withSelector?: boolean
+}) {
+  const [instrument, setInstrument] = useState<InstrumentId | null>(initialInstrument)
+  return (
+    <>
+      {withSelector && <InstrumentSelector selected={instrument} onSelect={setInstrument} />}
+      <LibraryPreview instrument={instrument} onInstrumentChange={setInstrument} />
+    </>
+  )
+}
+
+it('monta a página e mantém os destinos de navegação válidos', () => {
   const { container } = render(<App />)
   expect(screen.getByRole('main')).toBeInTheDocument()
   expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Suas partituras/)
@@ -23,68 +38,84 @@ it('monta a landing completa com animações e destinos de navegação válidos'
   }
 })
 
-function Demo() {
-  const [instrument, setInstrument] = useState<InstrumentId>('violin')
-  return (
-    <>
-      <InstrumentSelector selected={instrument} onSelect={setInstrument} />
-      <LibraryPreview instrument={instrument} onInstrumentChange={setInstrument} />
-    </>
+it('sincroniza a escolha do instrumento e combina busca, estilo e tonalidade', async () => {
+  const user = userEvent.setup()
+  render(<LibraryDemo withSelector />)
+  await user.click(screen.getAllByRole('button', { name: /Explorar repertório/ })[1])
+  expect(screen.getByRole('combobox', { name: 'Filtrar instrumento' })).toHaveValue('saxophone')
+  await user.selectOptions(screen.getByRole('combobox', { name: 'Filtrar tonalidade' }), 'Lá menor')
+  expect(screen.getByText('2 arquivos')).toBeInTheDocument()
+  expect(
+    screen.queryByRole('button', { name: 'Abrir partitura Primeira luz' }),
+  ).not.toBeInTheDocument()
+  await user.selectOptions(
+    screen.getByRole('combobox', { name: 'Filtrar estilo' }),
+    'Contemporâneo',
   )
-}
-
-describe('demonstração da biblioteca', () => {
-  it('sincroniza a escolha do instrumento e combina busca, estilo e tonalidade', async () => {
-    const user = userEvent.setup()
-    render(<Demo />)
-    await user.click(screen.getAllByRole('button', { name: /Explorar repertório/ })[1])
-    expect(screen.getByRole('combobox', { name: 'Filtrar instrumento' })).toHaveValue('saxophone')
-    await user.selectOptions(
-      screen.getByRole('combobox', { name: 'Filtrar tonalidade' }),
-      'Lá menor',
-    )
-    expect(screen.getByText('1 resultado')).toBeInTheDocument()
-    expect(
-      screen.queryByRole('button', { name: /Primeira luz.*Contemporâneo/ }),
-    ).not.toBeInTheDocument()
-    await user.selectOptions(
-      screen.getByRole('combobox', { name: 'Filtrar estilo' }),
-      'Contemporâneo',
-    )
-    expect(screen.getByText('Nenhum estudo por aqui.')).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Limpar filtros' }))
-    expect(screen.getByText('2 resultados')).toBeInTheDocument()
-    await user.type(screen.getByRole('textbox', { name: 'Buscar músicas' }), 'primeira LUZ')
-    expect(screen.getByText('1 resultado')).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Limpar busca' }))
-    expect(screen.getByText('2 resultados')).toBeInTheDocument()
-  })
-
-  it('filtra favoritos locais e explica o estado vazio', async () => {
-    const user = userEvent.setup()
-    render(<LibraryPreview instrument="violin" onInstrumentChange={vi.fn()} />)
-    await user.click(screen.getByRole('button', { name: 'Adicionar Primeira luz aos favoritos' }))
-    expect(
-      screen.getByRole('button', { name: 'Remover Primeira luz dos favoritos' }),
-    ).toHaveAttribute('aria-pressed', 'true')
-    await user.click(screen.getByRole('button', { name: 'Favoritos' }))
-    expect(screen.getByText('1 resultado')).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Remover Primeira luz dos favoritos' }))
-    expect(screen.getByText('0 resultados')).toBeInTheDocument()
-    expect(screen.getByText('Nenhum estudo por aqui.')).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Minha biblioteca' }))
-    expect(screen.getByText('2 resultados')).toBeInTheDocument()
-  })
+  expect(screen.getByText('Nenhum arquivo encontrado.')).toBeInTheDocument()
+  await user.click(screen.getAllByRole('button', { name: 'Limpar filtros' })[0])
+  expect(screen.getByText('4 arquivos')).toBeInTheDocument()
+  await user.type(screen.getByRole('textbox', { name: 'Buscar arquivos' }), 'primeira LUZ')
+  expect(screen.getByText('2 arquivos')).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Limpar busca' }))
+  expect(screen.getByText('4 arquivos')).toBeInTheDocument()
 })
 
-it('fecha o menu por Escape e devolve o foco ao botão', async () => {
+it('filtra arquivos favoritos e retorna à raiz das pastas', async () => {
   const user = userEvent.setup()
-  render(<Header />)
-  await user.click(screen.getByRole('button', { name: 'Abrir menu' }))
-  expect(screen.getByRole('navigation', { name: 'Navegação móvel' })).toBeVisible()
-  await user.keyboard('{Escape}')
-  expect(screen.queryByRole('navigation', { name: 'Navegação móvel' })).not.toBeInTheDocument()
-  expect(screen.getByRole('button', { name: 'Abrir menu' })).toHaveFocus()
+  render(<LibraryDemo initialInstrument="violin" />)
+  await user.click(
+    screen.getByRole('button', {
+      name: 'Adicionar Primeira luz (Partitura · prévia) aos favoritos',
+    }),
+  )
+  await user.click(screen.getByRole('button', { name: 'Favoritos' }))
+  expect(screen.getByText('1 arquivo')).toBeInTheDocument()
+  await user.click(
+    screen.getByRole('button', { name: 'Remover Primeira luz (Partitura · prévia) dos favoritos' }),
+  )
+  expect(screen.getByText('0 arquivos')).toBeInTheDocument()
+  expect(screen.getByText('Nenhum arquivo encontrado.')).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Minha biblioteca' }))
+  await user.click(screen.getByRole('button', { name: 'Abrir pasta Violino' }))
+  expect(screen.getByText('4 arquivos')).toBeInTheDocument()
+})
+
+it('navega em subpastas, ordena arquivos e abre a prévia com retorno de foco', async () => {
+  const user = userEvent.setup()
+  render(<LibraryDemo />)
+  expect(screen.getAllByRole('button', { name: /^Abrir pasta / })).toHaveLength(6)
+  await user.click(screen.getByRole('button', { name: 'Abrir pasta Violino' }))
+  await user.click(screen.getByRole('button', { name: 'Abrir pasta Partituras' }))
+  expect(screen.getByText('2 arquivos')).toBeInTheDocument()
+  expect(
+    screen.queryByRole('button', { name: 'Abrir áudio Primeira luz.wav' }),
+  ).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Visualização em grade' }))
+  expect(screen.getByRole('button', { name: 'Visualização em grade' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await user.selectOptions(screen.getByRole('combobox', { name: 'Ordenar arquivos' }), 'desc')
+  expect(screen.getAllByRole('button', { name: /^Abrir partitura / })[0]).toHaveAccessibleName(
+    'Abrir partitura Primeira luz',
+  )
+  const opener = screen.getByRole('button', { name: 'Abrir partitura Primeira luz' })
+  await user.click(opener)
+  expect(screen.getByRole('region', { name: 'Prévia do arquivo' })).toBeInTheDocument()
+  expect(
+    screen.getByRole('img', { name: /Partitura ilustrativa de Primeira luz/ }),
+  ).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Fechar prévia' }))
+  expect(opener).toHaveFocus()
+  await user.click(screen.getByRole('button', { name: 'Voltar uma pasta' }))
+  await user.click(screen.getByRole('button', { name: 'Abrir pasta Backing tracks' }))
+  expect(screen.getByRole('button', { name: 'Abrir áudio Primeira luz.wav' })).toBeInTheDocument()
+  await user.selectOptions(screen.getByRole('combobox', { name: 'Filtrar instrumento' }), '')
+  expect(screen.getByRole('button', { name: 'Abrir pasta Violino' })).toBeInTheDocument()
+  expect(
+    screen.queryByRole('button', { name: 'Abrir áudio Primeira luz.wav' }),
+  ).not.toBeInTheDocument()
 })
 
 it('apresenta informações da modalidade sem simular checkout', async () => {

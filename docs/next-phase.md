@@ -4,19 +4,20 @@ Esta entrega é uma landing page pública. Não contém backend, banco de dados,
 
 ## Pontos de integração
 
-| Área          | Ponto atual                                         | Trabalho futuro                                                                      |
-| ------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| Catálogo      | `src/data/content.ts`, tipos `Instrument` e `Track` | Serviço de catálogo, paginação, arquivos autorizados, arranjos reais por instrumento |
-| Players       | `AudioPlayer` recebe `src` e `label`                | URLs assinadas de áudio, metadados e tratamento de autorização                       |
-| Partituras    | `Score` ilustra dois estudos em SVG                 | Visualizador de PDF, downloads e controle de acesso                                  |
-| Planos        | `Plan` com preço e URL opcionais                    | Definir preços, duração do acesso e condições; preencher `checkoutUrl`               |
-| Checkout      | Botões sem URL abrem aviso informativo              | Provedor de Pix/cartão e checkout hospedado                                          |
-| Liberação     | Somente descrição do fluxo planejado                | Webhooks verificados, operações idempotentes e permissões após confirmação           |
-| Conta         | Inexistente                                         | Autenticação, recuperação de acesso e biblioteca privada                             |
-| Favoritos     | Estado React em memória                             | Persistência por conta, setlists e organização pessoal                               |
-| Administração | Inexistente                                         | Upload de partituras/áudios, curadoria, pacotes e permissões                         |
-| Comunicação   | Canal de contato não configurado                    | E-mail oficial, confirmação de compra e suporte                                      |
-| Documentos    | Avisos de versão demonstrativa                      | Termos, privacidade e licenças revisados para a operação real                        |
+| Área          | Ponto atual                                                                  | Trabalho futuro                                                                      |
+| ------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Catálogo      | `src/data/content.ts`, tipos `Instrument` e `Track`                          | Serviço de catálogo, paginação, arquivos autorizados, arranjos reais por instrumento |
+| Organização   | `LibraryPreview`, `LibraryFiles`, `src/data/library.ts` e tipo `LibraryFile` | Persistência de pastas e arquivos, upload, movimentação e permissões de acesso       |
+| Players       | `AudioPlayer` recebe `src` e `label`                                         | URLs assinadas de áudio, metadados e tratamento de autorização                       |
+| Partituras    | `Score` ilustra dois estudos em SVG                                          | Visualizador de PDF, downloads e controle de acesso                                  |
+| Planos        | `Plan` com preço e URL opcionais                                             | Definir preços, duração do acesso e condições; preencher `checkoutUrl`               |
+| Checkout      | Botões sem URL abrem aviso informativo                                       | Provedor de Pix/cartão e checkout hospedado                                          |
+| Liberação     | Somente descrição do fluxo planejado                                         | Webhooks verificados, operações idempotentes e permissões após confirmação           |
+| Conta         | Inexistente                                                                  | Autenticação, recuperação de acesso e biblioteca privada                             |
+| Favoritos     | Estado React em memória                                                      | Persistência por conta, setlists e organização pessoal                               |
+| Administração | Inexistente                                                                  | Upload de partituras/áudios, curadoria, pacotes e permissões                         |
+| Comunicação   | Canal de contato não configurado                                             | E-mail oficial, confirmação de compra e suporte                                      |
+| Documentos    | Avisos de versão demonstrativa                                               | Termos, privacidade e licenças revisados para a operação real                        |
 
 ## Limites importantes
 
@@ -25,6 +26,7 @@ Esta entrega é uma landing page pública. Não contém backend, banco de dados,
 - Os materiais comerciais precisam de permissões de distribuição e execução adequadas.
 - A biblioteca por instrumento, os pacotes e o acesso completo são possibilidades editoriais; os prazos de acesso ainda não foram definidos.
 - Transposição, assinatura, setlists e permissões continuam fora do escopo desta versão.
+- A referência ao Google Drive diz respeito à familiaridade da organização em pastas e arquivos. Não existe integração com o Google Drive nesta entrega.
 
 ## Publicação
 

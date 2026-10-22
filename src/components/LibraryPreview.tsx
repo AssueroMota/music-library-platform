@@ -1,57 +1,101 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import {
+  ArrowLeft,
   AudioLines,
-  BookOpen,
-  Check,
   ChevronRight,
-  Heart,
-  ListMusic,
-  Music2,
+  Folder,
+  FolderOpen,
+  Grid2X2,
+  List,
   Search,
-  SlidersHorizontal,
+  Star,
   X,
 } from 'lucide-react'
-import { instruments, tracks } from '../data/content'
-import type { InstrumentId } from '../types'
-import { AudioPlayer } from './AudioPlayer'
-import { Score } from './Score'
+import { instruments } from '../data/content'
+import { libraryFiles, normalizeSearch } from '../data/library'
+import type { InstrumentId, LibraryFile, LibraryFileKind } from '../types'
+import { LibraryFiles, LibraryFilePreview } from './LibraryFiles'
 import { Container, SectionHeading } from './ui'
+
+type FolderKind = LibraryFileKind | 'all'
 
 export function LibraryPreview({
   instrument,
   onInstrumentChange,
 }: {
-  instrument: InstrumentId
-  onInstrumentChange: (id: InstrumentId) => void
+  instrument: InstrumentId | null
+  onInstrumentChange: (id: InstrumentId | null) => void
 }) {
   const [search, setSearch] = useState('')
   const [style, setStyle] = useState('')
   const [key, setKey] = useState('')
-  const [selectedId, setSelectedId] = useState('')
+  const [kind, setKind] = useState<FolderKind>('all')
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const [onlyFavorites, setOnlyFavorites] = useState(false)
+  const [view, setView] = useState<'list' | 'grid'>('list')
+  const [sort, setSort] = useState('asc')
+  const previewTrigger = useRef<HTMLButtonElement | null>(null)
+  const currentInstrument = instruments.find((item) => item.id === instrument)
+  const hasFilters = Boolean(search.trim() || style || key)
+  const showFiles = Boolean(instrument || onlyFavorites || hasFilters)
+  const showFolders = !onlyFavorites && !hasFilters && kind === 'all'
+  const categoryName = kind === 'score' ? 'Partituras' : 'Backing tracks'
+
   const filtered = useMemo(
     () =>
-      tracks.filter(
-        (track) =>
-          track.instrument === instrument &&
-          track.title
-            .toLocaleLowerCase('pt-BR')
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .includes(
-              search
-                .toLocaleLowerCase('pt-BR')
-                .normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, ''),
-            ) &&
-          (!style || track.style === style) &&
-          (!key || track.key === key) &&
-          (!onlyFavorites || favorites.has(track.id)),
-      ),
-    [instrument, search, style, key, onlyFavorites, favorites],
+      libraryFiles
+        .filter(
+          (file) =>
+            (!instrument || file.track.instrument === instrument) &&
+            (kind === 'all' || file.kind === kind) &&
+            normalizeSearch(file.name).includes(normalizeSearch(search.trim())) &&
+            (!style || file.track.style === style) &&
+            (!key || file.track.key === key) &&
+            (!onlyFavorites || favorites.has(file.id)),
+        )
+        .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR') * (sort === 'asc' ? 1 : -1)),
+    [instrument, kind, search, style, key, onlyFavorites, favorites, sort],
   )
-  const selected = filtered.find((track) => track.id === selectedId) ?? filtered[0]
+  const selected = filtered.find((file) => file.id === selectedId)
+
+  const clearFilters = () => {
+    setSearch('')
+    setStyle('')
+    setKey('')
+    setSelectedId(null)
+  }
+  const openInstrument = (id: InstrumentId) => {
+    onInstrumentChange(id)
+    setKind('all')
+    setOnlyFavorites(false)
+    clearFilters()
+  }
+  const goRoot = () => {
+    onInstrumentChange(null)
+    setKind('all')
+    setOnlyFavorites(false)
+    clearFilters()
+  }
+  const openFavorites = () => {
+    onInstrumentChange(null)
+    setKind('all')
+    setOnlyFavorites(true)
+    clearFilters()
+  }
+  const goBack = () => {
+    clearFilters()
+    if (kind !== 'all') setKind('all')
+    else goRoot()
+  }
+  const openFile = (file: LibraryFile, trigger: HTMLButtonElement) => {
+    previewTrigger.current = trigger
+    setSelectedId(file.id)
+  }
+  const closePreview = () => {
+    setSelectedId(null)
+    previewTrigger.current?.focus()
+  }
   const toggleFavorite = (id: string) =>
     setFavorites((previous) => {
       const next = new Set(previous)
@@ -59,112 +103,139 @@ export function LibraryPreview({
       else next.add(id)
       return next
     })
-  const reset = () => {
-    setSearch('')
-    setStyle('')
-    setKey('')
-    setOnlyFavorites(false)
-  }
 
   return (
     <section id="biblioteca" className="library-section section-space">
       <Container>
         <div className="section-topline">
           <SectionHeading
-            eyebrow="UM LUGAR PARA A SUA MÚSICA"
+            eyebrow="SUAS PARTITURAS, CADA UMA NO SEU LUGAR"
             title={
               <>
-                Tudo em harmonia.
+                ORGANIZE EM PASTAS.
                 <br />
-                <em>Inclusive sua rotina.</em>
+                <em>ENCONTRE. ABRA. TOQUE.</em>
               </>
             }
           >
-            Explore a ideia da plataforma. Busque um estudo, experimente os filtros e ouça a
-            demonstração.
+            Uma organização familiar: navegue pelas pastas do instrumento, encontre seus arquivos e
+            abra a prévia da partitura ou do acompanhamento.
           </SectionHeading>
           <span className="demo-badge">
             <span />
-            PRÉVIA INTERATIVA
+            DEMONSTRAÇÃO DA ORGANIZAÇÃO
           </span>
         </div>
-        <div className="library-app">
-          <aside className="library-sidebar">
-            <div className="app-mark">
-              <AudioLines size={21} /> music library.
+        <div className="file-browser">
+          <aside className="browser-sidebar" aria-label="Navegação da biblioteca">
+            <div className="browser-brand">
+              <AudioLines size={24} />
+              <span>music library.</span>
             </div>
-            <span className="sidebar-caption">SEU ESPAÇO MUSICAL</span>
             <button
               aria-label="Minha biblioteca"
-              className={!onlyFavorites ? 'sidebar-active' : ''}
-              onClick={reset}
+              className={!onlyFavorites && !instrument ? 'browser-nav-active' : ''}
+              onClick={goRoot}
             >
-              <BookOpen size={17} /> Minha biblioteca
+              <FolderOpen size={19} />
+              <span>Minha biblioteca</span>
             </button>
             <button
               aria-label="Favoritos"
-              className={onlyFavorites ? 'sidebar-active' : ''}
-              onClick={() => setOnlyFavorites(true)}
+              className={onlyFavorites ? 'browser-nav-active' : ''}
+              onClick={openFavorites}
             >
-              <Heart size={17} /> Favoritos <span className="sidebar-count">{favorites.size}</span>
+              <Star size={18} />
+              <span>Favoritos</span>
+              <small>{favorites.size}</small>
             </button>
-            <div className="sidebar-divider" />
-            <span className="sidebar-caption">INSTRUMENTOS</span>
+            <span className="browser-sidebar-label">PASTAS POR INSTRUMENTO</span>
             {instruments.map((item) => (
               <button
+                className={instrument === item.id ? 'browser-nav-active' : ''}
+                onClick={() => openInstrument(item.id)}
                 key={item.id}
-                className={instrument === item.id ? 'instrument-active' : ''}
-                onClick={() => onInstrumentChange(item.id)}
               >
-                <Music2 size={15} />
-                {item.name}
-                {instrument === item.id && <ChevronRight size={14} />}
+                <Folder size={17} />
+                <span>{item.name}</span>
               </button>
             ))}
-            <div className="sidebar-note">
-              <ListMusic size={23} />
-              <p>Seu próximo repertório começa com uma boa escolha.</p>
-              <small>Ambiente de demonstração</small>
-            </div>
+            <p className="browser-local-note">
+              Prévia local com arquivos de exemplo. Favoritos são reiniciados ao recarregar.
+            </p>
           </aside>
-          <div className="library-main">
-            <div className="library-toolbar">
-              <div>
-                <span className="micro-label">
-                  BIBLIOTECA /{' '}
-                  {instruments
-                    .find((item) => item.id === instrument)
-                    ?.name.toLocaleUpperCase('pt-BR')}
-                </span>
-                <h3>
-                  {onlyFavorites ? 'Seus favoritos' : 'Encontre sua próxima música'}
-                  <span className="gold-dot">.</span>
-                </h3>
-              </div>
-              <span className="sample-label">DADOS DE EXEMPLO</span>
-            </div>
-            <div className="library-filters">
-              <label className="search-field">
-                <Search size={16} />
-                <span className="sr-only">Buscar músicas</span>
+          <div className="browser-workspace">
+            <div className="browser-topbar">
+              <label className="browser-search">
+                <Search size={19} />
+                <span className="sr-only">Buscar arquivos</span>
                 <input
-                  placeholder="Busque por uma música…"
+                  placeholder="Buscar nas partituras e áudios"
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                 />
                 {search && (
                   <button aria-label="Limpar busca" onClick={() => setSearch('')}>
-                    <X size={14} />
+                    <X size={16} />
                   </button>
                 )}
               </label>
+              <span className="browser-demo">DEMO</span>
+            </div>
+            <div className="browser-location">
+              <button
+                className="browser-back"
+                aria-label="Voltar uma pasta"
+                disabled={!instrument && !onlyFavorites}
+                onClick={goBack}
+              >
+                <ArrowLeft size={18} />
+              </button>
+              <nav aria-label="Caminho da pasta">
+                <button onClick={goRoot} aria-label="Ir para a raiz">
+                  Minha biblioteca
+                </button>
+                {onlyFavorites && (
+                  <>
+                    <ChevronRight size={15} />
+                    <span aria-current="page">Favoritos</span>
+                  </>
+                )}
+                {currentInstrument && (
+                  <>
+                    <ChevronRight size={15} />
+                    <button
+                      onClick={() => {
+                        setKind('all')
+                        setSelectedId(null)
+                      }}
+                      aria-current={kind === 'all' ? 'page' : undefined}
+                    >
+                      {currentInstrument.name}
+                    </button>
+                  </>
+                )}
+                {instrument && kind !== 'all' && (
+                  <>
+                    <ChevronRight size={15} />
+                    <span aria-current="page">{categoryName}</span>
+                  </>
+                )}
+              </nav>
+            </div>
+            <div className="browser-filters">
               <label>
                 <span className="sr-only">Filtrar instrumento</span>
                 <select
                   aria-label="Filtrar instrumento"
-                  value={instrument}
-                  onChange={(event) => onInstrumentChange(event.target.value as InstrumentId)}
+                  value={instrument ?? ''}
+                  onChange={(event) => {
+                    onInstrumentChange((event.target.value || null) as InstrumentId | null)
+                    setKind('all')
+                    setSelectedId(null)
+                  }}
                 >
+                  <option value="">Todos os instrumentos</option>
                   {instruments.map((item) => (
                     <option key={item.id} value={item.id}>
                       {item.name}
@@ -183,103 +254,129 @@ export function LibraryPreview({
               <label>
                 <span className="sr-only">Filtrar tonalidade</span>
                 <select value={key} onChange={(event) => setKey(event.target.value)}>
-                  <option value="">Tonalidade</option>
+                  <option value="">Todas as tonalidades</option>
                   <option>Dó maior</option>
                   <option>Lá menor</option>
                 </select>
               </label>
+              {hasFilters && (
+                <button className="browser-clear" onClick={clearFilters}>
+                  Limpar filtros
+                </button>
+              )}
             </div>
-            <div className="library-content">
-              <div className="track-column">
-                <div className="track-list-heading">
-                  <span>{onlyFavorites ? 'FAVORITOS' : 'ESTUDOS ORIGINAIS'}</span>
-                  <SlidersHorizontal size={14} aria-hidden="true" />
-                </div>
-                <p className="result-count" aria-live="polite">
-                  {filtered.length} {filtered.length === 1 ? 'resultado' : 'resultados'}
-                </p>
-                {filtered.map((track, index) => (
-                  <div
-                    className={`track-row ${selected?.id === track.id ? 'track-selected' : ''}`}
-                    key={track.id}
-                  >
-                    <button
-                      className="track-select"
-                      onClick={() => setSelectedId(track.id)}
-                      aria-pressed={selected?.id === track.id}
-                    >
-                      <span className="track-number">
-                        {selected?.id === track.id ? <AudioLines size={17} /> : `0${index + 1}`}
-                      </span>
-                      <span>
-                        <strong>{track.title}</strong>
-                        <small>
-                          {track.style} · {track.key}
-                        </small>
-                      </span>
-                    </button>
-                    <button
-                      className={`favorite-button ${favorites.has(track.id) ? 'is-favorite' : ''}`}
-                      aria-label={`${favorites.has(track.id) ? 'Remover' : 'Adicionar'} ${track.title} ${favorites.has(track.id) ? 'dos' : 'aos'} favoritos`}
-                      aria-pressed={favorites.has(track.id)}
-                      onClick={() => toggleFavorite(track.id)}
-                    >
-                      <Heart size={17} fill={favorites.has(track.id) ? 'currentColor' : 'none'} />
-                    </button>
-                  </div>
-                ))}
-                {!filtered.length && (
-                  <div className="empty-state">
-                    <Search size={27} />
-                    <strong>Nenhum estudo por aqui.</strong>
-                    <p>Experimente outros filtros ou adicione um favorito.</p>
-                    <button onClick={reset}>Limpar filtros</button>
-                  </div>
-                )}
-                <div className="local-note">
-                  <Check size={14} />
-                  <span>Interações locais. Favoritos são reiniciados ao recarregar.</span>
-                </div>
-              </div>
-              <div className="score-column">
-                {selected ? (
+            <div className={`browser-body ${selected ? 'browser-has-preview' : ''}`}>
+              <div className="browser-directory">
+                {showFolders && (
                   <>
-                    <div className="score-column-top">
-                      <span>PRÉVIA DA PARTITURA</span>
-                      <span>{selected.bpm} BPM</span>
+                    <h3 className="browser-section-title">Pastas</h3>
+                    <div className="browser-folders">
+                      {!instrument
+                        ? instruments.map((item) => (
+                            <button
+                              className="browser-folder"
+                              key={item.id}
+                              onClick={() => openInstrument(item.id)}
+                              aria-label={`Abrir pasta ${item.name}`}
+                            >
+                              <Folder size={30} fill="currentColor" strokeWidth={1.3} />
+                              <strong>{item.name}</strong>
+                              <small>2 partituras · 2 áudios de exemplo</small>
+                            </button>
+                          ))
+                        : (['score', 'audio'] as const).map((type) => (
+                            <button
+                              className={`browser-folder folder-${type}`}
+                              key={type}
+                              onClick={() => {
+                                setKind(type)
+                                setSelectedId(null)
+                              }}
+                              aria-label={`Abrir pasta ${type === 'score' ? 'Partituras' : 'Backing tracks'}`}
+                            >
+                              <Folder size={30} fill="currentColor" strokeWidth={1.3} />
+                              <strong>{type === 'score' ? 'Partituras' : 'Backing tracks'}</strong>
+                              <small>2 arquivos de exemplo</small>
+                            </button>
+                          ))}
                     </div>
-                    <Score
-                      title={selected.title}
-                      notes={selected.scoreNotes}
-                      bpm={selected.bpm}
-                      keyLabel={selected.key}
-                    />
-                    <div className="library-player-title">
-                      <span>
-                        <Music2 size={13} /> {selected.title}
-                      </span>
-                      <small>ACOMPANHAMENTO</small>
+                  </>
+                )}
+                {showFiles ? (
+                  <>
+                    <div className="browser-files-heading">
+                      <div>
+                        <h3 className="browser-section-title">
+                          {onlyFavorites ? 'Arquivos favoritos' : 'Arquivos'}
+                        </h3>
+                        <p className="browser-result-count" aria-live="polite">
+                          {filtered.length} {filtered.length === 1 ? 'arquivo' : 'arquivos'}
+                        </p>
+                      </div>
+                      <div className="browser-view-controls">
+                        <label>
+                          <span className="sr-only">Ordenar arquivos</span>
+                          <select value={sort} onChange={(event) => setSort(event.target.value)}>
+                            <option value="asc">Nome: A–Z</option>
+                            <option value="desc">Nome: Z–A</option>
+                          </select>
+                        </label>
+                        <button
+                          aria-label="Visualização em lista"
+                          aria-pressed={view === 'list'}
+                          onClick={() => setView('list')}
+                        >
+                          <List size={18} />
+                        </button>
+                        <button
+                          aria-label="Visualização em grade"
+                          aria-pressed={view === 'grid'}
+                          onClick={() => setView('grid')}
+                        >
+                          <Grid2X2 size={17} />
+                        </button>
+                      </div>
                     </div>
-                    <AudioPlayer
-                      key={selected.id}
-                      src={selected.audio.backing}
-                      label={`acompanhamento de ${selected.title}`}
-                      compact
-                    />
+                    {filtered.length ? (
+                      <LibraryFiles
+                        files={filtered}
+                        view={view}
+                        favorites={favorites}
+                        selectedId={selectedId}
+                        onOpen={openFile}
+                        onFavorite={toggleFavorite}
+                      />
+                    ) : (
+                      <div className="browser-empty">
+                        <Search size={30} />
+                        <strong>Nenhum arquivo encontrado.</strong>
+                        <p>
+                          {onlyFavorites
+                            ? 'Marque a estrela de um arquivo para encontrá-lo aqui.'
+                            : 'Experimente outros termos, estilos ou tonalidades.'}
+                        </p>
+                        {hasFilters && <button onClick={clearFilters}>Limpar filtros</button>}
+                      </div>
+                    )}
                   </>
                 ) : (
-                  <div className="score-placeholder">
-                    <BookOpen size={38} />
-                    <p>Escolha um estudo para visualizar a partitura.</p>
+                  <div className="browser-root-hint">
+                    <FolderOpen size={23} />
+                    <p>
+                      Abra a pasta do seu instrumento para explorar as partituras e os áudios de
+                      exemplo.
+                    </p>
                   </div>
                 )}
               </div>
+              {selected && <LibraryFilePreview file={selected} onClose={closePreview} />}
             </div>
           </div>
         </div>
         <p className="demo-disclaimer">
-          Demonstração com estudos originais e timbres sintetizados em clave de Sol. Arranjos por
-          instrumento, PDFs completos e biblioteca privada fazem parte da próxima fase.
+          Prévia de navegação por pastas e arquivos, inspirada na familiaridade de um gerenciador de
+          documentos. Estudos ilustrativos e áudio sintetizado; PDFs completos, upload, movimentação
+          de arquivos e armazenamento em nuvem serão integrados futuramente.
         </p>
       </Container>
     </section>

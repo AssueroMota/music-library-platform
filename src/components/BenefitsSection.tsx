@@ -13,9 +13,9 @@ import { Button, Container, Reveal, SectionHeading } from './ui'
 const features = [
   {
     icon: FileMusic,
-    title: 'Partituras organizadas',
-    description: 'Cada música no lugar certo. Materiais reunidos para facilitar a sua preparação.',
-    current: false,
+    title: 'Partituras em pastas',
+    description: 'Navegue por instrumento e abra as subpastas de partituras e áudios na prévia.',
+    current: true,
   },
   {
     icon: CirclePlay,
@@ -31,8 +31,9 @@ const features = [
   },
   {
     icon: Search,
-    title: 'Encontre seu próximo som',
-    description: 'Experimente a busca e os filtros por instrumento, estilo e tonalidade na prévia.',
+    title: 'Encontre seus arquivos',
+    description:
+      'Busque pelo nome da música e filtre os arquivos por instrumento, estilo e tonalidade.',
     current: true,
   },
   {
@@ -43,9 +44,10 @@ const features = [
   },
   {
     icon: Heart,
-    title: 'Uma biblioteca com a sua cara',
-    description: 'Favoritos e organização pessoal. Teste os favoritos locais na demonstração.',
-    current: false,
+    title: 'Seus arquivos favoritos',
+    description:
+      'Marque a estrela para reunir os materiais na área de favoritos desta demonstração.',
+    current: true,
   },
   {
     icon: Layers,

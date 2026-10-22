@@ -31,3 +31,12 @@ export interface Plan {
   checkoutUrl?: string
   featured?: boolean
 }
+
+export type LibraryFileKind = 'score' | 'audio'
+
+export interface LibraryFile {
+  id: string
+  name: string
+  kind: LibraryFileKind
+  track: Track
+}

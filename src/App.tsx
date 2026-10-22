@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { MotionConfig } from 'motion/react'
 import type { InstrumentId } from './types'
-import { Header } from './components/Header'
 import { HeroSection } from './components/HeroSection'
 import { InstrumentSelector } from './components/InstrumentSelector'
 import { AudioComparison } from './components/AudioComparison'
@@ -16,7 +15,7 @@ import { CollectionShowcase } from './components/CollectionShowcase'
 import { ScrollProgress } from './components/ScrollProgress'
 
 export default function App() {
-  const [instrument, setInstrument] = useState<InstrumentId>('violin')
+  const [instrument, setInstrument] = useState<InstrumentId | null>(null)
   const [info, setInfo] = useState<{ title: string; text: string } | null>(null)
   const showInfo = (title: string, text: string) => setInfo({ title, text })
   return (
@@ -25,7 +24,6 @@ export default function App() {
       <a className="skip-link" href="#conteudo">
         Pular para o conteúdo
       </a>
-      <Header />
       <main id="conteudo">
         <HeroSection />
         <AudioComparison />

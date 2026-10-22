@@ -6,7 +6,7 @@ const materials = [
     icon: FileMusic,
     label: 'PARTITURAS',
     title: 'Cada nota no seu lugar.',
-    description: 'Materiais organizados para transformar sua preparação em música.',
+    description: 'Partituras em pastas por instrumento, com cada música fácil de localizar.',
     cover: 'PARTITURAS\nPARA TOCAR MAIS',
     className: 'cover-score',
   },
@@ -30,7 +30,7 @@ const materials = [
     icon: Search,
     label: 'ORGANIZAÇÃO',
     title: 'Encontre. Prepare. Toque.',
-    description: 'Filtros e navegação para encontrar o que combina com seu momento.',
+    description: 'Pastas, arquivos, busca e favoritos em uma navegação familiar.',
     cover: 'SUA BIBLIOTECA\nEM HARMONIA',
     className: 'cover-library',
   },
@@ -58,7 +58,7 @@ export function CollectionShowcase() {
             </h2>
             <ul>
               {[
-                'Partituras e áudios reunidos no mesmo espaço',
+                'Pastas para partituras e áudios no mesmo espaço',
                 'Cordas e sopros: seis instrumentos no projeto',
                 'Curadoria planejada para diferentes ocasiões',
                 'Uma rotina com mais ensaio e menos procura',

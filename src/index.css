@@ -7,9 +7,7 @@
   --color-gold: #e7c66c;
   --color-paper: #faf8f3;
   --font-sans: 'Montserrat Variable', sans-serif;
-}
-
-/* Foundations */
+} /* Foundations */
 :root {
   font-family: 'Montserrat Variable', sans-serif;
   color: #14263f;
@@ -290,44 +288,6 @@ em {
   color: #657181;
 }
 
-/* Navigation and opening */
-.announcement {
-  background: var(--gold);
-  color: #0b1627;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  min-height: 36px;
-  padding: 9px 20px;
-  font-size: 9px;
-  font-weight: 800;
-  text-align: center;
-  letter-spacing: 0.35px;
-}
-.announcement-tag {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin-left: 30px;
-  font-size: 8px;
-}
-.header {
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  background: #0b1627f5;
-  backdrop-filter: blur(16px);
-  color: #fff;
-  border-bottom: 1px solid #ffffff10;
-}
-.header-inner {
-  height: 77px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 25px;
-}
 .logo {
   display: inline-flex;
   align-items: center;
@@ -356,53 +316,7 @@ em {
 .logo-light {
   color: #fff;
 }
-.desktop-nav {
-  display: flex;
-  gap: 22px;
-  margin-left: auto;
-}
-.desktop-nav a {
-  padding-block: 14px;
-  font-size: 10px;
-  font-weight: 650;
-  color: #b8c3d2;
-  transition: color 0.2s;
-  white-space: nowrap;
-}
-.desktop-nav a:hover {
-  color: var(--gold);
-}
-.header-cta {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 12px 15px;
-  border: 1px solid #c8a64c66;
-  border-radius: 5px;
-  color: var(--gold);
-  font-size: 9px;
-  font-weight: 800;
-  white-space: nowrap;
-}
-.header-cta:hover {
-  background: #d8b45e15;
-}
-.menu-toggle {
-  display: none;
-  padding: 10px;
-}
-.mobile-nav {
-  background: #11243b;
-  padding: 5px 25px 20px;
-}
-.mobile-nav a {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 5px;
-  font-size: 13px;
-  border-bottom: 1px solid #ffffff18;
-}
+
 .hero {
   background: var(--navy);
   color: #fff;
@@ -536,121 +450,6 @@ em {
   background: radial-gradient(ellipse, #ce9d3d16, transparent 68%);
   transform: scale(1.2);
   pointer-events: none;
-}
-.product-label {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  color: var(--gold);
-  border: 1px solid #d8b45e42;
-  background: #14273edb;
-  backdrop-filter: blur(12px);
-  padding: 13px 16px;
-  border-radius: 9px;
-  box-shadow: 0 15px 30px #0003;
-}
-.product-label > span {
-  font-size: 8px;
-  letter-spacing: 0.5px;
-  font-weight: 750;
-}
-.product-label strong {
-  display: block;
-  color: #fff;
-  font-size: 10px;
-  letter-spacing: -0.1px;
-  margin-top: 5px;
-  font-weight: 600;
-}
-.label-score {
-  top: 5%;
-  right: 0;
-  animation: label-float 6s ease-in-out infinite;
-}
-.label-sound {
-  bottom: 4%;
-  left: 0;
-  animation: label-float 6s ease-in-out -3s infinite;
-}
-.label-equalizer {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  height: 24px;
-  margin-left: 6px;
-}
-.label-equalizer i {
-  width: 3px;
-  border-radius: 2px;
-  background: #2bd178;
-  height: 8px;
-  animation: equalizer 0.9s ease-in-out infinite alternate;
-}
-.label-equalizer i:nth-child(2) {
-  animation-delay: -0.2s;
-  height: 18px;
-}
-.label-equalizer i:nth-child(3) {
-  animation-delay: -0.6s;
-  height: 24px;
-}
-.label-equalizer i:nth-child(4) {
-  animation-delay: -0.4s;
-  height: 12px;
-}
-.product-caption {
-  position: absolute;
-  bottom: -35px;
-  left: 0;
-  right: 0;
-  text-align: center;
-  font-size: 6px;
-  letter-spacing: 0.8px;
-  color: #9aa9bc;
-}
-.hero-instruments {
-  display: flex;
-  align-items: center;
-  gap: 32px;
-  padding-block: 27px;
-  border-top: 1px solid #ffffff18;
-}
-.hero-instruments > span {
-  font-size: 8px;
-  font-weight: 600;
-  line-height: 1.8;
-  letter-spacing: 0.7px;
-  color: #9baabd;
-  white-space: nowrap;
-}
-.hero-instruments strong {
-  color: var(--gold);
-  font-weight: 750;
-}
-.hero-instruments > div {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  flex: 1;
-  font-size: 12px;
-  font-weight: 700;
-}
-.hero-instruments i {
-  width: 3px;
-  height: 3px;
-  background: #b99a4b;
-  border-radius: 50%;
-}
-.hero-instruments > a {
-  display: grid;
-  place-items: center;
-  border: 1px solid #c7a64c60;
-  border-radius: 50%;
-  width: 34px;
-  height: 34px;
-  color: var(--gold);
 }
 
 /* Listen before exploring */
@@ -925,9 +724,7 @@ em {
 .fact-navy {
   background: #203957;
   color: #fff;
-}
-
-/* Instruments and practical benefits */
+} /* Instruments and practical benefits */
 .instrument-section {
   background: #fff;
 }
@@ -1033,51 +830,7 @@ em {
   position: absolute;
   inset: 0;
 }
-.instrument-detail {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  background: #f7f6ef;
-  border: 1px solid #e4dece;
-  border-radius: 12px;
-  padding: 25px;
-  margin-top: 26px;
-}
-.instrument-detail-icon {
-  display: grid;
-  place-items: center;
-  width: 45px;
-  height: 45px;
-  border-radius: 12px;
-  color: #806324;
-  background: #eee2bf;
-  flex-shrink: 0;
-}
-.instrument-detail h3 {
-  font-size: 18px;
-  font-weight: 850;
-  margin-top: 5px;
-}
-.instrument-detail p {
-  font-size: 12px;
-  line-height: 1.8;
-  color: #657286;
-  margin-top: 5px;
-  max-width: 600px;
-}
-.instrument-detail .micro-label {
-  font-size: 8px;
-  color: #85703e;
-}
-.instrument-detail > a {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  margin-left: auto;
-  font-size: 10px;
-  font-weight: 800;
-  white-space: nowrap;
-}
+
 .benefits-section {
   background: #faf8f3;
 }
@@ -1138,114 +891,9 @@ em {
   color: #63718a;
   font-size: 12px;
   line-height: 1.8;
-}
-
-/* Interactive demo: real local filtering, media and favorites */
+} /* Interactive demo: real local filtering, media and favorites */
 .library-section {
   background: #fff;
-}
-.demo-badge {
-  margin-top: 20px;
-  font-size: 9px;
-  border-color: #cfc1a0;
-}
-.library-app {
-  grid-template-columns: 205px minmax(0, 1fr);
-  border-radius: 16px;
-}
-.library-sidebar {
-  background: #11263e;
-  padding: 28px 17px;
-}
-.app-mark {
-  font-size: 14px;
-}
-.sidebar-caption {
-  font-size: 8px;
-}
-.library-sidebar button {
-  font-size: 11px;
-  padding-block: 13px;
-}
-.sidebar-note p {
-  font-size: 12px;
-}
-.sidebar-note small {
-  font-size: 8px;
-}
-.library-main {
-  padding: 28px;
-}
-.library-toolbar h3 {
-  font-size: 21px;
-}
-.library-toolbar .micro-label {
-  font-size: 8px;
-}
-.sample-label {
-  font-size: 7px;
-}
-.search-field {
-  min-width: 140px;
-  min-height: 43px;
-}
-.search-field input {
-  font-size: 11px;
-}
-.library-filters select {
-  max-width: 130px;
-  min-height: 43px;
-  font-size: 9px;
-}
-.track-list-heading,
-.score-column-top {
-  font-size: 8px;
-}
-.result-count {
-  font-size: 10px;
-}
-.track-select {
-  padding-block: 20px;
-}
-.track-select strong {
-  font-size: 12px;
-}
-.track-select small {
-  font-size: 9px;
-}
-.local-note {
-  font-size: 8px;
-}
-.library-player-title {
-  font-size: 10px;
-}
-.library-player-title small {
-  font-size: 7px;
-}
-.empty-state strong {
-  font-size: 13px;
-}
-.empty-state p {
-  font-size: 11px;
-}
-.score-sheet h4 {
-  font-family: Georgia, serif;
-}
-.audio-compact {
-  margin-top: 10px;
-}
-.audio-compact .play-button {
-  background: #1c4a39;
-}
-.audio-compact .audio-wave {
-  color: #57926a;
-}
-.audio-compact .audio-times {
-  color: #526c5d;
-}
-.demo-disclaimer {
-  font-size: 10px;
-  line-height: 1.9;
 }
 
 /* Editorial categories and path to access */
@@ -1394,9 +1042,7 @@ em {
   max-width: 500px;
   margin: 18px auto 24px;
   color: #c6d1df;
-}
-
-/* Product collection */
+} /* Product collection */
 .collection-section {
   background: #0e1e34;
   color: #fff;
@@ -1571,9 +1217,7 @@ em {
 .collection-action {
   text-align: center;
   margin-top: 35px;
-}
-
-/* Comparison and access options */
+} /* Comparison and access options */
 .comparison-section {
   background: #faf8f3;
 }
@@ -1813,9 +1457,7 @@ em {
   line-height: 1.9;
   color: #64748a;
   margin-top: 25px;
-}
-
-/* Purpose, answers, and closing */
+} /* Purpose, answers, and closing */
 .about-section {
   background: #13263e;
   color: #fff;
@@ -2186,15 +1828,7 @@ em {
     transform: translateY(-12px) rotate(0.5deg);
   }
 }
-@keyframes label-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-7px);
-  }
-}
+
 @keyframes equalizer {
   from {
     transform: scaleY(0.45);
@@ -2216,15 +1850,6 @@ em {
 
 /* Tablet and narrow desktop */
 @media (max-width: 1079px) {
-  .desktop-nav {
-    display: none;
-  }
-  .header-cta {
-    margin-left: auto;
-  }
-  .menu-toggle {
-    display: flex;
-  }
   .hero h1 {
     font-size: 47px;
   }
@@ -2235,29 +1860,7 @@ em {
   .product-visual {
     margin-right: -20px;
   }
-  .product-label {
-    padding: 11px;
-    gap: 7px;
-  }
-  .product-label > span {
-    font-size: 6px;
-  }
-  .product-label strong {
-    font-size: 8px;
-  }
-  .product-label > svg {
-    width: 17px;
-  }
-  .label-score {
-    right: -10px;
-  }
-  .hero-instruments {
-    gap: 24px;
-  }
-  .hero-instruments > div {
-    font-size: 10px;
-    gap: 13px;
-  }
+
   .instrument-card {
     height: 315px;
   }
@@ -2267,61 +1870,7 @@ em {
   .instrument-card p {
     font-size: 10px;
   }
-  .instrument-detail > a {
-    white-space: normal;
-    max-width: 150px;
-  }
-  .library-app {
-    grid-template-columns: 170px minmax(0, 1fr);
-  }
-  .library-main {
-    padding: 22px;
-  }
-  .library-toolbar h3 {
-    font-size: 17px;
-  }
-  .library-filters {
-    flex-wrap: wrap;
-  }
-  .library-filters .search-field {
-    flex-basis: 100%;
-  }
-  .library-filters > label:not(.search-field) {
-    flex: 1;
-  }
-  .library-filters select {
-    max-width: none;
-    width: 100%;
-  }
-  .library-content {
-    grid-template-columns: 0.9fr 1.1fr;
-    gap: 15px;
-  }
-  .track-select strong {
-    font-size: 10px;
-  }
-  .track-select small {
-    font-size: 8px;
-  }
-  .track-row {
-    padding-right: 3px;
-  }
-  .track-select {
-    gap: 4px;
-    padding-inline: 5px;
-  }
-  .favorite-button {
-    padding: 5px;
-  }
-  .local-note {
-    font-size: 7px;
-  }
-  .app-mark {
-    font-size: 11px;
-  }
-  .library-sidebar button {
-    font-size: 9px;
-  }
+
   .materials-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     max-width: 750px;
@@ -2412,35 +1961,7 @@ em {
     width: 100%;
     margin-left: 0;
   }
-  .product-label {
-    padding: 12px 15px;
-    gap: 10px;
-  }
-  .product-label > span {
-    font-size: 8px;
-  }
-  .product-label strong {
-    font-size: 10px;
-  }
-  .label-score {
-    right: 0;
-  }
-  .product-caption {
-    bottom: -25px;
-    font-size: 6px;
-  }
-  .hero-instruments > div {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 12px 16px;
-    font-size: 11px;
-  }
-  .hero-instruments > a {
-    flex-shrink: 0;
-  }
-  .hero-instruments > div i:nth-of-type(3) {
-    display: none;
-  }
+
   .instrument-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 18px;
@@ -2454,17 +1975,7 @@ em {
   .instrument-card p {
     font-size: 11px;
   }
-  .instrument-detail {
-    padding: 23px;
-    flex-wrap: wrap;
-  }
-  .instrument-detail > div {
-    flex: 1;
-  }
-  .instrument-detail > a {
-    margin-left: 63px;
-    max-width: none;
-  }
+
   .feature-card {
     padding-left: 75px;
     padding-right: 19px;
@@ -2484,70 +1995,7 @@ em {
   .feature-status {
     font-size: 6px;
   }
-  .library-app {
-    grid-template-columns: 140px minmax(0, 1fr);
-  }
-  .library-sidebar {
-    padding-inline: 10px;
-  }
-  .app-mark {
-    font-size: 9px;
-    gap: 4px;
-  }
-  .app-mark svg {
-    width: 18px;
-  }
-  .sidebar-caption {
-    font-size: 6px;
-  }
-  .library-sidebar button {
-    gap: 7px;
-    padding-inline: 6px;
-    font-size: 8px;
-  }
-  .library-content {
-    grid-template-columns: 1fr;
-    gap: 22px;
-  }
-  .library-toolbar {
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .sample-label {
-    font-size: 6px;
-  }
-  .track-column {
-    padding-bottom: 0;
-  }
-  .track-select {
-    padding: 15px 8px;
-    gap: 10px;
-  }
-  .track-select strong {
-    font-size: 12px;
-  }
-  .track-select small {
-    font-size: 9px;
-  }
-  .favorite-button {
-    padding: 10px;
-  }
-  .local-note {
-    position: static;
-    margin-top: 15px;
-    font-size: 8px;
-  }
-  .score-column .score-sheet {
-    padding: 20px;
-  }
-  .library-player-title {
-    font-size: 10px;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .library-player-title small {
-    font-size: 6px;
-  }
+
   .occasion-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2654,25 +2102,7 @@ em {
     padding: 17px 22px;
     gap: 16px;
   }
-  .announcement {
-    font-size: 6px;
-    min-height: 34px;
-    padding: 9px 13px;
-    gap: 7px;
-    letter-spacing: 0.1px;
-    line-height: 1.6;
-  }
-  .announcement > svg {
-    flex-shrink: 0;
-    width: 11px;
-  }
-  .announcement-tag {
-    display: none;
-  }
-  .header-inner {
-    height: 70px;
-    gap: 10px;
-  }
+
   .logo {
     font-size: 18px;
     gap: 7px;
@@ -2684,20 +2114,7 @@ em {
   .logo-symbol svg {
     width: 22px;
   }
-  .header-cta {
-    font-size: 7px;
-    padding: 11px 9px;
-    gap: 6px;
-  }
-  .header-cta svg {
-    width: 12px;
-  }
-  .menu-toggle {
-    padding: 10px 0 10px 5px;
-  }
-  .menu-toggle svg {
-    width: 23px;
-  }
+
   .hero-grid {
     padding-top: 37px;
     padding-bottom: 34px;
@@ -2755,61 +2172,7 @@ em {
   .product-visual {
     margin-inline: -8px;
   }
-  .product-label {
-    padding: 10px 11px;
-    gap: 7px;
-    border-radius: 7px;
-  }
-  .product-label > span {
-    font-size: 5px;
-    letter-spacing: 0.3px;
-  }
-  .product-label strong {
-    font-size: 7px;
-    margin-top: 4px;
-  }
-  .product-label > svg {
-    width: 16px;
-  }
-  .label-score {
-    top: 1%;
-    right: 5px;
-  }
-  .label-sound {
-    bottom: 0;
-    left: 5px;
-  }
-  .label-equalizer {
-    height: 18px;
-    gap: 2px;
-  }
-  .label-equalizer i {
-    width: 2px;
-    max-height: 16px;
-  }
-  .product-caption {
-    bottom: -23px;
-    font-size: 4px;
-    letter-spacing: 0.5px;
-  }
-  .hero-instruments {
-    gap: 17px;
-    padding-block: 22px;
-  }
-  .hero-instruments > span {
-    font-size: 6px;
-    letter-spacing: 0.4px;
-  }
-  .hero-instruments > div {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 11px;
-    font-size: 9px;
-  }
-  .hero-instruments > div i,
-  .hero-instruments > a {
-    display: none;
-  }
+
   .audio-demo-info {
     gap: 7px;
     margin-top: 18px;
@@ -2909,33 +2272,7 @@ em {
   .instrument-card button svg {
     width: 13px;
   }
-  .instrument-detail {
-    padding: 19px;
-    gap: 13px;
-    border-radius: 10px;
-  }
-  .instrument-detail-icon {
-    width: 35px;
-    height: 35px;
-    border-radius: 9px;
-  }
-  .instrument-detail-icon svg {
-    width: 19px;
-  }
-  .instrument-detail h3 {
-    font-size: 16px;
-  }
-  .instrument-detail .micro-label {
-    font-size: 6px;
-  }
-  .instrument-detail p {
-    font-size: 10px;
-  }
-  .instrument-detail > a {
-    margin-left: 48px;
-    font-size: 9px;
-    padding-block: 5px;
-  }
+
   .benefit-grid {
     grid-template-columns: 1fr;
     gap: 13px;
@@ -2965,100 +2302,7 @@ em {
   .section-action {
     margin-top: 25px;
   }
-  .library-app {
-    grid-template-columns: 1fr;
-    border-radius: 12px;
-  }
-  .library-sidebar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 14px;
-  }
-  .app-mark {
-    font-size: 11px;
-    margin: 0 auto 0 0;
-    gap: 7px;
-  }
-  .app-mark svg {
-    width: 20px;
-  }
-  .sidebar-caption,
-  .sidebar-divider,
-  .sidebar-note,
-  .library-sidebar > button:nth-of-type(n + 3) {
-    display: none;
-  }
-  .library-sidebar > button {
-    font-size: 0;
-    width: 40px;
-    min-height: 40px;
-    margin: 0;
-    padding: 9px;
-    gap: 0;
-    justify-content: center;
-  }
-  .library-sidebar > button > svg {
-    width: 18px;
-    flex-shrink: 0;
-  }
-  .sidebar-count {
-    font-size: 8px;
-    margin-left: 4px;
-  }
-  .library-main {
-    padding: 22px 16px;
-  }
-  .library-toolbar h3 {
-    font-size: 16px;
-  }
-  .library-toolbar .micro-label {
-    font-size: 6px;
-  }
-  .sample-label {
-    font-size: 5px;
-  }
-  .search-field {
-    padding: 10px;
-    min-height: 44px;
-  }
-  .search-field input {
-    font-size: 10px;
-  }
-  .library-filters select {
-    font-size: 8px;
-    padding-inline: 5px;
-    min-height: 44px;
-  }
-  .track-list-heading {
-    font-size: 7px;
-  }
-  .result-count {
-    font-size: 9px;
-  }
-  .track-select {
-    padding: 17px 10px;
-  }
-  .track-select strong {
-    font-size: 12px;
-  }
-  .track-select small {
-    font-size: 9px;
-  }
-  .score-column .score-sheet {
-    padding: 18px;
-  }
-  .score-kicker {
-    font-size: 5px;
-  }
-  .score-subtitle {
-    font-size: 7px;
-  }
-  .demo-disclaimer {
-    font-size: 9px;
-    text-align: left;
-    margin-top: 18px;
-  }
+
   .occasion-grid {
     gap: 12px;
   }

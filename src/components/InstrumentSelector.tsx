@@ -1,4 +1,4 @@
-import { ArrowRight, ArrowUpRight, Music2 } from 'lucide-react'
+import { ArrowUpRight } from 'lucide-react'
 import { instruments } from '../data/content'
 import type { InstrumentId } from '../types'
 import { Container, InstrumentImage, Reveal, SectionHeading } from './ui'
@@ -7,10 +7,9 @@ export function InstrumentSelector({
   selected,
   onSelect,
 }: {
-  selected: InstrumentId
+  selected: InstrumentId | null
   onSelect: (id: InstrumentId) => void
 }) {
-  const current = instruments.find((instrument) => instrument.id === selected)!
   return (
     <section id="instrumentos" className="instrument-section section-space">
       <Container>
@@ -59,19 +58,6 @@ export function InstrumentSelector({
               </article>
             </Reveal>
           ))}
-        </div>
-        <div className="instrument-detail" aria-live="polite">
-          <span className="instrument-detail-icon">
-            <Music2 size={23} />
-          </span>
-          <div>
-            <span className="micro-label">SELEÇÃO DE EXEMPLO · {current.tuning}</span>
-            <h3>{current.name}</h3>
-            <p>{current.detail}</p>
-          </div>
-          <a href="#biblioteca">
-            Ver estudos demonstrativos <ArrowRight size={17} />
-          </a>
         </div>
       </Container>
     </section>

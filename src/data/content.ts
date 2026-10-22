@@ -93,7 +93,7 @@ export const plans: Plan[] = [
     description: 'Um universo de possibilidades para o instrumento que acompanha você.',
     accessMode: 'Biblioteca por instrumento',
     benefits: [
-      'Coleção dedicada ao seu instrumento',
+      'Pastas dedicadas ao seu instrumento',
       'Partituras e acompanhamentos',
       'Organização por estilo e tonalidade',
     ],
@@ -105,7 +105,7 @@ export const plans: Plan[] = [
     accessMode: 'Pacote de repertório',
     benefits: [
       'Seleções por tipo de evento',
-      'Materiais reunidos em um só lugar',
+      'Partituras e áudios em pastas organizadas',
       'Repertório para estudar e apresentar',
     ],
   },
@@ -125,6 +125,10 @@ export const plans: Plan[] = [
 
 export const faqs = [
   [
+    'Como as partituras são organizadas?',
+    'A proposta segue uma organização familiar de pastas e arquivos, próxima à lógica de um gerenciador como o Google Drive. Na prévia, abra a pasta do instrumento e depois as subpastas de partituras ou backing tracks. Você pode buscar, ordenar, alternar lista e grade, marcar favoritos e abrir a prévia de um arquivo. Upload, movimentação de arquivos e armazenamento em nuvem ainda não estão disponíveis.',
+  ],
+  [
     'Quais instrumentos são atendidos?',
     'A proposta contempla violino, saxofone alto e tenor, flauta transversal, violão, viola de arco e violoncelo. Nesta primeira versão, você pode explorar exemplos locais para os seis instrumentos. O catálogo comercial ainda está em preparação.',
   ],
@@ -142,7 +146,7 @@ export const faqs = [
   ],
   [
     'Posso visualizar partituras pela plataforma?',
-    'A prévia exibe um pequeno estudo ilustrativo em React. O visualizador de PDFs completos, os arquivos para download e os materiais comerciais serão integrados futuramente.',
+    'Na prévia, abra uma pasta, entre em Partituras e selecione um arquivo para ver o estudo ilustrativo no painel de visualização. O visualizador de PDFs completos e os arquivos para download serão integrados futuramente.',
   ],
   [
     'Como receberei o acesso depois da compra?',
