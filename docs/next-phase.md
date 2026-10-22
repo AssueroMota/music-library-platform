@@ -1,35 +1,13 @@
-# Próxima fase
+# Estado das integrações
 
-Esta entrega é uma landing page pública. Não contém backend, banco de dados, autenticação, checkout, integração de pagamentos ou biblioteca privada.
+O checkout possui API Fastify, PostgreSQL/Prisma, integração Orders API do Mercado Pago, notificações assinadas, fila persistente, Supabase Auth e Resend. A landing page e a prévia pública continuam preservadas.
 
-## Pontos de integração
+Veja [checkout.md](checkout.md) para instalação, credenciais, testes oficiais e operação.
 
-| Área          | Ponto atual                                                                  | Trabalho futuro                                                                      |
-| ------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| Catálogo      | `src/data/content.ts`, tipos `Instrument` e `Track`                          | Serviço de catálogo, paginação, arquivos autorizados, arranjos reais por instrumento |
-| Organização   | `LibraryPreview`, `LibraryFiles`, `src/data/library.ts` e tipo `LibraryFile` | Persistência de pastas e arquivos, upload, movimentação e permissões de acesso       |
-| Players       | `AudioPlayer` recebe `src` e `label`                                         | URLs assinadas de áudio, metadados e tratamento de autorização                       |
-| Partituras    | `Score` ilustra dois estudos em SVG                                          | Visualizador de PDF, downloads e controle de acesso                                  |
-| Planos        | `Plan` com preço e URL opcionais                                             | Definir preços, duração do acesso e condições; preencher `checkoutUrl`               |
-| Checkout      | Botões sem URL abrem aviso informativo                                       | Provedor de Pix/cartão e checkout hospedado                                          |
-| Liberação     | Somente descrição do fluxo planejado                                         | Webhooks verificados, operações idempotentes e permissões após confirmação           |
-| Conta         | Inexistente                                                                  | Autenticação, recuperação de acesso e biblioteca privada                             |
-| Favoritos     | Estado React em memória                                                      | Persistência por conta, setlists e organização pessoal                               |
-| Administração | Inexistente                                                                  | Upload de partituras/áudios, curadoria, pacotes e permissões                         |
-| Comunicação   | Canal de contato não configurado                                             | E-mail oficial, confirmação de compra e suporte                                      |
-| Documentos    | Avisos de versão demonstrativa                                               | Termos, privacidade e licenças revisados para a operação real                        |
+Dependem de configuração externa: contas e chaves, banco persistente, domínios HTTPS, webhook no painel do Mercado Pago, domínio de e-mail verificado, bucket privado, materiais comerciais e publicação. Nenhuma cobrança externa foi validada nesta máquina sem essas credenciais.
 
-## Limites importantes
+Os estudos em `public/` são demonstrações públicas e não constituem a biblioteca vendida. Arquivos comerciais são importados por `npm run library:import` e entregues por URLs temporárias após autenticação e verificação dos acessos.
 
-- Nenhuma chave privada deve entrar em variáveis `VITE_*`; esses valores são públicos no frontend.
-- O frontend nunca deve ser a autoridade para liberar uma compra.
-- Os materiais comerciais precisam de permissões de distribuição e execução adequadas.
-- O Plano Básico está configurado em R$ 17,90 e o Plano Completo em R$ 27,90, conforme os valores informados pelo usuário. Conteúdo final e prazo de acesso ainda precisam ser definidos; o checkout permanece fora desta etapa.
-- Transposição, assinatura, setlists e permissões continuam fora do escopo desta versão.
-- A referência ao Google Drive diz respeito à familiaridade da organização em pastas e arquivos. Não existe integração com o Google Drive nesta entrega.
+Autoria/licenças, suporte oficial, termos, privacidade e condições comerciais devem ser finalizados antes de abrir as vendas. Não foram inventadas garantias, duração de acesso ou condições de reembolso.
 
-## Publicação
-
-O build produz arquivos estáticos em `dist/`. A configuração usa caminhos a partir da raiz do domínio. Para hospedagem em subpasta, ajustar `base` do Vite e as URLs dos arquivos públicos antes da publicação. Não há workflow de deploy nem dependência de um provedor de hospedagem nesta entrega.
-
-Na raiz do domínio publicado, configurar `VITE_PUBLIC_SITE_URL` com a origem real para gerar canonical, `og:url` e imagem Open Graph absoluta. Não foi inserido um domínio fictício. Validar a página em navegador real nas larguras 320, 390, 768, 1024 e 1440 pixels antes do lançamento público.
+Outras evoluções possíveis: painel administrativo, busca avançada da biblioteca privada, histórico de compras, métricas/alertas da fila e rate limiting compartilhado para múltiplas instâncias.

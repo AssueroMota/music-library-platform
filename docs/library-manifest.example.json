@@ -1,0 +1,16 @@
+[
+  {
+    "title": "Nome da música — Partitura",
+    "instrument": "violin",
+    "kind": "score",
+    "file": "./materiais/partitura.pdf",
+    "storageKey": "violin/partituras/musica.pdf"
+  },
+  {
+    "title": "Nome da música — Backing track",
+    "instrument": "violin",
+    "kind": "audio",
+    "file": "./materiais/acompanhamento.mp3",
+    "storageKey": "violin/audios/musica.mp3"
+  }
+]

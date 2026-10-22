@@ -1,4 +1,5 @@
 import type { Instrument, Plan, Track } from '../types'
+import { catalog } from '../../shared/products'
 
 export const instruments: Instrument[] = [
   {
@@ -89,7 +90,7 @@ export const tracks: Track[] = instruments.flatMap((instrument) =>
 export const plans: Plan[] = [
   {
     id: 'basic',
-    price: 17.9,
+    price: catalog[0].priceCents / 100,
     name: 'Plano Básico',
     description: 'O essencial para organizar o repertório do seu instrumento.',
     accessMode: 'Biblioteca por instrumento',
@@ -101,7 +102,7 @@ export const plans: Plan[] = [
   },
   {
     id: 'complete',
-    price: 27.9,
+    price: catalog[6].priceCents / 100,
     name: 'Plano Completo',
     description: 'Todas as bibliotecas e mais possibilidades para o seu repertório.',
     accessMode: 'Acesso completo',

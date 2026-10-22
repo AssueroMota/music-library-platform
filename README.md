@@ -1,76 +1,80 @@
 # Music Library Platform
 
-Landing page de venda de partituras e backing tracks, com entrega digital planejada e organização em pastas.
+Landing page de partituras e backing tracks com checkout Mercado Pago, acesso por e-mail e biblioteca privada. Mantém React, Vite, TypeScript, Tailwind e a identidade visual original. A API usa Fastify, SDK oficial do Mercado Pago, Prisma/PostgreSQL, Supabase Auth, Resend e Zod.
 
 ## Executar
 
-Requisitos: Node.js 22.12+ e npm.
+Node.js 22.12+ e npm. A integração real precisa de PostgreSQL e dos provedores descritos em [docs/checkout.md](docs/checkout.md).
 
 ```sh
 npm ci
+npm run db:generate
+```
+
+Copie `.env.example` para `.env` e preencha as configurações. Segredos ficam exclusivamente no backend; somente variáveis `VITE_*` são públicas.
+
+```sh
+npm run db:migrate
+npm run db:seed
+npm run dev:server
+```
+
+Em outro terminal:
+
+```sh
 npm run dev
 ```
 
-Abra a URL exibida pelo Vite, normalmente `http://localhost:5173`.
+O Vite encaminha `/api` para `http://127.0.0.1:3001`. A landing page pode ser executada sozinha; sem API, o checkout informa indisponibilidade e não simula compras. `CHECKOUT_ENABLED=false` é o padrão até finalizar a configuração.
 
-```sh
-npm run build        # TypeScript e produção em dist/
-npm run preview      # Servir a versão de produção localmente
-npm test             # Seis testes de interação em JSDOM
-npm run typecheck    # Verificar tipos
-npm run format       # Formatar com Prettier
-npm run assets:audio # Regenerar os estudos originais
-```
+## Compra e entrega
 
-## Página
+1. O visitante escolhe Básico e instrumento ou Completo, consultando preço e disponibilidade atuais.
+2. O navegador envia apenas `productId` no corpo de `POST /api/checkout`. Cabeçalhos identificam a tentativa e protegem a consulta de status.
+3. O servidor lê o produto no PostgreSQL, grava o pedido e cria uma order pelo SDK oficial, retornando `checkout_url`.
+4. O comprador informa dados e paga no ambiente do Mercado Pago.
+5. Uma notificação assinada é persistida. A fila consulta a order no provedor, verifica conta, valor, moeda, referência e produto, e confirma o estado.
+6. Após aprovação real, a fila cria/localiza o usuário Supabase, grava o acesso e envia o link pelo Resend. Erros de e-mail não removem o acesso concedido.
+7. O usuário acessa `/biblioteca`; downloads exigem sessão válida e acesso ativo.
 
-O fluxo foi reduzido a cinco blocos: oferta com preço inicial e botão para os planos, amostra de áudio, material e entrega, comparação Básico/Completo e quatro dúvidas essenciais. A prévia da organização por pastas aparece apenas ao expandir “Ver como os materiais ficam organizados”. As animações respeitam a preferência por movimento reduzido.
+As páginas `/checkout/success`, `/checkout/pending` e `/checkout/failure` consultam o backend. A URL do retorno nunca autoriza uma compra. Estorno total, parcial e contestação suspendem o acesso referente ao pedido.
 
-A tipografia usa Lato para textos, preços, botões e títulos principais, com peso 900 nos destaques; Roboto Slab 700 dá o acabamento dos títulos dos cartões. Todas as fontes são locais.
+## Catálogo e arquivos
 
-- **Básico:** R$ 17,90, biblioteca de um instrumento.
-- **Completo:** R$ 27,90, bibliotecas dos seis instrumentos e repertórios por ocasião.
-- Valores configurados conforme a orientação do usuário; não foram adicionados descontos, parcelamento, urgência ou garantias fictícias.
-- Sem `checkoutUrl`, os botões informam que as vendas ainda não estão abertas.
-- O fluxo planejado de entrega é: compra confirmada, liberação do acesso e orientações por e-mail.
+`shared/products.ts` define os sete produtos iniciais: seis bibliotecas individuais a R$ 17,90 e acesso completo a R$ 27,90. O seed não sobrescreve preços ou disponibilidade existentes. O banco é a autoridade na compra; o resumo consulta a API antes de pagar. Atualize também a oferta pública se alterar os preços comerciais.
+
+Os estudos em `public/` são demonstrações; consulte [docs/assets.md](docs/assets.md). Os materiais comerciais precisam ser importados em bucket privado antes do lançamento, com `npm run library:import -- caminho/do/manifesto.json`.
 
 ## Estrutura
 
 ```text
-public/audio/                 Estudos originais em WAV
-public/images/                Mockup dos materiais e imagens da marca
-src/components/
-  HeroSection.tsx             Oferta, preço inicial e CTA
-  AudioComparison.tsx         Duas versões do estudo de demonstração
-  AudioPlayer.tsx             Play, pause, progresso e duração
-  MaterialsSection.tsx        Material, entrega e prévia expansível
-  LibraryPreview.tsx          Pastas, busca, filtros e favoritos locais
-  LibraryFiles.tsx            Lista/grade e painel do arquivo
-  Score.tsx                   Partitura SVG ilustrativa
-  PricingSection.tsx          Básico e Completo
-  ClosingSections.tsx         FAQ curto e rodapé
-  InfoDialog.tsx              Informações de planos e documentos
-  ScrollProgress.tsx          Progresso da rolagem
-  ui.tsx                      Componentes visuais reutilizáveis
-src/data/content.ts           Instrumentos, estudos e planos
-src/data/library.ts           Arquivos de exemplo
-src/data/sales.ts             Quatro dúvidas essenciais
-src/styles/                   Biblioteca, planos e página de venda
-src/index.css                 Base visual e responsividade
-src/test/                     Testes das interações
-scripts/generate-demo-audio.mjs
+src/components/          Landing page, checkout, retornos e biblioteca privada
+src/lib/                 Cliente da API e Supabase público
+src/test/                Interações do frontend em JSDOM
+shared/products.ts       Catálogo inicial compartilhado
+server/app.ts            Rotas, autenticação, validação e controles HTTP
+server/service.ts        Pedidos, validação de pagamento, acesso e fila
+server/providers.ts      SDKs Mercado Pago, Supabase e Resend
+server/security.ts       Assinaturas, tokens e criptografia do outbox
+server/email.ts          Template de confirmação em HTML e texto
+server/checkout.test.ts  Integração com PostgreSQL temporário real
+prisma/                  Esquema, migrações e seed
+docs/checkout.md         Configuração dos provedores e operação
 ```
 
-## Conteúdo e próximas integrações
+## Verificação e produção
 
-Altere preços, benefícios e URLs de checkout em `src/data/content.ts`. `AudioPlayer` aceita arquivos reais por `src`; o catálogo usa os contratos de `src/types.ts`.
+```sh
+npm test                 # Frontend + backend; inicia PostgreSQL isolado temporário
+npm run typecheck
+npm run lint
+npm run build            # Frontend em dist/ e API em dist-server/
+npm start                # API compilada e processamento da fila
+npm run preview          # Preview estático; configure VITE_API_URL para API em outra origem
+```
 
-A prévia tem pastas por instrumento, subpastas de partituras/áudios, busca, filtros, ordenação, lista/grade e favoritos em memória. A organização lembra um gerenciador de documentos; não há conexão com o Google Drive. As partituras são ilustrativas, e os áudios são estudos originais sintetizados, compartilhados entre os instrumentos para demonstrar a navegação.
+Os testes substituem os serviços externos por doubles controlados. Não acessam contas reais nem comprovam compra no sandbox oficial. Essa validação requer credenciais e segue o roteiro de [docs/checkout.md](docs/checkout.md).
 
-Esta entrega é somente frontend. Backend, catálogo comercial, PDFs completos, pagamentos, confirmação da compra, e-mail, contas e armazenamento em nuvem serão integrados na próxima fase. Consulte [as integrações futuras](docs/next-phase.md) e [a origem dos materiais](docs/assets.md).
+A API precisa de um processo Node persistente para executar a fila. Sirva `dist/` por HTTPS com fallback para `index.html` nas rotas do frontend e proxy de `/api` para a API. Não exponha a pasta do repositório ou `.env`. Configure `VITE_PUBLIC_SITE_URL` para canonical/Open Graph.
 
-## Publicação e validação
-
-O build em `dist/` é estático e destinado à raiz do domínio. Configure `VITE_PUBLIC_SITE_URL` a partir de `.env.example` para canonical e Open Graph absolutos. Não foi implantada hospedagem nesta etapa.
-
-O projeto utiliza Vite, React, TypeScript estrito, Tailwind, Lucide e Motion. Build, seis testes de interação e resposta HTTP do servidor local foram verificados. JSDOM usa mídia simulada; a revisão de layout e reprodução audível em navegador real permanece pendente.
+Para publicar o frontend na Vercel, use o `vercel.json` e siga [docs/vercel.md](docs/vercel.md). A configuração do frontend não publica automaticamente a API ou o processamento da fila.

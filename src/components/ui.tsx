@@ -39,10 +39,10 @@ export function Button({
   )
 }
 
-export function Logo({ light = false }: { light?: boolean }) {
+export function Logo({ light = false, href = '#inicio' }: { light?: boolean; href?: string }) {
   return (
     <a
-      href="#inicio"
+      href={href}
       className={`logo ${light ? 'logo-light' : ''}`}
       aria-label="Music Library — início"
     >

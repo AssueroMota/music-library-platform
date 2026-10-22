@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrderStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELED
+  REFUNDED
+  CHARGED_BACK
+}
+
+enum JobKind {
+  RECONCILE
+  FULFILL
+}
+
+model User {
+  id           String        @id @db.Uuid
+  email        String        @unique
+  createdAt    DateTime      @default(now()) @db.Timestamptz(3)
+  orders       Order[]
+  entitlements Entitlement[]
+  @@map("users")
+}
+
+model Product {
+  id           String         @id
+  code         String         @unique
+  name         String
+  description  String
+  priceCents   Int
+  currency     String         @default("BRL")
+  available    Boolean        @default(false)
+  accessType   String
+  instrument   String?
+  orders       Order[]
+  entitlements Entitlement[]
+  @@map("products")
+}
+
+model Order {
+  id                  String        @id @default(uuid()) @db.Uuid
+  idempotencyKey      String        @unique @db.Uuid
+  statusTokenHash      String
+  productId           String
+  product             Product       @relation(fields: [productId], references: [id])
+  productCode         String
+  productName         String
+  priceCents          Int
+  currency            String
+  userId              String?       @db.Uuid
+  user                User?         @relation(fields: [userId], references: [id])
+  buyerEmail          String?
+  providerOrderId     String?       @unique
+  checkoutUrl         String?
+  providerUpdatedAt   DateTime?     @db.Timestamptz(3)
+  status              OrderStatus   @default(PENDING)
+  accessGrantedAt     DateTime?     @db.Timestamptz(3)
+  emailSentAt         DateTime?     @db.Timestamptz(3)
+  emailLinkCiphertext String?
+  createdAt           DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime      @updatedAt @db.Timestamptz(3)
+  payments            Payment[]
+  entitlement         Entitlement?
+  @@index([status, updatedAt])
+  @@map("orders")
+}
+
+model Payment {
+  id          String      @id
+  orderId     String      @db.Uuid
+  order       Order       @relation(fields: [orderId], references: [id])
+  status      String
+  statusDetail String
+  amountCents Int
+  updatedAt   DateTime    @updatedAt @db.Timestamptz(3)
+  @@index([orderId])
+  @@map("payments")
+}
+
+model Entitlement {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @db.Uuid
+  user       User      @relation(fields: [userId], references: [id])
+  productId  String
+  product    Product   @relation(fields: [productId], references: [id])
+  orderId    String    @unique @db.Uuid
+  order      Order     @relation(fields: [orderId], references: [id])
+  grantedAt  DateTime  @default(now()) @db.Timestamptz(3)
+  revokedAt  DateTime? @db.Timestamptz(3)
+  @@index([userId, revokedAt])
+  @@map("entitlements")
+}
+
+model WebhookEvent {
+  id              String    @id
+  providerOrderId String
+  receivedAt      DateTime  @default(now()) @db.Timestamptz(3)
+  @@index([providerOrderId])
+  @@map("webhook_events")
+}
+
+model Job {
+  id          String    @id
+  kind        JobKind
+  resourceId  String
+  attempts    Int       @default(0)
+  availableAt DateTime  @default(now()) @db.Timestamptz(3)
+  lockedUntil DateTime? @db.Timestamptz(3)
+  leaseToken  String?
+  doneAt      DateTime? @db.Timestamptz(3)
+  lastError   String?
+  @@index([doneAt, availableAt])
+  @@map("jobs")
+}
+
+model LibraryAsset {
+  id         String @id @default(uuid()) @db.Uuid
+  title      String
+  instrument String
+  kind       String
+  storageKey String @unique
+  @@index([instrument])
+  @@map("library_assets")
+}

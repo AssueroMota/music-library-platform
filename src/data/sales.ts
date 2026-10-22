@@ -9,7 +9,7 @@ export const salesFaqs = [
   ],
   [
     'Como recebo o acesso?',
-    'A entrega prevista é digital, com orientações por e-mail após a confirmação da compra. As vendas e a liberação automática estão em preparação.',
+    'A entrega é digital. Após a confirmação do pagamento pelo Mercado Pago, o acesso é preparado e as orientações são enviadas ao e-mail informado na compra. Você também pode solicitar um link na página da sua biblioteca.',
   ],
   [
     'Posso acessar pelo celular ou tablet?',

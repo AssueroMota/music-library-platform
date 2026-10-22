@@ -59,7 +59,7 @@ export function Footer({ onInfo }: { onInfo: (title: string, text: string) => vo
               onClick={() =>
                 onInfo(
                   'Privacidade',
-                  'Esta página não possui cadastro ou pagamento. Os favoritos da prévia ficam apenas na memória da página e são reiniciados ao recarregar. A política completa será publicada antes das integrações.',
+                  'O pagamento é realizado no Mercado Pago. Quando confirmado, o e-mail informado na compra é usado para criar ou localizar seu acesso e enviar orientações. Os favoritos da prévia ficam apenas na memória da página. A política completa será publicada antes da abertura das vendas.',
                 )
               }
             >

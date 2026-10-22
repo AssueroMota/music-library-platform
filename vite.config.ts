@@ -13,6 +13,7 @@ export default defineConfig(({ mode }) => {
     siteUrl = parsed.origin
   }
   return {
+    server: { proxy: { '/api': 'http://127.0.0.1:3001' } },
     plugins: [
       react(),
       tailwindcss(),

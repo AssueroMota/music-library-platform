@@ -59,13 +59,7 @@ function PlanPrice({ price }: { price?: number }) {
   )
 }
 
-function PricingCard({
-  plan,
-  onInfo,
-}: {
-  plan: Plan
-  onInfo: (title: string, text: string) => void
-}) {
+function PricingCard({ plan, onCheckout }: { plan: Plan; onCheckout: (plan: string) => void }) {
   const label = `Quero o ${plan.name}`
   return (
     <article
@@ -88,25 +82,12 @@ function PricingCard({
         ))}
       </ul>
       <PlanPrice price={plan.price} />
-      {plan.checkoutUrl ? (
-        <Button href={plan.checkoutUrl}>{label}</Button>
-      ) : (
-        <Button
-          onClick={() =>
-            onInfo(
-              plan.name,
-              `${plan.description} Valor: ${plan.price?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) ?? 'a definir'}. As vendas ainda não estão abertas. O acesso será disponibilizado no lançamento.`,
-            )
-          }
-        >
-          {label}
-        </Button>
-      )}
+      <Button onClick={() => onCheckout(plan.id)}>{label}</Button>
     </article>
   )
 }
 
-export function PricingSection({ onInfo }: { onInfo: (title: string, text: string) => void }) {
+export function PricingSection({ onCheckout }: { onCheckout: (plan: string) => void }) {
   return (
     <section id="planos" className="pricing-section section-space">
       <Container>
@@ -124,11 +105,13 @@ export function PricingSection({ onInfo }: { onInfo: (title: string, text: strin
         <div className="pricing-grid">
           {plans.map((plan, index) => (
             <Reveal key={plan.id} delay={index * 0.1}>
-              <PricingCard plan={plan} onInfo={onInfo} />
+              <PricingCard plan={plan} onCheckout={onCheckout} />
             </Reveal>
           ))}
         </div>
-        <p className="pricing-disclaimer">Valores de lançamento. Vendas ainda não abertas.</p>
+        <p className="pricing-disclaimer">
+          Consulte a disponibilidade e o valor atualizado antes de continuar para o Mercado Pago.
+        </p>
       </Container>
     </section>
   )

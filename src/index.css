@@ -6,6 +6,7 @@
 @import './styles/library.css';
 @import './styles/pricing.css';
 @import './styles/sales.css';
+@import './styles/checkout.css';
 
 @theme {
   --color-navy: #0b1627;

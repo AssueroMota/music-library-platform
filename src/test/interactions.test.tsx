@@ -1,10 +1,9 @@
 import { useState } from 'react'
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, it, vi } from 'vitest'
 import { LibraryPreview } from '../components/LibraryPreview'
 import { PricingSection } from '../components/PricingSection'
-import { InfoDialog } from '../components/InfoDialog'
 import { AudioPlayer } from '../components/AudioPlayer'
 import type { InstrumentId } from '../types'
 import App from '../App'
@@ -117,29 +116,14 @@ it('navega em subpastas, ordena arquivos e abre a prévia com retorno de foco', 
   ).not.toBeInTheDocument()
 })
 
-it('apresenta informações da modalidade sem simular checkout', async () => {
+it('encaminha a escolha correta de cada plano para o checkout', async () => {
   const user = userEvent.setup()
-  function PricingDemo() {
-    const [info, setInfo] = useState<{ title: string; text: string } | null>(null)
-    return (
-      <>
-        <PricingSection onInfo={(title, text) => setInfo({ title, text })} />
-        <InfoDialog info={info} onClose={() => setInfo(null)} />
-      </>
-    )
-  }
-  render(<PricingDemo />)
+  const onCheckout = vi.fn()
+  render(<PricingSection onCheckout={onCheckout} />)
   await user.click(screen.getByRole('button', { name: 'Quero o Plano Básico' }))
-  const dialog = screen.getByRole('dialog', { name: 'Plano Básico' })
-  expect(within(dialog).getByText(/As vendas ainda não estão abertas/)).toBeInTheDocument()
-  await user.click(within(dialog).getByRole('button', { name: 'Entendi' }))
-  expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  expect(onCheckout).toHaveBeenLastCalledWith('basic')
   await user.click(screen.getByRole('button', { name: 'Quero o Plano Completo' }))
-  expect(
-    within(screen.getByRole('dialog', { name: 'Plano Completo' })).getByText(
-      /As vendas ainda não estão abertas/,
-    ),
-  ).toBeInTheDocument()
+  expect(onCheckout).toHaveBeenLastCalledWith('complete')
 })
 
 it('coordena play e pause entre players e permite avançar o áudio', async () => {
