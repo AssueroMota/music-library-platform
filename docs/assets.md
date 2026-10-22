@@ -30,7 +30,7 @@ npm run assets:audio
 
 ## Fontes e ícones
 
-Montserrat Variable é servida localmente pelo pacote Fontsource. Consulte a licença OFL no pacote. Não há chamadas a servidores de fontes durante a navegação. Os ícones são do Lucide React, sob a licença do pacote.
+Lato (400, 700 e 900) e Roboto Slab (700) são servidas localmente pelos pacotes Fontsource. Lato é a fonte principal e Roboto Slab aparece nos títulos dos cartões de materiais e planos. Consulte as licenças OFL nos pacotes. Não há chamadas a servidores de fontes durante a navegação. Os ícones são do Lucide React, sob a licença do pacote.
 
 ## Prompt do novo mockup
 

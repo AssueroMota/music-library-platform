@@ -2,16 +2,11 @@ import { useState } from 'react'
 import { MotionConfig } from 'motion/react'
 import type { InstrumentId } from './types'
 import { HeroSection } from './components/HeroSection'
-import { InstrumentSelector } from './components/InstrumentSelector'
 import { AudioComparison } from './components/AudioComparison'
-import { BenefitsSection } from './components/BenefitsSection'
-import { LibraryPreview } from './components/LibraryPreview'
-import { RepertoireCategories } from './components/RepertoireCategories'
-import { ComparisonSection, HowItWorks } from './components/JourneySections'
+import { MaterialsSection } from './components/MaterialsSection'
 import { PricingSection } from './components/PricingSection'
-import { AboutSection, FAQSection, FinalCTA, Footer } from './components/ClosingSections'
+import { FAQSection, Footer } from './components/ClosingSections'
 import { InfoDialog } from './components/InfoDialog'
-import { CollectionShowcase } from './components/CollectionShowcase'
 import { ScrollProgress } from './components/ScrollProgress'
 
 export default function App() {
@@ -27,17 +22,9 @@ export default function App() {
       <main id="conteudo">
         <HeroSection />
         <AudioComparison />
-        <InstrumentSelector selected={instrument} onSelect={setInstrument} />
-        <BenefitsSection />
-        <LibraryPreview instrument={instrument} onInstrumentChange={setInstrument} />
-        <RepertoireCategories />
-        <HowItWorks />
-        <CollectionShowcase />
-        <ComparisonSection />
+        <MaterialsSection instrument={instrument} onInstrumentChange={setInstrument} />
         <PricingSection onInfo={showInfo} />
-        <AboutSection />
         <FAQSection />
-        <FinalCTA />
       </main>
       <Footer onInfo={showInfo} />
       <InfoDialog info={info} onClose={() => setInfo(null)} />

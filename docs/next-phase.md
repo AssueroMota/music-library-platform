@@ -24,7 +24,7 @@ Esta entrega é uma landing page pública. Não contém backend, banco de dados,
 - Nenhuma chave privada deve entrar em variáveis `VITE_*`; esses valores são públicos no frontend.
 - O frontend nunca deve ser a autoridade para liberar uma compra.
 - Os materiais comerciais precisam de permissões de distribuição e execução adequadas.
-- O Plano Básico contempla a biblioteca por instrumento e o Plano Completo reúne as bibliotecas e repertórios planejados. Preços, conteúdo final e prazos de acesso ainda não foram definidos.
+- O Plano Básico está configurado em R$ 17,90 e o Plano Completo em R$ 27,90, conforme os valores informados pelo usuário. Conteúdo final e prazo de acesso ainda precisam ser definidos; o checkout permanece fora desta etapa.
 - Transposição, assinatura, setlists e permissões continuam fora do escopo desta versão.
 - A referência ao Google Drive diz respeito à familiaridade da organização em pastas e arquivos. Não existe integração com o Google Drive nesta entrega.
 

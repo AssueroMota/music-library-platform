@@ -3,45 +3,44 @@ import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, it, vi } from 'vitest'
 import { LibraryPreview } from '../components/LibraryPreview'
-import { InstrumentSelector } from '../components/InstrumentSelector'
 import { PricingSection } from '../components/PricingSection'
 import { InfoDialog } from '../components/InfoDialog'
 import { AudioPlayer } from '../components/AudioPlayer'
 import type { InstrumentId } from '../types'
 import App from '../App'
 
-function LibraryDemo({
-  initialInstrument = null,
-  withSelector = false,
-}: {
-  initialInstrument?: InstrumentId | null
-  withSelector?: boolean
-}) {
+function LibraryDemo({ initialInstrument = null }: { initialInstrument?: InstrumentId | null }) {
   const [instrument, setInstrument] = useState<InstrumentId | null>(initialInstrument)
   return (
     <>
-      {withSelector && <InstrumentSelector selected={instrument} onSelect={setInstrument} />}
       <LibraryPreview instrument={instrument} onInstrumentChange={setInstrument} />
     </>
   )
 }
 
-it('monta a página e mantém os destinos de navegação válidos', () => {
+it('monta a página e permite abrir a organização dos materiais', async () => {
+  const user = userEvent.setup()
   const { container } = render(<App />)
   expect(screen.getByRole('main')).toBeInTheDocument()
-  expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Suas partituras/)
+  expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Partituras e bases/)
   for (const link of container.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')) {
     expect(
       document.getElementById(link.hash.slice(1)),
       `Destino de ${link.textContent}`,
     ).not.toBeNull()
   }
+  expect(screen.queryByRole('button', { name: 'Abrir pasta Violino' })).not.toBeInTheDocument()
+  await user.click(screen.getByText('Ver como os materiais ficam organizados'))
+  expect(await screen.findByRole('button', { name: 'Abrir pasta Violino' })).toBeInTheDocument()
 })
 
-it('sincroniza a escolha do instrumento e combina busca, estilo e tonalidade', async () => {
+it('seleciona instrumento e combina busca, estilo e tonalidade', async () => {
   const user = userEvent.setup()
-  render(<LibraryDemo withSelector />)
-  await user.click(screen.getAllByRole('button', { name: /Explorar repertório/ })[1])
+  render(<LibraryDemo />)
+  await user.selectOptions(
+    screen.getByRole('combobox', { name: 'Filtrar instrumento' }),
+    'saxophone',
+  )
   expect(screen.getByRole('combobox', { name: 'Filtrar instrumento' })).toHaveValue('saxophone')
   await user.selectOptions(screen.getByRole('combobox', { name: 'Filtrar tonalidade' }), 'Lá menor')
   expect(screen.getByText('2 arquivos')).toBeInTheDocument()
@@ -132,13 +131,13 @@ it('apresenta informações da modalidade sem simular checkout', async () => {
   render(<PricingDemo />)
   await user.click(screen.getByRole('button', { name: 'Quero o Plano Básico' }))
   const dialog = screen.getByRole('dialog', { name: 'Plano Básico' })
-  expect(within(dialog).getByText(/Não há checkout ou cobrança/)).toBeInTheDocument()
+  expect(within(dialog).getByText(/As vendas ainda não estão abertas/)).toBeInTheDocument()
   await user.click(within(dialog).getByRole('button', { name: 'Entendi' }))
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Quero o Plano Completo' }))
   expect(
     within(screen.getByRole('dialog', { name: 'Plano Completo' })).getByText(
-      /Não há checkout ou cobrança/,
+      /As vendas ainda não estão abertas/,
     ),
   ).toBeInTheDocument()
 })

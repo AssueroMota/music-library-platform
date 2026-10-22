@@ -113,26 +113,3 @@ export function Reveal({
     </motion.div>
   )
 }
-
-export function InstrumentImage({
-  index,
-  name,
-  className = '',
-}: {
-  index: number
-  name: string
-  className?: string
-}) {
-  return (
-    <div className={`instrument-image ${className}`}>
-      <img
-        src="/images/instruments.jpg"
-        alt={name}
-        loading="lazy"
-        width="1536"
-        height="1024"
-        style={{ left: `${-(index % 3) * 100}%`, top: index >= 3 ? '-88%' : '0' }}
-      />
-    </div>
-  )
-}

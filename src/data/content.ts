@@ -89,78 +89,28 @@ export const tracks: Track[] = instruments.flatMap((instrument) =>
 export const plans: Plan[] = [
   {
     id: 'basic',
+    price: 17.9,
     name: 'Plano Básico',
     description: 'O essencial para organizar o repertório do seu instrumento.',
     accessMode: 'Biblioteca por instrumento',
     benefits: [
-      'Biblioteca do instrumento escolhido',
+      'Um instrumento à sua escolha',
       'Partituras e backing tracks',
       'Materiais organizados em pastas',
-      'Busca por música e tonalidade',
     ],
   },
   {
     id: 'complete',
+    price: 27.9,
     name: 'Plano Completo',
     description: 'Todas as bibliotecas e mais possibilidades para o seu repertório.',
     accessMode: 'Acesso completo',
     featured: true,
     benefits: [
-      'Tudo o que está previsto no Plano Básico',
       'Bibliotecas dos seis instrumentos',
       'Partituras e backing tracks reunidos',
       'Repertórios para diferentes ocasiões',
       'Pastas por instrumento e tipo de material',
-      'Busca por estilo e tonalidade',
-      'Favoritos para encontrar materiais rapidamente',
     ],
   },
-]
-
-export const faqs = [
-  [
-    'Como as partituras são organizadas?',
-    'A proposta segue uma organização familiar de pastas e arquivos, próxima à lógica de um gerenciador como o Google Drive. Na prévia, abra a pasta do instrumento e depois as subpastas de partituras ou backing tracks. Você pode buscar, ordenar, alternar lista e grade, marcar favoritos e abrir a prévia de um arquivo. Upload, movimentação de arquivos e armazenamento em nuvem ainda não estão disponíveis.',
-  ],
-  [
-    'Quais instrumentos são atendidos?',
-    'A proposta contempla violino, saxofone alto e tenor, flauta transversal, violão, viola de arco e violoncelo. Nesta primeira versão, você pode explorar exemplos locais para os seis instrumentos. O catálogo comercial ainda está em preparação.',
-  ],
-  [
-    'Como funciona o acesso à biblioteca?',
-    'Esta página apresenta uma demonstração pública. O acesso à biblioteca privada será disponibilizado em uma próxima fase, após a implantação de cadastro, autenticação e pagamento. Ainda não há venda ou acesso contratado.',
-  ],
-  [
-    'Posso acessar pelo tablet?',
-    'Sim, esta demonstração se adapta a computadores, tablets e celulares. O acesso aos materiais da futura biblioteca seguirá a mesma proposta de navegação responsiva.',
-  ],
-  [
-    'Os materiais incluem backing tracks?',
-    'A proposta é associar partituras a backing tracks. Aqui você pode ouvir duas composições originais com acompanhamento e melodia sintetizados. Os áudios demonstrativos não representam gravações reais dos instrumentos ou a qualidade final do catálogo.',
-  ],
-  [
-    'Posso visualizar partituras pela plataforma?',
-    'Na prévia, abra uma pasta, entre em Partituras e selecione um arquivo para ver o estudo ilustrativo no painel de visualização. O visualizador de PDFs completos e os arquivos para download serão integrados futuramente.',
-  ],
-  [
-    'Como receberei o acesso depois da compra?',
-    'Quando as integrações estiverem prontas, o processo planejado será: confirmação do pagamento, liberação automática e envio de orientações por e-mail. Nesta etapa não há checkout nem envio de e-mails.',
-  ],
-  [
-    'Existem repertórios para casamentos?',
-    'Casamentos estão entre as categorias planejadas, junto a restaurantes, igrejas e eventos corporativos. Os cartões desta página apresentam a proposta editorial, não pacotes já disponíveis para compra.',
-  ],
-  [
-    'Como funciona a compra de novos pacotes?',
-    'Estamos preparando o Plano Básico, com a biblioteca de um instrumento, e o Plano Completo, com todas as bibliotecas e repertórios por ocasião. Preços, duração do acesso e regras comerciais serão publicados antes da abertura das vendas.',
-  ],
-]
-
-export const navigation = [
-  ['Início', '#inicio'],
-  ['Instrumentos', '#instrumentos'],
-  ['Como funciona', '#como-funciona'],
-  ['Biblioteca', '#biblioteca'],
-  ['Planos', '#planos'],
-  ['FAQ', '#perguntas'],
 ]

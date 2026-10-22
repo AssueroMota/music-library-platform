@@ -1,7 +1,10 @@
-import { Check, Play, ShieldCheck } from 'lucide-react'
+import { Play } from 'lucide-react'
+import { plans } from '../data/content'
 import { Button, Container, Reveal } from './ui'
 
 export function HeroSection() {
+  const prices = plans.flatMap((plan) => (plan.price === undefined ? [] : [plan.price]))
+  const startingPrice = Math.min(...prices)
   return (
     <section id="inicio" className="hero">
       <Container>
@@ -9,43 +12,38 @@ export function HeroSection() {
           <Reveal className="hero-copy">
             <span className="hero-kicker">
               <span />
-              DE MÚSICO PARA MÚSICO
+              MUSIC LIBRARY
             </span>
             <h1>
-              <span>Suas partituras.</span>
+              <span>Partituras e bases.</span>
               <br />
-              Seu repertório.
+              Para o seu
               <br />
-              Sua música.
+              próximo palco.
             </h1>
             <p>
-              Suas partituras organizadas em pastas por instrumento e repertório.{' '}
-              <strong>
-                Encontre a música, abra a partitura e tenha o acompanhamento no mesmo lugar.
-              </strong>
+              Escolha seu instrumento e tenha as partituras e os acompanhamentos organizados em um
+              só lugar.
             </p>
-            <ul className="hero-checklist">
-              <li>
-                <Check size={17} />
-                Pastas por instrumento, arquivos por música
-              </li>
-              <li>
-                <Check size={17} />
-                Busca, favoritos e visualização dos materiais
-              </li>
-            </ul>
+            {prices.length > 0 && (
+              <div className="hero-offer-price">
+                <span>Planos a partir de</span>
+                <strong>
+                  {startingPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                </strong>
+              </div>
+            )}
             <div className="hero-actions">
-              <Button href="#biblioteca">Quero conhecer a biblioteca</Button>
+              <Button href="#planos">Escolher meu plano</Button>
               <a className="hero-listen" href="#demonstracao">
                 <span>
                   <Play size={12} fill="currentColor" />
                 </span>
-                Ouvir uma demonstração
+                Ouvir uma amostra
               </a>
             </div>
-            <span className="hero-disclaimer">
-              <ShieldCheck size={14} />
-              Explore a prévia. A biblioteca está em preparação.
+            <span className="hero-instrument-list">
+              Violino · Saxofone · Flauta · Violão · Viola · Violoncelo
             </span>
           </Reveal>
           <Reveal className="hero-mockup-wrap" delay={0.15}>

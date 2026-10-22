@@ -66,20 +66,6 @@
   margin-top: 9px;
   color: #142b47;
 }
-.pricing-highlight {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  color: #21995b;
-  font-size: 8px;
-  line-height: 1.8;
-  font-weight: 700;
-  margin-top: 10px;
-}
-.pricing-highlight svg {
-  flex-shrink: 0;
-}
 .pricing-artwork {
   display: grid;
   place-items: center;
@@ -174,13 +160,6 @@
   margin-top: 5px;
   color: #b5c8c4;
 }
-.pricing-description {
-  max-width: 290px;
-  margin: 0 auto;
-  color: #63748c;
-  font-size: 12px;
-  line-height: 1.85;
-}
 .pricing-benefits {
   display: grid;
   gap: 13px;
@@ -245,42 +224,6 @@
   padding: 16px 12px;
   gap: 13px;
 }
-.pricing-availability {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  margin-top: 13px;
-  font-size: 8px;
-  line-height: 1.8;
-  color: #7b8797;
-}
-.pricing-availability svg {
-  color: #9a834c;
-}
-.pricing-upgrade {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-top: 20px;
-  margin-top: 18px;
-  border-top: 1px solid #edf0f3;
-  color: #6b7b90;
-  font-size: 9px;
-  line-height: 1.8;
-}
-.pricing-upgrade strong {
-  font-weight: 750;
-  color: #8f702e;
-}
-.pricing-upgrade svg {
-  margin-top: 8px;
-  color: #ac8935;
-  transition: transform 0.2s;
-}
-.pricing-upgrade:hover svg {
-  transform: translateY(4px);
-}
 .pricing-disclaimer {
   max-width: 760px;
   color: #728196;
@@ -306,18 +249,12 @@
   .artwork-complete {
     min-height: 220px;
   }
-  .pricing-description {
-    font-size: 11px;
-  }
   .pricing-benefits li {
     font-size: 11px;
   }
   .pricing-card .button {
     font-size: 9px;
     gap: 8px;
-  }
-  .pricing-highlight {
-    font-size: 7px;
   }
 }
 @media (max-width: 640px) {
@@ -337,17 +274,11 @@
   .pricing-mode {
     font-size: 8px;
   }
-  .pricing-highlight {
-    font-size: 8px;
-  }
   .pricing-artwork {
     min-height: 210px;
   }
   .artwork-complete {
     min-height: 225px;
-  }
-  .pricing-description {
-    font-size: 12px;
   }
   .pricing-benefits li {
     font-size: 12px;

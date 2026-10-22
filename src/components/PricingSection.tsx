@@ -1,4 +1,4 @@
-import { AudioLines, CheckCircle2, ChevronDown, Clock3, FolderOpen, Music2 } from 'lucide-react'
+import { AudioLines, CheckCircle2, FolderOpen, Music2 } from 'lucide-react'
 import { plans } from '../data/content'
 import type { Plan } from '../types'
 import { Button, Container, Reveal, SectionHeading } from './ui'
@@ -53,9 +53,7 @@ function PlanPrice({ price }: { price?: number }) {
         <strong className="pricing-coming-soon">Em breve</strong>
       )}
       <span className="pricing-price-caption">
-        {price === undefined
-          ? 'Valores e condições no lançamento'
-          : 'Condições de acesso no checkout'}
+        {price === undefined ? 'Valores e condições no lançamento' : 'Valor do plano'}
       </span>
     </div>
   )
@@ -79,15 +77,8 @@ function PricingCard({
       <header className="pricing-card-heading">
         <span className="pricing-mode">{plan.accessMode}</span>
         <h3>{plan.name}</h3>
-        {plan.featured && (
-          <span className="pricing-highlight">
-            <CheckCircle2 size={12} />
-            Todos os instrumentos em um só acesso
-          </span>
-        )}
       </header>
       <PlanArtwork complete={Boolean(plan.featured)} />
-      <p className="pricing-description">{plan.description}</p>
       <ul className="pricing-benefits">
         {plan.benefits.map((benefit) => (
           <li key={benefit}>
@@ -104,23 +95,12 @@ function PricingCard({
           onClick={() =>
             onInfo(
               plan.name,
-              `${plan.description} Esta modalidade está em preparação. Os preços, a duração do acesso e as condições serão informados no lançamento. Não há checkout ou cobrança nesta demonstração.`,
+              `${plan.description} Valor: ${plan.price?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) ?? 'a definir'}. As vendas ainda não estão abertas. O acesso será disponibilizado no lançamento.`,
             )
           }
         >
           {label}
         </Button>
-      )}
-      <span className="pricing-availability">
-        <Clock3 size={12} />
-        Modalidade em preparação
-      </span>
-      {!plan.featured && (
-        <a className="pricing-upgrade" href="#plano-complete">
-          <span>Quer explorar todos os instrumentos?</span>
-          <strong>Conheça o Plano Completo</strong>
-          <ChevronDown size={24} />
-        </a>
       )}
     </article>
   )
@@ -131,7 +111,7 @@ export function PricingSection({ onInfo }: { onInfo: (title: string, text: strin
     <section id="planos" className="pricing-section section-space">
       <Container>
         <SectionHeading
-          eyebrow="UMA ESCOLHA PARA A SUA ROTINA MUSICAL"
+          eyebrow="ESCOLHA O SEU ACESSO"
           center
           title={
             <>
@@ -140,10 +120,7 @@ export function PricingSection({ onInfo }: { onInfo: (title: string, text: strin
               <em>PARA VOCÊ.</em>
             </>
           }
-        >
-          Do seu instrumento a todas as possibilidades. Compare as modalidades que estamos
-          preparando.
-        </SectionHeading>
+        />
         <div className="pricing-grid">
           {plans.map((plan, index) => (
             <Reveal key={plan.id} delay={index * 0.1}>
@@ -151,10 +128,7 @@ export function PricingSection({ onInfo }: { onInfo: (title: string, text: strin
             </Reveal>
           ))}
         </div>
-        <p className="pricing-disclaimer">
-          Proposta de planos para o lançamento. Preços, duração do acesso e conteúdo final serão
-          definidos antes da abertura das vendas.
-        </p>
+        <p className="pricing-disclaimer">Valores de lançamento. Vendas ainda não abertas.</p>
       </Container>
     </section>
   )

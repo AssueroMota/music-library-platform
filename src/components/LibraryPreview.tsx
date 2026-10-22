@@ -22,9 +22,11 @@ type FolderKind = LibraryFileKind | 'all'
 export function LibraryPreview({
   instrument,
   onInstrumentChange,
+  embedded = false,
 }: {
   instrument: InstrumentId | null
   onInstrumentChange: (id: InstrumentId | null) => void
+  embedded?: boolean
 }) {
   const [search, setSearch] = useState('')
   const [style, setStyle] = useState('')
@@ -105,27 +107,32 @@ export function LibraryPreview({
     })
 
   return (
-    <section id="biblioteca" className="library-section section-space">
+    <section
+      id={embedded ? 'biblioteca-arquivos' : 'biblioteca'}
+      className={`library-section ${embedded ? 'library-embedded' : 'section-space'}`}
+    >
       <Container>
-        <div className="section-topline">
-          <SectionHeading
-            eyebrow="SUAS PARTITURAS, CADA UMA NO SEU LUGAR"
-            title={
-              <>
-                ORGANIZE EM PASTAS.
-                <br />
-                <em>ENCONTRE. ABRA. TOQUE.</em>
-              </>
-            }
-          >
-            Uma organização familiar: navegue pelas pastas do instrumento, encontre seus arquivos e
-            abra a prévia da partitura ou do acompanhamento.
-          </SectionHeading>
-          <span className="demo-badge">
-            <span />
-            DEMONSTRAÇÃO DA ORGANIZAÇÃO
-          </span>
-        </div>
+        {!embedded && (
+          <div className="section-topline">
+            <SectionHeading
+              eyebrow="SUAS PARTITURAS, CADA UMA NO SEU LUGAR"
+              title={
+                <>
+                  ORGANIZE EM PASTAS.
+                  <br />
+                  <em>ENCONTRE. ABRA. TOQUE.</em>
+                </>
+              }
+            >
+              Uma organização familiar: navegue pelas pastas do instrumento, encontre seus arquivos
+              e abra a prévia da partitura ou do acompanhamento.
+            </SectionHeading>
+            <span className="demo-badge">
+              <span />
+              DEMONSTRAÇÃO DA ORGANIZAÇÃO
+            </span>
+          </div>
+        )}
         <div className="file-browser">
           <aside className="browser-sidebar" aria-label="Navegação da biblioteca">
             <div className="browser-brand">
@@ -374,9 +381,7 @@ export function LibraryPreview({
           </div>
         </div>
         <p className="demo-disclaimer">
-          Prévia de navegação por pastas e arquivos, inspirada na familiaridade de um gerenciador de
-          documentos. Estudos ilustrativos e áudio sintetizado; PDFs completos, upload, movimentação
-          de arquivos e armazenamento em nuvem serão integrados futuramente.
+          Demonstração local com partituras ilustrativas e áudios sintetizados.
         </p>
       </Container>
     </section>
