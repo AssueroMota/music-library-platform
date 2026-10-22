@@ -1,6 +1,6 @@
 import { Play } from 'lucide-react'
 import { plans } from '../data/content'
-import { Button, Container, Reveal } from './ui'
+import { Button, Container, Logo, Reveal } from './ui'
 
 export function HeroSection() {
   const prices = plans.flatMap((plan) => (plan.price === undefined ? [] : [plan.price]))
@@ -10,10 +10,9 @@ export function HeroSection() {
       <Container>
         <div className="hero-grid">
           <Reveal className="hero-copy">
-            <span className="hero-kicker">
-              <span />
-              MUSIC LIBRARY
-            </span>
+            <div className="hero-brand">
+              <Logo light />
+            </div>
             <h1>
               <span>Partituras e bases.</span>
               <br />

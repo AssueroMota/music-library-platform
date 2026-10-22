@@ -1,4 +1,15 @@
 /* Short sales flow: offer, sample, materials, plans, essential questions. */
+.hero-brand {
+  margin-bottom: 28px;
+}
+.hero-brand .logo {
+  font-size: 25px;
+  gap: 11px;
+}
+.hero-brand .logo-symbol {
+  width: 43px;
+  height: 49px;
+}
 .hero h1,
 .section-heading h2 {
   font-weight: 900;
