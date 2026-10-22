@@ -88,37 +88,31 @@ export const tracks: Track[] = instruments.flatMap((instrument) =>
 
 export const plans: Plan[] = [
   {
-    id: 'instrument',
-    name: 'Seu instrumento',
-    description: 'Um universo de possibilidades para o instrumento que acompanha você.',
+    id: 'basic',
+    name: 'Plano Básico',
+    description: 'O essencial para organizar o repertório do seu instrumento.',
     accessMode: 'Biblioteca por instrumento',
     benefits: [
-      'Pastas dedicadas ao seu instrumento',
-      'Partituras e acompanhamentos',
-      'Organização por estilo e tonalidade',
-    ],
-  },
-  {
-    id: 'repertoire',
-    name: 'Seu repertório',
-    description: 'Uma seleção com propósito, pensada para a sua próxima ocasião.',
-    accessMode: 'Pacote de repertório',
-    benefits: [
-      'Seleções por tipo de evento',
-      'Partituras e áudios em pastas organizadas',
-      'Repertório para estudar e apresentar',
+      'Biblioteca do instrumento escolhido',
+      'Partituras e backing tracks',
+      'Materiais organizados em pastas',
+      'Busca por música e tonalidade',
     ],
   },
   {
     id: 'complete',
-    name: 'Todas as possibilidades',
-    description: 'Mais instrumentos, mais repertórios e liberdade para explorar.',
+    name: 'Plano Completo',
+    description: 'Todas as bibliotecas e mais possibilidades para o seu repertório.',
     accessMode: 'Acesso completo',
     featured: true,
     benefits: [
-      'Bibliotecas de todos os instrumentos',
+      'Tudo o que está previsto no Plano Básico',
+      'Bibliotecas dos seis instrumentos',
+      'Partituras e backing tracks reunidos',
       'Repertórios para diferentes ocasiões',
-      'Partituras e backing tracks integrados',
+      'Pastas por instrumento e tipo de material',
+      'Busca por estilo e tonalidade',
+      'Favoritos para encontrar materiais rapidamente',
     ],
   },
 ]
@@ -158,7 +152,7 @@ export const faqs = [
   ],
   [
     'Como funciona a compra de novos pacotes?',
-    'Os modelos planejados são biblioteca por instrumento, pacote de repertório e acesso completo. Preços, duração do acesso e regras comerciais serão publicados antes da abertura das vendas.',
+    'Estamos preparando o Plano Básico, com a biblioteca de um instrumento, e o Plano Completo, com todas as bibliotecas e repertórios por ocasião. Preços, duração do acesso e regras comerciais serão publicados antes da abertura das vendas.',
   ],
 ]
 

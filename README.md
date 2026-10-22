@@ -39,7 +39,7 @@ npm run assets:audio # Regenerar os áudios originais
 - Favoritos locais em memória, reiniciados ao recarregar.
 - Players HTML Audio com play, pause, progresso, duração e coordenação para evitar reprodução simultânea.
 - Dois estudos originais com versões de acompanhamento e melodia sintetizada, sem músicas comerciais.
-- Planos tipados com preço, modalidade e `checkoutUrl` opcionais. Sem URL, os botões explicam que a modalidade está em preparação.
+- Seção de dois planos, Básico e Completo, com imagens, benefícios, botões verdes e destaque visual para o Completo. Preço e `checkoutUrl` permanecem configuráveis; sem checkout, os botões abrem informações sobre a modalidade em preparação.
 - FAQ com `details`/`summary`, modais com `dialog`, foco visível, link de salto e respeito a movimento reduzido.
 - Fontes locais, imagens secundárias lazy, metadados em português, Open Graph, favicon e configuração opcional de canonical.
 
@@ -74,6 +74,7 @@ src/
   types.ts                    Contratos de dados tipados
   index.css                   Tailwind, tokens e breakpoints
   styles/library.css          Estilos da prévia da biblioteca
+  styles/pricing.css          Comparação visual dos planos Básico e Completo
   App.tsx                     Página e estado compartilhado
   main.tsx                    Entrada React
 scripts/

@@ -130,11 +130,17 @@ it('apresenta informações da modalidade sem simular checkout', async () => {
     )
   }
   render(<PricingDemo />)
-  await user.click(screen.getAllByRole('button', { name: 'Conhecer a modalidade' })[0])
-  const dialog = screen.getByRole('dialog', { name: 'Biblioteca por instrumento' })
+  await user.click(screen.getByRole('button', { name: 'Quero o Plano Básico' }))
+  const dialog = screen.getByRole('dialog', { name: 'Plano Básico' })
   expect(within(dialog).getByText(/Não há checkout ou cobrança/)).toBeInTheDocument()
   await user.click(within(dialog).getByRole('button', { name: 'Entendi' }))
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Quero o Plano Completo' }))
+  expect(
+    within(screen.getByRole('dialog', { name: 'Plano Completo' })).getByText(
+      /Não há checkout ou cobrança/,
+    ),
+  ).toBeInTheDocument()
 })
 
 it('coordena play e pause entre players e permite avançar o áudio', async () => {

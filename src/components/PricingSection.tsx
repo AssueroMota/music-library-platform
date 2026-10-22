@@ -1,82 +1,126 @@
-import { Check, Layers, LibraryBig, ListMusic } from 'lucide-react'
+import { AudioLines, CheckCircle2, ChevronDown, Clock3, FolderOpen, Music2 } from 'lucide-react'
 import { plans } from '../data/content'
 import type { Plan } from '../types'
 import { Button, Container, Reveal, SectionHeading } from './ui'
 
-function PricingCard({
-  plan,
-  index,
-  onInfo,
-}: {
-  plan: Plan
-  index: number
-  onInfo: (title: string, text: string) => void
-}) {
-  const Icon = [LibraryBig, ListMusic, Layers][index]
+function PlanArtwork({ complete }: { complete: boolean }) {
   return (
-    <article className={`pricing-card ${plan.featured ? 'pricing-featured' : ''}`}>
-      {plan.featured && <span className="pricing-ribbon">PARA EXPLORAR MAIS</span>}
-      <Icon size={26} strokeWidth={1.5} />
-      <span className="pricing-mode">{plan.accessMode}</span>
-      <h3>{plan.name}</h3>
-      {plan.featured ? (
+    <div className={`pricing-artwork ${complete ? 'artwork-complete' : ''}`}>
+      {complete ? (
         <img
-          className="pricing-product"
           src="/images/music-library-bundle.webp"
-          alt="Composição ilustrativa da coleção completa"
+          alt="Apresentação ilustrativa da coleção completa Music Library"
           width="1672"
           height="941"
           loading="lazy"
         />
       ) : (
-        <div className={`plan-cover plan-cover-${index}`} aria-hidden="true">
-          <span>MUSIC LIBRARY</span>
-          <strong>{index === 0 ? 'SEU\nINSTRUMENTO.' : 'SEU\nREPERTÓRIO.'}</strong>
-          <Icon size={40} strokeWidth={1.2} />
-          <small>COLEÇÃO EM PREPARAÇÃO</small>
+        <div className="basic-plan-art" aria-hidden="true">
+          <div className="basic-plan-book">
+            <AudioLines size={28} />
+            <span>MUSIC LIBRARY</span>
+            <strong>
+              PARTITURAS
+              <br />& BASES
+            </strong>
+            <Music2 size={37} strokeWidth={1.2} />
+            <small>
+              SEU INSTRUMENTO.
+              <br />
+              SEU REPERTÓRIO.
+            </small>
+          </div>
+          <div className="basic-plan-folder">
+            <FolderOpen size={34} strokeWidth={1.2} />
+            <strong>SUA BIBLIOTECA</strong>
+            <span>EM PASTAS</span>
+          </div>
         </div>
       )}
-      <p>{plan.description}</p>
-      <div className="pricing-price">
-        {plan.price !== undefined ? (
-          <strong>
-            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
-              plan.price,
-            )}
-          </strong>
-        ) : (
-          <strong>Em breve</strong>
+    </div>
+  )
+}
+
+function PlanPrice({ price }: { price?: number }) {
+  return (
+    <div className="pricing-price">
+      {price !== undefined ? (
+        <strong className="pricing-value">
+          <span>R$</span>
+          {price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        </strong>
+      ) : (
+        <strong className="pricing-coming-soon">Em breve</strong>
+      )}
+      <span className="pricing-price-caption">
+        {price === undefined
+          ? 'Valores e condições no lançamento'
+          : 'Condições de acesso no checkout'}
+      </span>
+    </div>
+  )
+}
+
+function PricingCard({
+  plan,
+  onInfo,
+}: {
+  plan: Plan
+  onInfo: (title: string, text: string) => void
+}) {
+  const label = `Quero o ${plan.name}`
+  return (
+    <article
+      id={`plano-${plan.id}`}
+      className={`pricing-card ${plan.featured ? 'pricing-featured' : ''}`}
+      tabIndex={-1}
+    >
+      {plan.featured && <span className="pricing-ribbon">MAIS POSSIBILIDADES</span>}
+      <header className="pricing-card-heading">
+        <span className="pricing-mode">{plan.accessMode}</span>
+        <h3>{plan.name}</h3>
+        {plan.featured && (
+          <span className="pricing-highlight">
+            <CheckCircle2 size={12} />
+            Todos os instrumentos em um só acesso
+          </span>
         )}
-        <span>
-          {plan.price === undefined
-            ? 'Valores e condições no lançamento'
-            : 'Condições de acesso no checkout'}
-        </span>
-      </div>
-      <ul>
+      </header>
+      <PlanArtwork complete={Boolean(plan.featured)} />
+      <p className="pricing-description">{plan.description}</p>
+      <ul className="pricing-benefits">
         {plan.benefits.map((benefit) => (
           <li key={benefit}>
-            <Check size={16} />
-            {benefit}
+            <CheckCircle2 size={15} />
+            <span>{benefit}</span>
           </li>
         ))}
       </ul>
+      <PlanPrice price={plan.price} />
       {plan.checkoutUrl ? (
-        <Button href={plan.checkoutUrl} variant={plan.featured ? 'primary' : 'outline'}>
-          Adquirir acesso
-        </Button>
+        <Button href={plan.checkoutUrl}>{label}</Button>
       ) : (
         <Button
-          variant="primary"
           onClick={() =>
             onInfo(
-              plan.accessMode,
-              `${plan.name}: ${plan.description} Esta modalidade está em preparação. Os preços, a duração do acesso e as condições serão informados no lançamento. Não há checkout ou cobrança nesta demonstração.`,
+              plan.name,
+              `${plan.description} Esta modalidade está em preparação. Os preços, a duração do acesso e as condições serão informados no lançamento. Não há checkout ou cobrança nesta demonstração.`,
             )
           }
         >
-          Conhecer a modalidade
+          {label}
         </Button>
+      )}
+      <span className="pricing-availability">
+        <Clock3 size={12} />
+        Modalidade em preparação
+      </span>
+      {!plan.featured && (
+        <a className="pricing-upgrade" href="#plano-complete">
+          <span>Quer explorar todos os instrumentos?</span>
+          <strong>Conheça o Plano Completo</strong>
+          <ChevronDown size={24} />
+        </a>
       )}
     </article>
   )
@@ -87,28 +131,29 @@ export function PricingSection({ onInfo }: { onInfo: (title: string, text: strin
     <section id="planos" className="pricing-section section-space">
       <Container>
         <SectionHeading
-          eyebrow="UM ACESSO QUE COMBINA COM VOCÊ"
+          eyebrow="UMA ESCOLHA PARA A SUA ROTINA MUSICAL"
           center
           title={
             <>
-              ESCOLHA O CAMINHO
+              ESCOLHA O PLANO IDEAL
               <br />
-              <em>PARA A SUA MÚSICA.</em>
+              <em>PARA VOCÊ.</em>
             </>
           }
         >
-          Três possibilidades em preparação. Escolha o caminho que faz sentido para a sua jornada.
+          Do seu instrumento a todas as possibilidades. Compare as modalidades que estamos
+          preparando.
         </SectionHeading>
         <div className="pricing-grid">
           {plans.map((plan, index) => (
-            <Reveal key={plan.id} delay={index * 0.08}>
-              <PricingCard plan={plan} index={index} onInfo={onInfo} />
+            <Reveal key={plan.id} delay={index * 0.1}>
+              <PricingCard plan={plan} onInfo={onInfo} />
             </Reveal>
           ))}
         </div>
         <p className="pricing-disclaimer">
-          Vendas ainda não abertas. Preços, prazo de acesso e conteúdo dos pacotes serão definidos
-          antes do lançamento.
+          Proposta de planos para o lançamento. Preços, duração do acesso e conteúdo final serão
+          definidos antes da abertura das vendas.
         </p>
       </Container>
     </section>

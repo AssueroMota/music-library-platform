@@ -1,6 +1,7 @@
 @import '@fontsource-variable/montserrat';
 @import 'tailwindcss';
 @import './styles/library.css';
+@import './styles/pricing.css';
 
 @theme {
   --color-navy: #0b1627;
@@ -287,7 +288,6 @@ em {
   line-height: 1.7;
   color: #657181;
 }
-
 .logo {
   display: inline-flex;
   align-items: center;
@@ -316,7 +316,6 @@ em {
 .logo-light {
   color: #fff;
 }
-
 .hero {
   background: var(--navy);
   color: #fff;
@@ -450,9 +449,7 @@ em {
   background: radial-gradient(ellipse, #ce9d3d16, transparent 68%);
   transform: scale(1.2);
   pointer-events: none;
-}
-
-/* Listen before exploring */
+} /* Listen before exploring */
 .audio-section {
   background: #faf8f3;
 }
@@ -830,7 +827,6 @@ em {
   position: absolute;
   inset: 0;
 }
-
 .benefits-section {
   background: #faf8f3;
 }
@@ -894,9 +890,7 @@ em {
 } /* Interactive demo: real local filtering, media and favorites */
 .library-section {
   background: #fff;
-}
-
-/* Editorial categories and path to access */
+} /* Editorial categories and path to access */
 .occasion-section {
   background: #faf8f3;
 }
@@ -1291,173 +1285,8 @@ em {
 .comparison-after li svg {
   color: #21b969;
 }
-.pricing-section {
-  background: #fff;
-}
-.pricing-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 22px;
-  margin-top: 48px;
-  align-items: stretch;
-}
-.pricing-grid > div {
-  display: flex;
-}
-.pricing-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  background: #fff;
-  border: 1px solid #d7dfe8;
-  border-radius: 17px;
-  padding: 28px;
-  box-shadow: 0 10px 30px #162b430b;
-  width: 100%;
-  text-align: center;
-}
-.pricing-card > svg {
-  display: none;
-}
-.pricing-featured {
-  border-color: #b98c29;
-  box-shadow: 0 15px 36px #c49b3020;
-}
-.pricing-ribbon {
-  position: absolute;
-  top: -12px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: #fff;
-  background: #102239;
-  border-radius: 20px;
-  padding: 7px 17px;
-  font-size: 7px;
-  font-weight: 850;
-  white-space: nowrap;
-}
-.pricing-mode {
-  font-size: 8px;
-  font-weight: 800;
-  text-transform: uppercase;
-  color: #91712b;
-  letter-spacing: 0.3px;
-  margin-top: 10px;
-}
-.pricing-card h3 {
-  font-size: 19px;
-  text-transform: uppercase;
-  line-height: 1.25;
-  font-weight: 900;
-  letter-spacing: -0.5px;
-  margin-top: 11px;
-  min-height: 48px;
-}
-.pricing-card > p {
-  font-size: 11px;
-  line-height: 1.85;
-  color: #637189;
-  min-height: 63px;
-}
-.plan-cover {
-  width: 128px;
-  height: 165px;
-  margin: 24px auto 30px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: linear-gradient(145deg, #183b50, #102039 80%);
-  color: #e8c66e;
-  transform: perspective(600px) rotateY(-14deg) rotateZ(-3deg);
-  box-shadow:
-    -7px 5px 0 #061322,
-    -9px 7px 0 #bd9d4e,
-    8px 10px 20px #12283a30;
-  padding: 15px 10px;
-  border: 1px solid #cfa744;
-}
-.plan-cover-1 {
-  background: linear-gradient(145deg, #34514d, #142c34 80%);
-}
-.plan-cover > span {
-  font-size: 5px;
-  letter-spacing: 0.8px;
-}
-.plan-cover > strong {
-  font-size: 16px;
-  font-weight: 900;
-  white-space: pre-line;
-  line-height: 1.1;
-  margin-top: 16px;
-}
-.plan-cover > svg {
-  margin-top: auto;
-}
-.plan-cover > small {
-  font-size: 4px;
-  margin-top: 8px;
-}
-.pricing-product {
-  width: 100%;
-  height: 219px;
-  object-fit: contain;
-  margin: 0;
-  border-radius: 7px;
-  filter: drop-shadow(0 10px 12px #122a431a);
-}
-.pricing-price {
-  padding-block: 22px;
-  border-top: 1px solid #e2e7ec;
-  border-bottom: 1px solid #e2e7ec;
-  margin-top: 20px;
-}
-.pricing-price strong {
-  display: block;
-  font-size: 28px;
-  color: #148a48;
-  font-weight: 900;
-  letter-spacing: -0.8px;
-}
-.pricing-price span {
-  display: block;
-  font-size: 9px;
-  line-height: 1.8;
-  color: #69758a;
-  margin-top: 6px;
-}
-.pricing-card ul {
-  display: grid;
-  gap: 14px;
-  text-align: left;
-  padding-block: 25px;
-  flex: 1;
-}
-.pricing-card li {
-  display: flex;
-  align-items: start;
-  gap: 8px;
-  font-size: 11px;
-  line-height: 1.8;
-  color: #52637a;
-}
-.pricing-card li svg {
-  flex-shrink: 0;
-  color: #22b764;
-  margin-top: 2px;
-}
-.pricing-card .button {
-  width: 100%;
-  font-size: 9px;
-  padding: 16px 12px;
-  gap: 12px;
-}
-.pricing-disclaimer {
-  text-align: center;
-  font-size: 10px;
-  line-height: 1.9;
-  color: #64748a;
-  margin-top: 25px;
-} /* Purpose, answers, and closing */
+
+/* Purpose, answers, and closing */
 .about-section {
   background: #13263e;
   color: #fff;
@@ -1860,7 +1689,6 @@ em {
   .product-visual {
     margin-right: -20px;
   }
-
   .instrument-card {
     height: 315px;
   }
@@ -1870,7 +1698,6 @@ em {
   .instrument-card p {
     font-size: 10px;
   }
-
   .materials-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     max-width: 750px;
@@ -1903,15 +1730,7 @@ em {
   .occasion-card p {
     font-size: 11px;
   }
-  .pricing-card {
-    padding: 26px 20px;
-  }
-  .pricing-card h3 {
-    font-size: 17px;
-  }
-  .pricing-product {
-    height: 219px;
-  }
+
   .about-grid {
     gap: 40px;
   }
@@ -1961,7 +1780,6 @@ em {
     width: 100%;
     margin-left: 0;
   }
-
   .instrument-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 18px;
@@ -1975,7 +1793,6 @@ em {
   .instrument-card p {
     font-size: 11px;
   }
-
   .feature-card {
     padding-left: 75px;
     padding-right: 19px;
@@ -1995,7 +1812,6 @@ em {
   .feature-status {
     font-size: 6px;
   }
-
   .occasion-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2016,42 +1832,7 @@ em {
   .collection-summary-card h2 {
     font-size: 28px;
   }
-  .pricing-grid {
-    gap: 15px;
-  }
-  .pricing-card {
-    padding: 24px 17px;
-  }
-  .pricing-card h3 {
-    font-size: 15px;
-    min-height: 55px;
-  }
-  .pricing-card > p {
-    font-size: 10px;
-    min-height: 90px;
-  }
-  .pricing-card li {
-    font-size: 10px;
-  }
-  .pricing-card .button {
-    font-size: 8px;
-    gap: 6px;
-  }
-  .pricing-ribbon {
-    font-size: 5px;
-    padding-inline: 10px;
-  }
-  .pricing-mode {
-    font-size: 6px;
-    min-height: 20px;
-  }
-  .pricing-price strong {
-    font-size: 25px;
-  }
-  .pricing-price span {
-    font-size: 8px;
-    min-height: 28px;
-  }
+
   .about-grid {
     grid-template-columns: 1fr;
     gap: 40px;
@@ -2102,7 +1883,6 @@ em {
     padding: 17px 22px;
     gap: 16px;
   }
-
   .logo {
     font-size: 18px;
     gap: 7px;
@@ -2114,7 +1894,6 @@ em {
   .logo-symbol svg {
     width: 22px;
   }
-
   .hero-grid {
     padding-top: 37px;
     padding-bottom: 34px;
@@ -2172,7 +1951,6 @@ em {
   .product-visual {
     margin-inline: -8px;
   }
-
   .audio-demo-info {
     gap: 7px;
     margin-top: 18px;
@@ -2272,7 +2050,6 @@ em {
   .instrument-card button svg {
     width: 13px;
   }
-
   .benefit-grid {
     grid-template-columns: 1fr;
     gap: 13px;
@@ -2302,7 +2079,6 @@ em {
   .section-action {
     margin-top: 25px;
   }
-
   .occasion-grid {
     gap: 12px;
   }
@@ -2476,66 +2252,7 @@ em {
   .comparison-panels li {
     font-size: 11px;
   }
-  .pricing-grid {
-    grid-template-columns: 1fr;
-    gap: 30px;
-    max-width: 400px;
-    margin: 35px auto 0;
-  }
-  .pricing-card {
-    padding: 30px;
-  }
-  .pricing-mode {
-    font-size: 8px;
-    min-height: 0;
-  }
-  .pricing-card h3 {
-    font-size: 22px;
-    min-height: 0;
-  }
-  .pricing-card > p {
-    font-size: 12px;
-    min-height: 0;
-  }
-  .plan-cover {
-    width: 145px;
-    height: 190px;
-    margin-block: 30px;
-  }
-  .plan-cover > span {
-    font-size: 6px;
-  }
-  .plan-cover strong {
-    font-size: 19px;
-  }
-  .plan-cover > small {
-    font-size: 5px;
-  }
-  .pricing-product {
-    height: 250px;
-  }
-  .pricing-ribbon {
-    font-size: 7px;
-    padding: 7px 15px;
-  }
-  .pricing-price strong {
-    font-size: 32px;
-  }
-  .pricing-price span {
-    min-height: 0;
-    font-size: 9px;
-  }
-  .pricing-card li {
-    font-size: 12px;
-  }
-  .pricing-card .button {
-    font-size: 10px;
-    gap: 15px;
-  }
-  .pricing-disclaimer {
-    text-align: left;
-    font-size: 9px;
-  }
+
   .about-grid .section-heading h2 {
     font-size: 29px;
   }
