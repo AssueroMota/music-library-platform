@@ -3,7 +3,8 @@
 ## Imagens
 
 - `public/images/instruments.jpg`: composição ilustrativa gerada com a ferramenta integrada Imagegen, usando a skill Imagegen. Um único atlas fotográfico de seis instrumentos, apresentado em recortes CSS. Não é fotografia do fundador nem de materiais do catálogo.
-- `public/images/og-cover.jpg`: peça Open Graph montada localmente com a composição acima e tipografia do sistema. O tamanho é 1200 × 630 pixels.
+- `public/images/music-library-bundle.webp`: novo mockup autoral de livros, instrumentos, tablet e partituras, gerado com Imagegen e editado pela mesma ferramenta para remover o fundo. O WebP preserva a transparência, tem 1672 × 941 pixels e foi comprimido para aproximadamente 373 KB sem alterar a composição. Usado no hero, no bloco de materiais e no plano completo.
+- `public/images/og-cover.jpg`: peça Open Graph montada localmente com os instrumentos e tipografia do sistema. O tamanho é 1200 × 630 pixels.
 - `public/favicon.svg`: marca vetorial simples criada para este projeto.
 - A foto do fundador permanece explicitamente reservada, sem retrato inventado.
 
@@ -29,4 +30,14 @@ npm run assets:audio
 
 ## Fontes e ícones
 
-Manrope Variable e Cormorant Garamond são servidas localmente por pacotes Fontsource. Consulte as licenças OFL nos respectivos pacotes. Não há chamadas a servidores de fontes durante a navegação. Os ícones são do Lucide React, sob a licença do pacote.
+Montserrat Variable é servida localmente pelo pacote Fontsource. Consulte a licença OFL no pacote. Não há chamadas a servidores de fontes durante a navegação. Os ícones são do Lucide React, sob a licença do pacote.
+
+## Prompt do novo mockup
+
+Gerado com a ferramenta integrada Imagegen; a referência enviada pelo usuário orientou a linguagem de página de vendas, sem ser reproduzida na imagem.
+
+> Use case: ads-marketing. Asset type: hero product bundle image for an original Brazilian musician digital sheet-music library called MUSIC LIBRARY. Create a premium photorealistic 3D digital music collection still-life, a coherent original composition, NOT a screenshot, not a website. Wide landscape composition. Center: two elegant substantial navy hardcover music folios with metallic gold edges, front folio cover text exactly 'MUSIC LIBRARY' and below 'PARTITURAS & REPERTÓRIOS', a tasteful minimal soundwave gold emblem, no other text. Surround the folios with finely detailed REALISTIC musical instruments: a golden alto saxophone in the foreground left, amber violin behind left, a classical acoustic guitar behind right, silver transverse flute across foreground, a cello on the right behind the book. In front an open sheet music book with plausible fine music notation, black studio headphones, and a small thin modern tablet angled in perspective showing an elegant dark music playlist with gold and green accents; no readable tablet UI text required. Dark navy blue #0B1627 studio background, subtly blending to the SAME navy color on all image edges so it integrates with a dark navy website section, no visible floor horizon. Warm golden rim lighting on wood and brass, sophisticated high-end product-ad photography, crisp detail, realistic proportions, natural perspective, very subtle soft shadows below. Generous 8% breathing space around the outer instruments, all objects fully contained. No people, no hands, no fake numbers or discount badges, no prices, no guarantees, no commercial artist names, no commercial song titles, no watermarks, no logos other than MUSIC LIBRARY text. Horizontal product image, not tall.
+
+Prompt de edição para recorte transparente, também com a ferramenta integrada:
+
+> Edit this exact product composition into a clean transparent-background cutout for use on both navy and off-white website sections. Remove ONLY the dark blue studio background and floor, including the dark spaces between the instruments. Keep every instrument, both music books with their exact cover lettering, open sheet music, headphones and tablet unchanged in position, proportions, colors, fine detail and framing. Keep the full arrangement and all object edges. Preserve realistic delicate contact shadows as soft alpha if possible. Output genuine transparency, no white fill, no checkerboard drawn into the image, no new elements, no new text. The objects are the edit target, their identity and arrangement must be preserved.

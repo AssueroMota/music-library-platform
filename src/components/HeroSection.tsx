@@ -1,102 +1,5 @@
-import {
-  ArrowDown,
-  AudioLines,
-  Check,
-  FileMusic,
-  Headphones,
-  Music2,
-  ShieldCheck,
-} from 'lucide-react'
-import { Container, Button, Reveal } from './ui'
-import { Score } from './Score'
-
-function HeroMockup() {
-  return (
-    <div className="hero-visual" aria-label="Composição visual da futura biblioteca">
-      <div className="orbit orbit-one" />
-      <div className="orbit orbit-two" />
-      <span className="visual-cross">+</span>
-      <div className="mockup-window">
-        <div className="mockup-chrome">
-          <div className="window-dots">
-            <i />
-            <i />
-            <i />
-          </div>
-          <span>SEU ESPAÇO PARA TOCAR</span>
-          <span className="mockup-demo">DEMO</span>
-        </div>
-        <div className="mockup-content">
-          <div className="mockup-side">
-            <AudioLines size={24} />
-            <BookSpine />
-            <Music2 size={17} />
-            <Headphones size={17} />
-          </div>
-          <div className="mockup-body">
-            <div className="mockup-heading">
-              <div>
-                <span>BOA MÚSICA, SEM COMPLICAÇÃO</span>
-                <h3>Seu momento de tocar.</h3>
-              </div>
-              <span className="mockup-avatar">ML</span>
-            </div>
-            <div className="mockup-score-header">
-              <span>
-                <FileMusic size={13} /> Primeira luz
-              </span>
-              <span>Dó maior · 80 BPM</span>
-            </div>
-            <Score />
-            <div className="mockup-audio">
-              <span className="mockup-play">
-                <Music2 size={17} />
-              </span>
-              <div>
-                <strong>Primeira luz</strong>
-                <small>Estudo original · acompanhamento</small>
-              </div>
-              <div className="mini-wave" aria-hidden="true">
-                {Array.from({ length: 25 }, (_, i) => (
-                  <i key={i} style={{ height: `${12 + ((i * 19) % 21)}px` }} />
-                ))}
-              </div>
-              <span className="mockup-time">0:12</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="floating-tag tag-top">
-        <span>
-          <FileMusic size={19} />
-        </span>
-        <div>
-          <strong>Partitura + backing track</strong>
-          <small>Uma experiência integrada</small>
-        </div>
-        <Check size={15} />
-      </div>
-      <div className="floating-tag tag-bottom">
-        <span>
-          <Headphones size={20} />
-        </span>
-        <div>
-          <strong>Menos busca. Mais música.</strong>
-          <small>Do estudo ao seu próximo palco.</small>
-        </div>
-      </div>
-      <span className="visual-caption">UMA PRÉVIA DO QUE ESTAMOS CRIANDO</span>
-    </div>
-  )
-}
-
-function BookSpine() {
-  return (
-    <span className="mockup-nav-active">
-      <FileMusic size={17} />
-    </span>
-  )
-}
+import { ArrowDown, Check, FileMusic, Headphones, Play, ShieldCheck } from 'lucide-react'
+import { Button, Container, Reveal } from './ui'
 
 export function HeroSection() {
   return (
@@ -104,45 +7,86 @@ export function HeroSection() {
       <Container>
         <div className="hero-grid">
           <Reveal className="hero-copy">
-            <span className="eyebrow">
-              <i />
-              FEITA POR UM MÚSICO. PENSADA PARA VOCÊ.
+            <span className="hero-kicker">
+              <span />
+              DE MÚSICO PARA MÚSICO
             </span>
             <h1>
-              Suas partituras.
+              <span>Suas partituras.</span>
               <br />
               Seu repertório.
               <br />
-              <em>Sua música.</em>
+              Sua música.
             </h1>
             <p>
-              Descubra uma biblioteca digital de partituras, acompanhamentos e repertórios
-              organizados para estudar, ensaiar e se apresentar com mais liberdade.
+              Partituras, backing tracks e repertórios organizados para você{' '}
+              <strong>
+                estudar melhor, preparar suas apresentações e tocar com mais liberdade.
+              </strong>
             </p>
+            <ul className="hero-checklist">
+              <li>
+                <Check size={17} />
+                Um projeto para cordas e sopros
+              </li>
+              <li>
+                <Check size={17} />
+                Do seu primeiro ensaio ao próximo palco
+              </li>
+            </ul>
             <div className="hero-actions">
-              <Button href="#biblioteca">Explorar a biblioteca</Button>
-              <a className="text-link" href="#recursos">
-                Conhecer os recursos <ArrowDown size={16} />
+              <Button href="#biblioteca">Quero conhecer a biblioteca</Button>
+              <a className="hero-listen" href="#demonstracao">
+                <span>
+                  <Play size={12} fill="currentColor" />
+                </span>
+                Ouvir uma demonstração
               </a>
             </div>
-            <div className="hero-assurance">
-              <span>
-                <ShieldCheck size={15} /> Projeto em desenvolvimento
-              </span>
-              <span>
-                <Headphones size={15} /> Ouça uma demonstração
+            <span className="hero-disclaimer">
+              <ShieldCheck size={14} />
+              Explore a prévia. A biblioteca está em preparação.
+            </span>
+          </Reveal>
+          <Reveal className="hero-mockup-wrap" delay={0.15}>
+            <div className="product-visual">
+              <div className="product-halo" aria-hidden="true" />
+              <img
+                className="hero-product-image"
+                src="/images/music-library-bundle.webp"
+                width="1672"
+                height="941"
+                fetchPriority="high"
+                alt="Composição ilustrativa da Music Library com coleções digitais, instrumentos, partitura e tablet"
+              />
+              <div className="product-label label-score">
+                <FileMusic size={21} />
+                <span>
+                  PARTITURA + ÁUDIO<strong>Sua preparação em harmonia.</strong>
+                </span>
+              </div>
+              <div className="product-label label-sound">
+                <Headphones size={21} />
+                <span>
+                  DO ESTUDO AO PALCO<strong>Mais tempo fazendo música.</strong>
+                </span>
+                <span className="label-equalizer" aria-hidden="true">
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                </span>
+              </div>
+              <span className="product-caption">
+                COMPOSIÇÃO VISUAL DO PROJETO · MATERIAIS EM PREPARAÇÃO
               </span>
             </div>
-          </Reveal>
-          <Reveal className="hero-mockup-wrap">
-            <HeroMockup />
           </Reveal>
         </div>
         <div className="hero-instruments">
           <span>
-            SEU INSTRUMENTO.
-            <br />
-            <strong>SEU LUGAR.</strong>
+            QUAL É O<br />
+            <strong>SEU INSTRUMENTO?</strong>
           </span>
           <div>
             Violino

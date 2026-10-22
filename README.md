@@ -28,9 +28,10 @@ npm run assets:audio # Regenerar os áudios originais
 
 ## Experiência implementada
 
-- Quinze seções: barra superior, header sticky, hero, instrumentos, comparação de áudio, benefícios, biblioteca, ocasiões, como funciona, comparação, planos, propósito, FAQ, chamada final e rodapé.
+- Página de vendas com barra superior, header sticky, hero, comparação de áudio, instrumentos, benefícios, biblioteca, ocasiões, como funciona, apresentação dos materiais, comparação, planos, propósito, FAQ, chamada final e rodapé.
 - Vite, React, TypeScript estrito, Tailwind CSS, Lucide React e Motion.
-- Identidade em azul-marinho, dourado e off-white, CTAs verdes, imagens locais dos seis instrumentos e mockup construído em React.
+- Direção visual de página de vendas: títulos grandes e pesados em Montserrat, azul-marinho e dourado, CTAs verdes, mockup autoral dos materiais com fundo transparente e cards de coleções.
+- Animações de entrada em sequência, barra de progresso na rolagem, mockup flutuante, interação nos cards, brilho nos botões e equalizador animado durante a reprodução. Todas respeitam a preferência de movimento reduzido.
 - Menu mobile com estado expandido, fechamento por Escape e devolução de foco.
 - Seleção de instrumentos sincronizada com a prévia da biblioteca.
 - Busca sem diferenciar maiúsculas/acentos; filtros combinados por instrumento, estilo e tonalidade; seleção de estudo e estado vazio.
@@ -52,6 +53,8 @@ src/
   components/
     Header.tsx                Navegação desktop e mobile
     HeroSection.tsx           Apresentação e mockup visual
+    CollectionShowcase.tsx    Apresentação visual dos materiais planejados
+    ScrollProgress.tsx        Progresso de rolagem animado
     InstrumentSelector.tsx    Cartões e descrição da seleção
     AudioComparison.tsx       Comparação entre os dois áudios
     AudioPlayer.tsx           Player reutilizável com src/label
@@ -68,6 +71,7 @@ src/
   test/                       Testes de integração em JSDOM
   types.ts                    Contratos de dados tipados
   index.css                   Tailwind, tokens e breakpoints
+  styles/library.css          Estilos da prévia da biblioteca
   App.tsx                     Página e estado compartilhado
   main.tsx                    Entrada React
 scripts/
@@ -94,7 +98,7 @@ A configuração segue a documentação oficial de [Vite](https://vite.dev/guide
 ## Validação e limites
 
 - `npm run build`: compilação TypeScript e empacotamento de produção verificados.
-- `npm test`: cinco testes de interação cobrindo filtros combinados, estados vazios, sincronização de instrumento, favoritos, Escape, aviso de plano e coordenação dos players.
+- `npm test`: seis testes cobrindo a montagem da página com animações, os destinos das âncoras, filtros combinados, estados vazios, sincronização de instrumento, favoritos, Escape, aviso de plano e coordenação dos players.
 - O servidor de desenvolvimento respondeu HTTP 200.
 - JSDOM usa mídia simulada: os testes não validam a reprodução audível ou o layout em navegador real.
 - A revisão visual pelo Chrome não pôde ser concluída: a automação interrompeu a sessão por não conseguir confirmar a URL da aba. Conferir os breakpoints em navegador real antes da publicação.

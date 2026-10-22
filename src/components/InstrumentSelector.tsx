@@ -35,8 +35,8 @@ export function InstrumentSelector({
           </span>
         </div>
         <div className="instrument-grid">
-          {instruments.map((instrument) => (
-            <Reveal key={instrument.id}>
+          {instruments.map((instrument, index) => (
+            <Reveal key={instrument.id} delay={(index % 3) * 0.08}>
               <article
                 className={`instrument-card ${selected === instrument.id ? 'instrument-card-selected' : ''}`}
               >

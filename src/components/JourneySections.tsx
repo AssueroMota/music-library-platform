@@ -1,5 +1,5 @@
 import { ArrowRight, Check, FolderOpen, Minus, Music2, ShoppingBag } from 'lucide-react'
-import { Container, SectionHeading } from './ui'
+import { Button, Container, Reveal, SectionHeading } from './ui'
 
 export function HowItWorks() {
   const steps = [
@@ -35,7 +35,7 @@ export function HowItWorks() {
         />
         <div className="steps-grid">
           {steps.map((step, i) => (
-            <article className="step-card" key={step.title}>
+            <Reveal className="step-card" key={step.title} delay={i * 0.1}>
               <div className="step-top">
                 <span>0{i + 1}</span>
                 <step.icon size={25} strokeWidth={1.4} />
@@ -43,13 +43,22 @@ export function HowItWorks() {
               </div>
               <h3>{step.title}</h3>
               <p>{step.text}</p>
-            </article>
+            </Reveal>
           ))}
         </div>
         <p className="process-note">
           Fluxo planejado para o lançamento. Compra, liberação automática e envio de e-mail ainda
           não estão disponíveis.
         </p>
+        <Reveal className="journey-cta">
+          <h3>
+            O PRÓXIMO PALCO
+            <br />
+            <em>COMEÇA NA PREPARAÇÃO.</em>
+          </h3>
+          <p>Conheça o projeto e descubra como queremos simplificar a sua rotina musical.</p>
+          <Button href="#biblioteca">Quero conhecer a Music Library</Button>
+        </Reveal>
       </Container>
     </section>
   )
@@ -117,6 +126,9 @@ export function ComparisonSection() {
               </ul>
             </div>
           </div>
+        </div>
+        <div className="section-action">
+          <Button href="#biblioteca">Explorar a demonstração</Button>
         </div>
       </Container>
     </section>

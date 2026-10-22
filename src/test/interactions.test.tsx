@@ -9,6 +9,19 @@ import { PricingSection } from '../components/PricingSection'
 import { InfoDialog } from '../components/InfoDialog'
 import { AudioPlayer } from '../components/AudioPlayer'
 import type { InstrumentId } from '../types'
+import App from '../App'
+
+it('monta a landing completa com animações e destinos de navegação válidos', () => {
+  const { container } = render(<App />)
+  expect(screen.getByRole('main')).toBeInTheDocument()
+  expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Suas partituras/)
+  for (const link of container.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')) {
+    expect(
+      document.getElementById(link.hash.slice(1)),
+      `Destino de ${link.textContent}`,
+    ).not.toBeNull()
+  }
+})
 
 function Demo() {
   const [instrument, setInstrument] = useState<InstrumentId>('violin')

@@ -8,7 +8,7 @@ import {
   Search,
   Smartphone,
 } from 'lucide-react'
-import { Container, Reveal, SectionHeading } from './ui'
+import { Button, Container, Reveal, SectionHeading } from './ui'
 
 const features = [
   {
@@ -79,8 +79,8 @@ export function BenefitsSection() {
           A tecnologia cuida da organização. Você cuida da música.
         </SectionHeading>
         <div className="benefit-grid">
-          {features.map((feature) => (
-            <Reveal key={feature.title}>
+          {features.map((feature, index) => (
+            <Reveal key={feature.title} delay={(index % 2) * 0.09}>
               <article className="feature-card">
                 <feature.icon size={25} strokeWidth={1.5} />
                 <span className={`feature-status ${feature.current ? 'status-current' : ''}`}>
@@ -91,6 +91,9 @@ export function BenefitsSection() {
               </article>
             </Reveal>
           ))}
+        </div>
+        <div className="section-action">
+          <Button href="#biblioteca">Quero explorar a biblioteca</Button>
         </div>
       </Container>
     </section>

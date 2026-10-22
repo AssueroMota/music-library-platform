@@ -28,14 +28,14 @@ export function Header() {
     <>
       <div className="announcement">
         <Music2 size={13} aria-hidden="true" />
-        <span>Uma biblioteca musical completa para sua próxima apresentação.</span>
+        <span>PARTITURAS, ACOMPANHAMENTOS E REPERTÓRIOS. SEU PRÓXIMO PALCO COMEÇA AQUI.</span>
         <span className="announcement-tag">
-          Conheça o projeto <ArrowUpRight size={12} />
+          MUSIC LIBRARY <ArrowUpRight size={12} />
         </span>
       </div>
       <header className="header">
         <Container className="header-inner">
-          <Logo />
+          <Logo light />
           <nav className="desktop-nav" aria-label="Navegação principal">
             {navigation.map(([name, href]) => (
               <a key={href} href={href}>

@@ -54,7 +54,9 @@ export function AudioPlayer({
   }
 
   return (
-    <div className={`audio-player ${compact ? 'audio-compact' : ''}`}>
+    <div
+      className={`audio-player ${compact ? 'audio-compact' : ''} ${playing ? 'is-playing' : ''}`}
+    >
       <audio
         ref={audioRef}
         src={src}

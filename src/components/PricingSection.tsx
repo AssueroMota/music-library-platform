@@ -1,7 +1,7 @@
 import { Check, Layers, LibraryBig, ListMusic } from 'lucide-react'
 import { plans } from '../data/content'
 import type { Plan } from '../types'
-import { Button, Container, SectionHeading } from './ui'
+import { Button, Container, Reveal, SectionHeading } from './ui'
 
 function PricingCard({
   plan,
@@ -19,6 +19,23 @@ function PricingCard({
       <Icon size={26} strokeWidth={1.5} />
       <span className="pricing-mode">{plan.accessMode}</span>
       <h3>{plan.name}</h3>
+      {plan.featured ? (
+        <img
+          className="pricing-product"
+          src="/images/music-library-bundle.webp"
+          alt="Composição ilustrativa da coleção completa"
+          width="1672"
+          height="941"
+          loading="lazy"
+        />
+      ) : (
+        <div className={`plan-cover plan-cover-${index}`} aria-hidden="true">
+          <span>MUSIC LIBRARY</span>
+          <strong>{index === 0 ? 'SEU\nINSTRUMENTO.' : 'SEU\nREPERTÓRIO.'}</strong>
+          <Icon size={40} strokeWidth={1.2} />
+          <small>COLEÇÃO EM PREPARAÇÃO</small>
+        </div>
+      )}
       <p>{plan.description}</p>
       <div className="pricing-price">
         {plan.price !== undefined ? (
@@ -50,7 +67,7 @@ function PricingCard({
         </Button>
       ) : (
         <Button
-          variant={plan.featured ? 'gold' : 'outline'}
+          variant="primary"
           onClick={() =>
             onInfo(
               plan.accessMode,
@@ -74,9 +91,9 @@ export function PricingSection({ onInfo }: { onInfo: (title: string, text: strin
           center
           title={
             <>
-              Sua música.
+              ESCOLHA O CAMINHO
               <br />
-              <em>Do seu jeito.</em>
+              <em>PARA A SUA MÚSICA.</em>
             </>
           }
         >
@@ -84,7 +101,9 @@ export function PricingSection({ onInfo }: { onInfo: (title: string, text: strin
         </SectionHeading>
         <div className="pricing-grid">
           {plans.map((plan, index) => (
-            <PricingCard key={plan.id} plan={plan} index={index} onInfo={onInfo} />
+            <Reveal key={plan.id} delay={index * 0.08}>
+              <PricingCard plan={plan} index={index} onInfo={onInfo} />
+            </Reveal>
           ))}
         </div>
         <p className="pricing-disclaimer">

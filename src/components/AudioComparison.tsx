@@ -1,4 +1,4 @@
-import { Headphones, Music2, Sparkles } from 'lucide-react'
+import { Headphones, Music2, Sparkles, AudioLines } from 'lucide-react'
 import { Container, Reveal, SectionHeading } from './ui'
 import { AudioPlayer } from './AudioPlayer'
 
@@ -9,12 +9,12 @@ export function AudioComparison() {
         <div className="audio-section-grid">
           <SectionHeading
             eyebrow="DÊ PLAY NAS POSSIBILIDADES"
-            light
+            center
             title={
               <>
-                Ouça a diferença.
+                DÊ PLAY E OUÇA
                 <br />
-                <em>Sinta a experiência.</em>
+                <em>AS POSSIBILIDADES.</em>
               </>
             }
           >
@@ -65,6 +65,26 @@ export function AudioComparison() {
           Exemplos autorais com timbres sintetizados. Não representam gravações reais dos
           instrumentos nem a qualidade final do catálogo.
         </p>
+        <div className="audio-facts">
+          <Reveal>
+            <div className="audio-fact fact-gold">
+              <Music2 size={22} />
+              <div>
+                <span>CORDAS E SOPROS NO PROJETO</span>
+                <strong>6 instrumentos</strong>
+              </div>
+            </div>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <div className="audio-fact fact-navy">
+              <AudioLines size={22} />
+              <div>
+                <span>PARA VOCÊ EXPERIMENTAR AGORA</span>
+                <strong>2 estudos originais</strong>
+              </div>
+            </div>
+          </Reveal>
+        </div>
       </Container>
     </section>
   )
