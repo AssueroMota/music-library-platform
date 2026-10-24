@@ -26,7 +26,8 @@
     "checkout:reconcile": "tsx server/reconcile.ts",
     "test:server": "vitest run --config vitest.server.config.ts",
     "library:import": "tsx server/import-assets.ts",
-    "library:grant-preview": "tsx server/grant-preview.ts"
+    "library:grant-preview": "tsx server/grant-preview.ts",
+    "library:personal-link": "tsx server/personal-link.ts"
   },
   "dependencies": {
     "@fastify/cors": "^11.3.1",

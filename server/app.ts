@@ -4,8 +4,9 @@ import cors from '@fastify/cors'
 import rateLimit from '@fastify/rate-limit'
 import { z, ZodError } from 'zod'
 import { CheckoutService, checkoutSchema, tokenSchema, uuidSchema } from './service.js'
-import { AppError, hashToken, validateSignature } from './security.js'
+import { AppError, checkToken, hashToken, validateSignature } from './security.js'
 import { libraryFileFormat } from '../shared/library.js'
+import { personalLibraryLink } from './library-access.js'
 
 export function createApp(service: CheckoutService, logging = true) {
   const app = Fastify({
@@ -145,14 +146,52 @@ export function createApp(service: CheckoutService, logging = true) {
         },
       })
       if (user && (user.entitlements.length || user.previewAccess.length)) {
-        const login = await service.providers.createLogin(email)
-        if (login.userId !== user.id || login.email !== user.email)
-          throw new Error('AUTH_USER_MISMATCH')
-        await service.providers.sendLogin(email, login.link, `login/${randomUUID()}`)
+        const link = await personalLibraryLink(
+          service.db,
+          user.id,
+          service.config.FRONTEND_URL,
+          service.config.EMAIL_LINK_ENCRYPTION_KEY,
+        )
+        await service.providers.sendLogin(email, link, `login/${randomUUID()}`)
       }
       return reply.code(202).send({
         message: 'Se houver acesso liberado para este e-mail, você receberá um link de acesso.',
       })
+    },
+  )
+  app.post(
+    '/api/auth/access',
+    { config: { rateLimit: { max: 10, timeWindow: '1 minute' } } },
+    async (request) => {
+      const { id, token } = z
+        .object({ id: uuidSchema, token: tokenSchema })
+        .strict()
+        .parse(request.body)
+      const link = await service.db.libraryAccessLink.findUnique({
+        where: { id },
+        include: {
+          user: {
+            include: {
+              entitlements: { where: { revokedAt: null, order: { status: 'APPROVED' } }, take: 1 },
+              previewAccess: { where: { revokedAt: null, expiresAt: { gt: new Date() } }, take: 1 },
+            },
+          },
+        },
+      })
+      if (
+        !link ||
+        !checkToken(token, link.secretHash) ||
+        (!link.user.entitlements.length && !link.user.previewAccess.length)
+      )
+        throw new AppError(
+          403,
+          'ACCESS_LINK_UNAVAILABLE',
+          'Este link não está disponível. Solicite seu link novamente ou entre em contato com o suporte.',
+        )
+      const login = await service.providers.createLogin(link.user.email)
+      if (login.userId !== link.userId || login.email !== link.user.email)
+        throw new Error('AUTH_USER_MISMATCH')
+      return { url: login.link }
     },
   )
   app.get('/api/library', async (request) => {
@@ -202,6 +241,15 @@ export function createApp(service: CheckoutService, logging = true) {
         format: libraryFileFormat(storageKey),
       })),
       previewAccess: previews,
+      personalLink:
+        complete || instruments.length
+          ? await personalLibraryLink(
+              service.db,
+              user.id,
+              service.config.FRONTEND_URL,
+              service.config.EMAIL_LINK_ENCRYPTION_KEY,
+            )
+          : null,
     }
   })
   async function authorizedAsset(header: string | undefined, params: unknown) {

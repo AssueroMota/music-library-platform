@@ -1,13 +1,20 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { LoaderCircle, LogOut, Mail, Music2 } from 'lucide-react'
+import { Copy, LoaderCircle, LogOut, Mail, Music2 } from 'lucide-react'
 import type { Session } from '@supabase/supabase-js'
 import { auth } from '../lib/auth'
 import { api } from '../lib/api'
 import type { MemberLibraryData } from '../../shared/library'
 import { MemberRepertoire } from './MemberRepertoire'
 import { instruments } from '../data/content'
+import { readPersonalAccess } from '../lib/library-access'
+import { PersonalLibraryAccess } from './PersonalLibraryAccess'
 
 export function MemberLibrary() {
+  const [access] = useState(() => readPersonalAccess(window.location.hash))
+  return access ? <PersonalLibraryAccess access={access} /> : <MemberLibraryContent />
+}
+
+function MemberLibraryContent() {
   const [session, setSession] = useState<Session | null>(null)
   const [checking, setChecking] = useState(true)
   const [email, setEmail] = useState('')
@@ -148,6 +155,25 @@ export function MemberLibrary() {
           <>
             {data && (
               <>
+                {data.personalLink && (
+                  <button
+                    className="repertoire-action"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(data.personalLink!)
+                        setNotice(
+                          'Seu link pessoal foi copiado. Guarde nos favoritos para entrar novamente.',
+                        )
+                      } catch {
+                        setError(
+                          'Não foi possível copiar seu link. Solicite-o por e-mail na tela de entrada.',
+                        )
+                      }
+                    }}
+                  >
+                    <Copy size={16} /> Copiar meu link pessoal
+                  </button>
+                )}
                 <div className="member-products">
                   {data.products.map((p) => (
                     <span key={p.id}>{p.name}</span>

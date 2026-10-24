@@ -13,6 +13,7 @@ export interface MemberLibraryData {
   products: { id: string; name: string }[]
   assets: MemberAsset[]
   previewAccess?: { instrument: string; expiresAt: string }[]
+  personalLink?: string | null
 }
 
 export function libraryFileFormat(key: string) {

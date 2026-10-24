@@ -3,6 +3,7 @@ import { Prisma, PrismaClient, type Order, type OrderStatus } from '@prisma/clie
 import { z } from 'zod'
 import type { Config } from './config.js'
 import type { Providers, RemoteOrder } from './providers.js'
+import { personalLibraryLink } from './library-access.js'
 import {
   AppError,
   checkToken,
@@ -245,12 +246,18 @@ export class CheckoutService {
           update: {},
           create: { orderId, userId: user.id, productId: order.productId },
         })
+        const personalLink = await personalLibraryLink(
+          tx,
+          user.id,
+          this.config.FRONTEND_URL,
+          this.config.EMAIL_LINK_ENCRYPTION_KEY,
+        )
         await tx.order.update({
           where: { id: orderId },
           data: {
             userId: user.id,
             accessGrantedAt: new Date(),
-            emailLinkCiphertext: encryptLink(login.link, this.config.EMAIL_LINK_ENCRYPTION_KEY),
+            emailLinkCiphertext: encryptLink(personalLink, this.config.EMAIL_LINK_ENCRYPTION_KEY),
           },
         })
       },

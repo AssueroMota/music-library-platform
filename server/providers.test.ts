@@ -146,3 +146,29 @@ it('usa o SDK do Resend com e-mail profissional e idempotência', async () => {
   expect(body.html).toContain('Acessar minha biblioteca')
   expect(body.text).toContain('Biblioteca de Violino')
 })
+
+it('envia o link fixo no texto e no botão do e-mail de acesso', async () => {
+  const fetchMock = vi.fn(async () => new Response(JSON.stringify({ id: randomUUID() })))
+  vi.stubGlobal('fetch', fetchMock)
+  const link = 'https://library.example.test/biblioteca#id=test&acesso=secret'
+  await createProviders(config).sendLogin('buyer@example.test', link, 'login/test')
+  const body = JSON.parse(fetchMock.mock.calls[0][1]!.body as string)
+  expect(body.text).toContain(link)
+  expect(body.html).toContain('id=test&amp;acesso=secret')
+  expect(body.text).toContain('continua o mesmo')
+  expect(body.subject).toBe('Seu link de acesso à Music Library')
+})
+
+it('não trata resposta de e-mail sem ID como envio aceito', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () => new Response(JSON.stringify({}))),
+  )
+  await expect(
+    createProviders(config).sendLogin(
+      'buyer@example.test',
+      'https://library.example.test',
+      'login/test',
+    ),
+  ).rejects.toThrow('EMAIL_SEND_FAILED')
+})

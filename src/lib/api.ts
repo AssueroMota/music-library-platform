@@ -9,14 +9,14 @@ export class ApiError extends Error {
     this.code = code
   }
 }
-export async function api<T>(path: string, init?: RequestInit): Promise<T> {
+export async function api<T>(path: string, init?: RequestInit, timeoutMs = 15000): Promise<T> {
   let response: Response
   try {
     response = await fetch(`${apiBase}/api${path}`, {
       ...init,
       signal: init?.signal
-        ? AbortSignal.any([init.signal, AbortSignal.timeout(15000)])
-        : AbortSignal.timeout(15000),
+        ? AbortSignal.any([init.signal, AbortSignal.timeout(timeoutMs)])
+        : AbortSignal.timeout(timeoutMs),
     })
   } catch (error) {
     if (init?.signal?.aborted) throw error

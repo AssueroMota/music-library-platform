@@ -7,6 +7,7 @@ import { createApp } from './app.js'
 import type { Config } from './config.js'
 import type { Providers, RemoteOrder } from './providers.js'
 import { confirmationEmail } from './email.js'
+import { personalLibraryLink } from './library-access.js'
 
 const config = {
   CHECKOUT_ENABLED: true,
@@ -251,7 +252,7 @@ describe('webhooks, confirmação e liberação', () => {
     expect(providers.sendConfirmation).toHaveBeenCalledWith(
       buyerEmail,
       'Biblioteca de Violino',
-      expect.stringContaining('verify?token='),
+      expect.stringContaining('/biblioteca#id='),
       `purchase/${order!.id}`,
     )
     const actual = await service.status(order!.id, 'a'.repeat(64))
@@ -308,6 +309,14 @@ describe('webhooks, confirmação e liberação', () => {
     }
     expect(await db.user.count()).toBe(1)
     expect(await db.entitlement.count({ where: { userId } })).toBe(2)
+    const purchaseLinks = vi.mocked(providers.sendConfirmation).mock.calls.map((call) => call[2])
+    expect(purchaseLinks[0]).toBe(purchaseLinks[1])
+    await app.inject({ method: 'POST', url: '/api/auth/link', payload: { email: buyerEmail } })
+    expect(providers.sendLogin).toHaveBeenCalledWith(
+      buyerEmail,
+      purchaseLinks[0],
+      expect.any(String),
+    )
   })
   it.each([
     ['refunded', 'refunded'],
@@ -417,6 +426,96 @@ describe('webhooks, confirmação e liberação', () => {
     })
     expect(res.statusCode).toBe(202)
     expect(providers.createLogin).not.toHaveBeenCalled()
+  })
+  it('mantém um link fixo por pessoa, separa os segredos e aceita visitas repetidas', async () => {
+    await db.user.create({ data: { id: userId, email: buyerEmail } })
+    await db.libraryPreviewAccess.create({
+      data: { userId, instrument: 'violin', expiresAt: new Date(Date.now() + 3600000) },
+    })
+    const links = await Promise.all(
+      Array.from({ length: 4 }, () =>
+        personalLibraryLink(db, userId, config.FRONTEND_URL, config.EMAIL_LINK_ENCRYPTION_KEY),
+      ),
+    )
+    expect(new Set(links).size).toBe(1)
+    const params = new URLSearchParams(new URL(links[0]).hash.slice(1))
+    const id = params.get('id')!,
+      token = params.get('acesso')!
+    expect(token).toMatch(/^[a-f0-9]{64}$/)
+    expect(id).not.toBe(userId)
+    const stored = await db.libraryAccessLink.findUniqueOrThrow({ where: { userId } })
+    expect(stored.secretHash).not.toBe(token)
+    expect(stored.secretCiphertext).not.toContain(token)
+    const other = await db.user.create({ data: { id: randomUUID(), email: 'other@example.test' } })
+    const otherLink = await personalLibraryLink(
+      db,
+      other.id,
+      config.FRONTEND_URL,
+      config.EMAIL_LINK_ENCRYPTION_KEY,
+    )
+    const otherParams = new URLSearchParams(new URL(otherLink).hash.slice(1))
+    expect(otherParams.get('id')).not.toBe(id)
+    expect(otherParams.get('acesso')).not.toBe(token)
+    expect(
+      (
+        await app.inject({
+          method: 'POST',
+          url: '/api/auth/access',
+          payload: { id, token: otherParams.get('acesso') },
+        })
+      ).statusCode,
+    ).toBe(403)
+    expect(
+      (await app.inject({ method: 'POST', url: '/api/auth/access', payload: { id } })).statusCode,
+    ).toBe(400)
+    expect(providers.createLogin).not.toHaveBeenCalled()
+    for (let visit = 0; visit < 2; visit++) {
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/auth/access',
+        payload: { id, token },
+      })
+      expect(response.statusCode).toBe(200)
+      expect(response.json()).toEqual({
+        url: 'https://auth.example.test/verify?token=secret-local-test',
+      })
+      expect(response.headers['cache-control']).toBe('no-store')
+    }
+    expect(await db.order.count()).toBe(0)
+    expect(providers.sendLogin).not.toHaveBeenCalled()
+    const rotated = await personalLibraryLink(
+      db,
+      userId,
+      config.FRONTEND_URL,
+      config.EMAIL_LINK_ENCRYPTION_KEY,
+      true,
+    )
+    const rotatedParams = new URLSearchParams(new URL(rotated).hash.slice(1))
+    expect(rotatedParams.get('id')).toBe(id)
+    expect(rotatedParams.get('acesso')).not.toBe(token)
+    expect(
+      (await app.inject({ method: 'POST', url: '/api/auth/access', payload: { id, token } }))
+        .statusCode,
+    ).toBe(403)
+    expect(
+      (
+        await app.inject({
+          method: 'POST',
+          url: '/api/auth/access',
+          payload: { id, token: rotatedParams.get('acesso') },
+        })
+      ).statusCode,
+    ).toBe(200)
+    await db.libraryPreviewAccess.updateMany({ where: { userId }, data: { revokedAt: new Date() } })
+    expect(
+      (
+        await app.inject({
+          method: 'POST',
+          url: '/api/auth/access',
+          payload: { id, token: rotatedParams.get('acesso') },
+        })
+      ).statusCode,
+    ).toBe(403)
   })
   it('permite acesso de teste somente à pessoa e ao instrumento liberados, sem compras', async () => {
     await db.user.create({ data: { id: userId, email: buyerEmail } })

@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import { z } from 'zod'
 import type { Config } from './config.js'
-import { confirmationEmail } from './email.js'
+import { confirmationEmail, loginEmail } from './email.js'
 
 export const remoteOrderSchema = z.object({
   id: z.string(),
@@ -135,7 +135,7 @@ export function createProviders(config: Config): Providers {
       }
     },
     async sendConfirmation(email, productName, link, key) {
-      const { error } = await resend.emails.send(
+      const { data, error } = await resend.emails.send(
         {
           from: config.EMAIL_FROM,
           to: email,
@@ -145,7 +145,7 @@ export function createProviders(config: Config): Providers {
         },
         { idempotencyKey: key, signal: AbortSignal.timeout(10000) },
       )
-      if (error) throw new Error('EMAIL_SEND_FAILED')
+      if (error || !data?.id) throw new Error('EMAIL_SEND_FAILED')
     },
     async authenticate(token) {
       const { data, error } = await supabase.auth.getUser(token)
@@ -154,17 +154,17 @@ export function createProviders(config: Config): Providers {
         : { id: data.user.id, email: data.user.email.toLowerCase() }
     },
     async sendLogin(email, link, key) {
-      const { error } = await resend.emails.send(
+      const { data, error } = await resend.emails.send(
         {
           from: config.EMAIL_FROM,
           to: email,
           replyTo: config.SUPPORT_EMAIL,
           subject: 'Seu link de acesso à Music Library',
-          text: `Acesse sua biblioteca pelo link pessoal: ${link}\n\nSe você não solicitou este acesso, ignore esta mensagem.\nSuporte: ${config.SUPPORT_EMAIL}`,
+          ...loginEmail(link, config.SUPPORT_EMAIL),
         },
         { idempotencyKey: key, signal: AbortSignal.timeout(10000) },
       )
-      if (error) throw new Error('EMAIL_SEND_FAILED')
+      if (error || !data?.id) throw new Error('EMAIL_SEND_FAILED')
     },
     async signedDownload(storageKey) {
       const { data, error } = await supabase.storage

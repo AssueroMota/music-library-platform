@@ -121,11 +121,25 @@ A CLI prepara a identidade no Supabase e registra `library_preview_access` com R
 
 ## Resend
 
-Verifique o domínio do remetente e configure `RESEND_API_KEY`, `EMAIL_FROM` e `SUPPORT_EMAIL`. O e-mail de confirmação contém HTML/texto, produto, instruções, botão, link pessoal temporário e suporte.
+Verifique o domínio do remetente e configure `RESEND_API_KEY`, `EMAIL_FROM` e `SUPPORT_EMAIL`. O e-mail de confirmação contém HTML/texto, produto, instruções, botão, link pessoal fixo e suporte.
 
 O envio ocorre depois da concessão do acesso. Se falhar, o acesso permanece e a fila tenta novamente. O link fica temporariamente criptografado para repetir o mesmo payload e chave `purchase/{orderId}`, sendo removido após envio ou estorno. A deduplicação do provedor é limitada à retenção do Resend; não garante entrega única após indisponibilidade prolongada.
 
-Compradores com acesso podem solicitar novo link em `/biblioteca`. A resposta é genérica, sem divulgar se o endereço possui conta. E-mails de login usam outro assunto e não simulam nova compra.
+Compradores com acesso podem solicitar o mesmo link em `/biblioteca`. A resposta é genérica, sem divulgar se o endereço possui conta. E-mails de login usam outro assunto e não simulam nova compra. O status `Delivered` do Resend confirma aceitação pelo servidor do destinatário; a pasta de destino é definida pelo provedor de e-mail.
+
+### Link pessoal fixo
+
+Após aplicar `202610240003_library_access_links`, cada conta recebe um único endereço `/biblioteca#id=UUID&acesso=SEGREDO`, reutilizado em novas compras e solicitações por e-mail. O ID é diferente do ID do usuário; o segredo aleatório tem 256 bits. O fragmento não é enviado no pedido da página nem no Referer. O cliente envia ID/segredo no corpo de `POST /api/auth/access`, sem persistir o segredo em armazenamento local.
+
+O banco guarda o hash para validação e uma cópia criptografada com `EMAIL_LINK_ENCRYPTION_KEY` para reenviar o mesmo endereço. RLS não permite leitura direta pelo navegador. A troca verifica compra aprovada ou prévia ativa antes de gerar um acesso temporário Supabase. A sessão resultante continua sujeita às verificações de instrumento, prazo e revogação em cada leitura. O link pessoal não concede uma compra e não mantém ativo um acesso de teste expirado.
+
+Quem possui o link completo pode entrar naquela conta: não publique URLs pessoais em logs ou páginas públicas. Na biblioteca, “Copiar meu link pessoal” permite guardar o endereço nos favoritos. Para substituí-lo após compartilhamento indevido, use a CLI administrativa; o ID permanece e o segredo anterior deixa de funcionar:
+
+```sh
+npm run library:personal-link -- --email pessoa@example.com --rotate --out novo-link.local
+```
+
+Sem `--rotate`, a CLI recupera o mesmo endereço. Ela exige acesso ativo e não envia e-mail. O arquivo `.local` é privado e ignorado pelo Git. Substituir o link não encerra sessões já autenticadas; para encerrá-las, revogue também as sessões da conta pelo provedor. Os e-mails não incluem mais URLs Supabase de uso único como endereço a guardar.
 
 ## Testes locais e teste oficial
 
