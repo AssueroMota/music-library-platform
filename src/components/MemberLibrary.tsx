@@ -138,7 +138,8 @@ export function MemberLibrary() {
             </form>
             {!auth && (
               <p className="checkout-notice">
-                O acesso à biblioteca está em configuração. Volte em breve.
+                O acesso à biblioteca está temporariamente indisponível. Tente novamente em
+                instantes.
               </p>
             )}
           </>

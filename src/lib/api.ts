@@ -1,4 +1,6 @@
-const apiBase = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
+import { publicEnv } from './public-env'
+
+const apiBase = publicEnv(import.meta.env.VITE_API_URL).replace(/\/$/, '')
 
 export class ApiError extends Error {
   code: string
