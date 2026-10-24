@@ -81,7 +81,7 @@ it('envia produto e e-mail de entrega, impede cliques repetidos e apresenta falh
   expect(JSON.parse(init.body)).toEqual({ productId: 'library-complete', email: 'buyer@gmail.com' })
   expect(init.headers['Idempotency-Key']).toMatch(/^[a-f\d-]{36}$/)
   expect(init.headers['X-Checkout-Token']).toHaveLength(64)
-  expect(screen.getByRole('button', { name: /Abrindo Mercado Pago/ })).toBeDisabled()
+  expect(screen.getByRole('button', { name: /Abrindo pagamento/ })).toBeDisabled()
   fail(
     new Response(
       JSON.stringify({ code: 'SERVICE_UNAVAILABLE', message: 'Mercado Pago indisponível.' }),
@@ -167,7 +167,7 @@ it('abre uma revisão de pagamento privativa e preserva o token para o retorno d
   render(<CheckoutReturn />)
   expect(await screen.findByRole('heading', { name: 'Confira seu pagamento.' })).toBeInTheDocument()
   expect(screen.getByText('R$ 1,00')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Continuar para o Mercado Pago' })).toHaveAttribute(
+  expect(screen.getByRole('link', { name: 'Continuar para o pagamento' })).toHaveAttribute(
     'href',
     checkoutUrl,
   )
@@ -199,7 +199,79 @@ it('não mostra botão de pagamento para host inválido ou pedido finalizado', a
   )
   render(<CheckoutReturn />)
   await screen.findByRole('heading', { name: 'Aguardando confirmação' })
-  expect(
-    screen.queryByRole('link', { name: 'Continuar para o Mercado Pago' }),
-  ).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: 'Continuar para o pagamento' })).not.toBeInTheDocument()
 })
+
+it('exibe e copia o link pessoal após confirmação e liberação do acesso', async () => {
+  const id = crypto.randomUUID()
+  const personalLink = `${window.location.origin}/biblioteca#id=${crypto.randomUUID()}&acesso=${'f'.repeat(64)}`
+  sessionStorage.setItem(`ml:order:${id}`, 'a'.repeat(64))
+  window.history.replaceState({}, '', `/checkout/success?order=${id}`)
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(() =>
+      response({
+        orderId: id,
+        productName: 'Biblioteca de Violino',
+        status: 'APPROVED',
+        accessReady: true,
+        emailSent: true,
+        personalLink,
+      }),
+    ),
+  )
+  const user = userEvent.setup()
+  render(<CheckoutReturn />)
+  expect(
+    await screen.findByRole('heading', { name: 'Pagamento confirmado. Seu acesso está pronto!' }),
+  ).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Acessar minha biblioteca' })).toHaveAttribute(
+    'href',
+    personalLink,
+  )
+  expect(screen.getByLabelText('Seu endereço de acesso')).toHaveValue(personalLink)
+  await user.click(screen.getByRole('button', { name: 'Copiar meu link' }))
+  expect(await navigator.clipboard.readText()).toBe(personalLink)
+  expect(screen.getByText('Link copiado!')).toBeInTheDocument()
+})
+
+it.each([
+  [
+    'PENDING',
+    false,
+    `${window.location.origin}/biblioteca#id=${crypto.randomUUID()}&acesso=${'f'.repeat(64)}`,
+  ],
+  [
+    'REFUNDED',
+    false,
+    `${window.location.origin}/biblioteca#id=${crypto.randomUUID()}&acesso=${'f'.repeat(64)}`,
+  ],
+  ['APPROVED', true, 'https://untrusted.example/biblioteca#id=secret'],
+])(
+  'não exibe link pessoal com status %s ou endereço externo',
+  async (status, accessReady, personalLink) => {
+    const id = crypto.randomUUID()
+    sessionStorage.setItem(`ml:order:${id}`, 'a'.repeat(64))
+    window.history.replaceState({}, '', `/checkout/success?order=${id}`)
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() =>
+        response({
+          orderId: id,
+          productName: 'Biblioteca de Violino',
+          status,
+          accessReady,
+          emailSent: true,
+          personalLink,
+        }),
+      ),
+    )
+    render(<CheckoutReturn />)
+    await screen.findByText('Biblioteca de Violino')
+    expect(screen.queryByLabelText('Seu endereço de acesso')).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Acessar minha biblioteca' })).toHaveAttribute(
+      'href',
+      '/biblioteca',
+    )
+  },
+)

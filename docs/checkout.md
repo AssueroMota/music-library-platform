@@ -202,6 +202,20 @@ A tentativa usa UUID/token aleatório em `sessionStorage`. O servidor só a reap
 
 Para revisar um pedido já criado sem abrir vendas públicas, o operador pode entregar `/checkout/pending?order=UUID&iniciar=1#token=TOKEN`. O cliente guarda o token de consulta na sessão e remove o fragmento da barra; o servidor só retorna o preço e a URL de pagamento ao portador desse token. A página exibe o total e um botão para continuar ao domínio oficial do Mercado Pago. Não aprova o pedido, não cria outra cobrança e não abre o checkout público. Pedidos finalizados ou com mais de 23 horas não recebem URL para retomada. O retorno do Mercado Pago recupera o token da mesma sessão do navegador para consultar a confirmação.
 
+Após aprovação e concessão ativa deste pedido, a consulta autenticada pelo token
+também retorna `personalLink`: o mesmo endereço fixo enviado por e-mail. A tela
+de confirmação permite abrir, selecionar e copiar o link. Pedidos pendentes,
+sem concessão ou estornados recebem `null`; token inválido recebe 404. O navegador
+aceita somente o endereço `/biblioteca` na própria origem, com as credenciais no
+fragmento. O link nunca depende do parâmetro `status` recebido na URL de retorno.
+
+As URLs de retorno e `auto_return: all` são configuradas na Order. A navegação
+na página externa, inclusive o botão de voltar durante um Pix, pertence ao
+Mercado Pago. A identidade visual também depende da conta vendedora: em
+Configurações → Conta → Personalização do checkout, configure o nome Music
+Library e a imagem pública `/images/music-library-logo.png`. O PNG exporta a
+marca já usada no site; publicar a imagem não altera o perfil da conta.
+
 Orders recém-criadas podem não trazer `status_detail`. Nesse caso, o detalhe é normalizado para vazio e o pedido permanece pendente. A aprovação continua exigindo explicitamente `processed/accredited`, valores e identidade da compra correspondentes.
 
 Preço/código são copiados no pedido para preservar a compra após mudanças no catálogo. A aprovação exige `processed/accredited`, valor total/pago exato, BRL, item/quantidade, referência e conta correspondentes. Estados antigos não regridem aprovação; estornos são terminais e não reativam por notificações atrasadas. Reembolso parcial também suspende o acesso por política conservadora, sujeita à revisão comercial.

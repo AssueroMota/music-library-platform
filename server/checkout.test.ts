@@ -257,7 +257,11 @@ describe('checkout e persistência real em PostgreSQL', () => {
       url: `/api/orders/${order!.id}?status=approved`,
       headers: { 'x-checkout-token': 'a'.repeat(64) },
     })
-    expect(actual.json()).toMatchObject({ status: 'PENDING', accessReady: false })
+    expect(actual.json()).toMatchObject({
+      status: 'PENDING',
+      accessReady: false,
+      personalLink: null,
+    })
     expect(actual.json()).toMatchObject({
       priceCents: 1790,
       checkoutUrl: expect.stringContaining('https://www.mercadopago.com.br/checkout/'),
@@ -333,6 +337,13 @@ describe('webhooks, confirmação e liberação', () => {
     )
     const actual = await service.status(order!.id, 'a'.repeat(64))
     expect(actual).toMatchObject({ status: 'APPROVED', accessReady: true, emailSent: true })
+    expect(actual.personalLink).toBe(vi.mocked(providers.sendConfirmation).mock.calls[0][2])
+    const denied = await app.inject({
+      url: `/api/orders/${order!.id}`,
+      headers: { 'x-checkout-token': 'b'.repeat(64) },
+    })
+    expect(denied.statusCode).toBe(404)
+    expect(denied.body).not.toContain('acesso=')
     expect(
       (await db.order.findUniqueOrThrow({ where: { id: order!.id } })).emailLinkCiphertext,
     ).toBeNull()
@@ -414,6 +425,7 @@ describe('webhooks, confirmação e liberação', () => {
     vi.mocked(providers.getOrder).mockResolvedValue(approved)
     await service.reconcile(order!.providerOrderId!)
     expect((await service.status(order!.id, 'a'.repeat(64))).accessReady).toBe(false)
+    expect((await service.status(order!.id, 'a'.repeat(64))).personalLink).toBeNull()
     const library = await app.inject({
       url: '/api/library',
       headers: { authorization: 'Bearer valid-test-session' },

@@ -3,7 +3,6 @@ import {
   ArrowRight,
   CheckCircle2,
   ChevronLeft,
-  ExternalLink,
   LoaderCircle,
   LockKeyhole,
   Music2,
@@ -138,7 +137,7 @@ export function CheckoutDialog({
           Vamos começar<span> a tocar.</span>
         </h2>
         <p className="checkout-intro">
-          Confira sua escolha. O pagamento é feito no ambiente do Mercado Pago.
+          Confira sua escolha e informe o e-mail que receberá seu acesso.
         </p>
         {plan === 'basic' && (
           <div className="checkout-field">
@@ -208,8 +207,7 @@ export function CheckoutDialog({
             <CheckCircle2 size={16} /> Acesso liberado após a confirmação do pagamento.
           </li>
           <li>
-            <CheckCircle2 size={16} /> Utilize um Gmail (@gmail.com) no pagamento para receber seu
-            link pessoal. Use o mesmo endereço para acessar a biblioteca.
+            <CheckCircle2 size={16} /> Seu link pessoal será enviado ao e-mail informado acima.
           </li>
         </ul>
         {data && !data.checkoutEnabled && (
@@ -245,15 +243,12 @@ export function CheckoutDialog({
             <LockKeyhole size={17} />
           )}
           {submitting
-            ? 'Abrindo Mercado Pago…'
+            ? 'Abrindo pagamento…'
             : loading
               ? 'Consultando disponibilidade…'
               : 'Continuar para o pagamento'}
           {!loading && !submitting && <ArrowRight size={17} />}
         </button>
-        <p className="checkout-provider">
-          <ExternalLink size={13} /> Você vai concluir a compra no Mercado Pago.
-        </p>
         <button type="button" className="checkout-back" onClick={onClose} disabled={submitting}>
           <ChevronLeft size={15} /> Voltar aos planos
         </button>

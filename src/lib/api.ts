@@ -60,6 +60,23 @@ export interface OrderResponse {
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELED' | 'REFUNDED' | 'CHARGED_BACK'
   accessReady: boolean
   emailSent: boolean
+  personalLink: string | null
+}
+
+export function trustedPersonalLibraryUrl(value: string) {
+  const url = new URL(value)
+  const credentials = new URLSearchParams(url.hash.slice(1))
+  if (
+    url.origin !== window.location.origin ||
+    url.pathname !== '/biblioteca' ||
+    url.search ||
+    url.username ||
+    url.password ||
+    !/^[a-f0-9-]{36}$/.test(credentials.get('id') ?? '') ||
+    !/^[a-f0-9]{64}$/.test(credentials.get('acesso') ?? '')
+  )
+    throw new Error('Link da biblioteca inválido.')
+  return url.href
 }
 
 export function trustedCheckoutUrl(value: string) {

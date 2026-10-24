@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { CheckCircle2, Clock3, LoaderCircle, Mail, Music2 } from 'lucide-react'
-import { api, trustedCheckoutUrl, type OrderResponse } from '../lib/api'
+import { CheckCircle2, Clock3, Copy, LoaderCircle, Mail, Music2 } from 'lucide-react'
+import { api, trustedCheckoutUrl, trustedPersonalLibraryUrl, type OrderResponse } from '../lib/api'
 import { Logo } from './ui'
 import { formatBRL } from '../../shared/products'
 
@@ -9,6 +9,7 @@ export function CheckoutReturn() {
   const [error, setError] = useState('')
   const [refresh, setRefresh] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [copyMessage, setCopyMessage] = useState('')
   const [startPayment] = useState(
     () => new URLSearchParams(window.location.search).get('iniciar') === '1',
   )
@@ -69,6 +70,14 @@ export function CheckoutReturn() {
   }, [refresh, startPayment])
 
   let checkoutUrl: string | null = null
+  let personalLink: string | null = null
+  if (order?.status === 'APPROVED' && order.accessReady && order.personalLink) {
+    try {
+      personalLink = trustedPersonalLibraryUrl(order.personalLink)
+    } catch {
+      /* Only display a personal link issued for this site's library. */
+    }
+  }
   if (startPayment && order?.status === 'PENDING' && order.checkoutUrl) {
     try {
       checkoutUrl = trustedCheckoutUrl(order.checkoutUrl)
@@ -87,10 +96,12 @@ export function CheckoutReturn() {
   if (checkoutUrl) {
     title = 'Confira seu pagamento.'
     message =
-      'O pagamento será concluído no Mercado Pago. Utilize um Gmail para receber seu link pessoal da biblioteca após a confirmação.'
+      'Confira o valor antes de continuar. Após a confirmação, seu link pessoal aparecerá aqui e será enviado por e-mail.'
   }
   if (order?.status === 'APPROVED') {
-    title = order.accessReady ? 'Seu repertório está pronto.' : 'Pagamento confirmado.'
+    title = order.accessReady
+      ? 'Pagamento confirmado. Seu acesso está pronto!'
+      : 'Pagamento confirmado.'
     message = order.accessReady
       ? order.emailSent
         ? 'Sua biblioteca foi liberada. Enviamos seu link pessoal ao e-mail informado na compra.'
@@ -138,25 +149,64 @@ export function CheckoutReturn() {
         <p role="status">{error || message}</p>
         {checkoutUrl && (
           <a className="button button-primary" href={checkoutUrl}>
-            Continuar para o Mercado Pago
+            Continuar para o pagamento
           </a>
         )}
-        <button
-          className="button button-outline"
-          disabled={loading}
-          onClick={() => {
-            setLoading(true)
-            setRefresh((v) => v + 1)
-          }}
-        >
-          Atualizar status
-        </button>
-        <a
-          className={`button ${checkoutUrl ? 'button-outline' : 'button-primary'}`}
-          href="/biblioteca"
-        >
-          <Mail size={17} /> Acessar minha biblioteca
-        </a>
+        {personalLink && (
+          <section className="checkout-personal-link" aria-labelledby="personal-link-title">
+            <h2 id="personal-link-title">Seu link pessoal da biblioteca</h2>
+            <p>Guarde nos favoritos. Este link é só seu e continuará sendo o mesmo.</p>
+            <a className="button button-primary" href={personalLink}>
+              <Music2 size={18} /> Acessar minha biblioteca
+            </a>
+            <label htmlFor="purchase-personal-link">Seu endereço de acesso</label>
+            <input
+              id="purchase-personal-link"
+              type="text"
+              value={personalLink}
+              readOnly
+              onFocus={(event) => event.target.select()}
+            />
+            <button
+              className="button button-outline"
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(personalLink)
+                  setCopyMessage('Link copiado!')
+                } catch {
+                  setCopyMessage('Selecione o endereço acima e copie seu link.')
+                }
+              }}
+            >
+              <Copy size={16} /> Copiar meu link
+            </button>
+            <span role="status" className="checkout-copy-status">
+              {copyMessage}
+            </span>
+          </section>
+        )}
+        {!personalLink && (
+          <a
+            className={`button ${checkoutUrl ? 'button-outline' : 'button-primary'}`}
+            href="/biblioteca"
+          >
+            <Mail size={17} /> Acessar minha biblioteca
+          </a>
+        )}
+        {(!order ||
+          order.status === 'PENDING' ||
+          (order.status === 'APPROVED' && !personalLink)) && (
+          <button
+            className="button button-outline"
+            disabled={loading}
+            onClick={() => {
+              setLoading(true)
+              setRefresh((v) => v + 1)
+            }}
+          >
+            Atualizar status
+          </button>
+        )}
         <a className="checkout-back" href="/#planos">
           Voltar aos planos
         </a>

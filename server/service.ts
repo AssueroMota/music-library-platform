@@ -301,6 +301,17 @@ export class CheckoutService {
     const order = await this.db.order.findUnique({ where: { id }, include: { entitlement: true } })
     if (!order || !checkToken(token, order.statusTokenHash))
       throw new AppError(404, 'ORDER_NOT_FOUND', 'Pedido não encontrado neste navegador.')
+    const accessReady =
+      order.status === 'APPROVED' && Boolean(order.entitlement && !order.entitlement.revokedAt)
+    const personalLink =
+      accessReady && order.entitlement
+        ? await personalLibraryLink(
+            this.db,
+            order.entitlement.userId,
+            this.config.FRONTEND_URL,
+            this.config.EMAIL_LINK_ENCRYPTION_KEY,
+          )
+        : null
     return {
       orderId: order.id,
       productName: order.productName,
@@ -310,8 +321,8 @@ export class CheckoutService {
           ? order.checkoutUrl
           : null,
       status: order.status,
-      accessReady:
-        order.status === 'APPROVED' && Boolean(order.entitlement && !order.entitlement.revokedAt),
+      accessReady,
+      personalLink,
       emailSent: Boolean(order.emailSentAt),
     }
   }
