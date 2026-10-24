@@ -20,6 +20,9 @@ const manifest = z
   .array(
     z.object({
       title: z.string().min(1).max(200),
+      songTitle: z.string().trim().max(200).default(''),
+      artist: z.string().trim().max(200).default(''),
+      style: z.string().trim().max(100).default(''),
       instrument: z.enum(['violin', 'saxophone', 'flute', 'guitar', 'viola', 'cello']),
       kind: z.enum(['score', 'audio']),
       file: z.string().min(1),
@@ -44,12 +47,14 @@ try {
   for (const item of manifest) {
     const extension = extname(item.file).toLowerCase()
     const mime = (
-      { '.pdf': 'application/pdf', '.mp3': 'audio/mpeg', '.wav': 'audio/wav' } as Record<
-        string,
-        string
-      >
+      {
+        '.pdf': 'application/pdf',
+        '.png': 'image/png',
+        '.mp3': 'audio/mpeg',
+        '.wav': 'audio/wav',
+      } as Record<string, string>
     )[extension]
-    if (!mime || (item.kind === 'score') !== (extension === '.pdf'))
+    if (!mime || (item.kind === 'score') !== ['.pdf', '.png'].includes(extension))
       throw new Error('Tipo de arquivo incompatível com o material.')
     const bytes = await readFile(resolve(dirname(manifestPath), item.file))
     const existing = await db.libraryAsset.findUnique({ where: { storageKey: item.storageKey } })
@@ -64,11 +69,21 @@ try {
       where: { storageKey: item.storageKey },
       create: {
         title: item.title,
+        songTitle: item.songTitle,
+        artist: item.artist,
+        style: item.style,
         instrument: item.instrument,
         kind: item.kind,
         storageKey: item.storageKey,
       },
-      update: { title: item.title, instrument: item.instrument, kind: item.kind },
+      update: {
+        title: item.title,
+        songTitle: item.songTitle,
+        artist: item.artist,
+        style: item.style,
+        instrument: item.instrument,
+        kind: item.kind,
+      },
     })
     console.info(`Material registrado: ${item.title}`)
   }

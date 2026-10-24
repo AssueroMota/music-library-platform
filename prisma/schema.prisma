@@ -124,6 +124,9 @@ model Job {
 model LibraryAsset {
   id         String @id @default(uuid()) @db.Uuid
   title      String
+  songTitle  String @default("")
+  artist     String @default("")
+  style      String @default("")
   instrument String
   kind       String
   storageKey String @unique

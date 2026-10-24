@@ -1,6 +1,9 @@
 [
   {
     "title": "Nome da música — Partitura",
+    "songTitle": "Nome da música",
+    "artist": "Nome do artista",
+    "style": "Pop internacional",
     "instrument": "violin",
     "kind": "score",
     "file": "./materiais/partitura.pdf",
@@ -8,6 +11,9 @@
   },
   {
     "title": "Nome da música — Backing track",
+    "songTitle": "Nome da música",
+    "artist": "Nome do artista",
+    "style": "Pop internacional",
     "instrument": "violin",
     "kind": "audio",
     "file": "./materiais/acompanhamento.mp3",

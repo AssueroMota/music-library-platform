@@ -1,24 +1,19 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Download, LoaderCircle, LogOut, Mail, Music2 } from 'lucide-react'
+import { LoaderCircle, LogOut, Mail, Music2 } from 'lucide-react'
 import type { Session } from '@supabase/supabase-js'
 import { auth } from '../lib/auth'
 import { api } from '../lib/api'
-import { instruments } from '../data/content'
-
-interface LibraryData {
-  products: { id: string; name: string }[]
-  assets: { id: string; title: string; instrument: string; kind: string }[]
-}
+import type { MemberLibraryData } from '../../shared/library'
+import { MemberRepertoire } from './MemberRepertoire'
 
 export function MemberLibrary() {
   const [session, setSession] = useState<Session | null>(null)
   const [checking, setChecking] = useState(true)
   const [email, setEmail] = useState('')
-  const [data, setData] = useState<LibraryData | null>(null)
+  const [data, setData] = useState<MemberLibraryData | null>(null)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
-  const [downloading, setDownloading] = useState<string | null>(null)
   const [refresh, setRefresh] = useState(0)
   useEffect(() => {
     document.title = 'Minha biblioteca | Music Library'
@@ -56,7 +51,7 @@ export function MemberLibrary() {
     if (!session) return
     const controller = new AbortController()
     setError('')
-    api<LibraryData>('/library', {
+    api<MemberLibraryData>('/library', {
       headers: { Authorization: `Bearer ${session.access_token}` },
       signal: controller.signal,
     })
@@ -85,21 +80,6 @@ export function MemberLibrary() {
       setBusy(false)
     }
   }
-  async function download(id: string) {
-    if (!session || downloading) return
-    setDownloading(id)
-    setError('')
-    try {
-      const result = await api<{ url: string }>(`/library/assets/${id}/download`, {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      })
-      window.location.assign(result.url)
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Não foi possível baixar o arquivo.')
-    } finally {
-      setDownloading(null)
-    }
-  }
   return (
     <div className="checkout-page">
       <header className="checkout-page-header">
@@ -122,6 +102,9 @@ export function MemberLibrary() {
       <main className={`checkout-status-card ${session ? 'member-library' : ''}`}>
         <span className="eyebrow">SEU ESPAÇO PARA TOCAR</span>
         <h1>{session ? 'Minha biblioteca.' : 'Seu repertório espera por você.'}</h1>
+        {session && (
+          <p>Encontre sua música, ouça o acompanhamento e abra a partitura para tocar.</p>
+        )}
         {checking ? (
           <p role="status">
             <LoaderCircle className="checkout-spinner" /> Verificando seu acesso…
@@ -168,43 +151,7 @@ export function MemberLibrary() {
                     <span key={p.id}>{p.name}</span>
                   ))}
                 </div>
-                {!data.products.length && (
-                  <p>
-                    Nenhuma compra liberada para esta conta. Se o pagamento foi confirmado, aguarde
-                    o processamento do acesso.
-                  </p>
-                )}
-                {data.products.length > 0 && !data.assets.length && (
-                  <p>
-                    Seu acesso está liberado. Os arquivos da sua biblioteca ainda não foram
-                    publicados. Entre em contato pelo suporte informado no e-mail de compra.
-                  </p>
-                )}
-                <ul className="member-assets">
-                  {data.assets.map((asset) => (
-                    <li key={asset.id}>
-                      <Music2 size={23} />
-                      <div>
-                        <strong>{asset.title}</strong>
-                        <span>
-                          {instruments.find((i) => i.id === asset.instrument)?.name} ·{' '}
-                          {asset.kind === 'score' ? 'Partitura' : 'Backing track'}
-                        </span>
-                      </div>
-                      <button
-                        disabled={Boolean(downloading)}
-                        onClick={() => download(asset.id)}
-                        aria-label={`Baixar ${asset.title}`}
-                      >
-                        {downloading === asset.id ? (
-                          <LoaderCircle size={19} className="checkout-spinner" />
-                        ) : (
-                          <Download size={19} />
-                        )}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                <MemberRepertoire data={data} token={session.access_token} />
               </>
             )}
             {!data && !error && <p role="status">Carregando seus materiais…</p>}

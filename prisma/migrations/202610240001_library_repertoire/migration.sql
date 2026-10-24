@@ -1,0 +1,4 @@
+ALTER TABLE "library_assets"
+  ADD COLUMN "songTitle" TEXT NOT NULL DEFAULT '',
+  ADD COLUMN "artist" TEXT NOT NULL DEFAULT '',
+  ADD COLUMN "style" TEXT NOT NULL DEFAULT '';

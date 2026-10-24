@@ -19,6 +19,23 @@ const config = configSchema.parse({
 })
 afterEach(() => vi.unstubAllGlobals())
 
+it('emite visualização inline por dez minutos e mantém download separado', async () => {
+  const fetchMock = vi.fn(
+    async () =>
+      new Response(
+        JSON.stringify({ signedURL: '/object/sign/music-library/violin/test.png?token=test-only' }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
+      ),
+  )
+  vi.stubGlobal('fetch', fetchMock)
+  const provider = createProviders(config)
+  await provider.signedView('violin/test.png')
+  expect(JSON.parse(fetchMock.mock.calls[0][1]!.body as string)).toMatchObject({ expiresIn: 600 })
+  const download = await provider.signedDownload('violin/test.png')
+  expect(JSON.parse(fetchMock.mock.calls[1][1]!.body as string)).toMatchObject({ expiresIn: 60 })
+  expect(download).toContain('download=')
+})
+
 it('executa o SDK oficial com contrato Orders e chave estável, sem campos de Preferences', async () => {
   const fetchMock = vi.fn(
     async () =>

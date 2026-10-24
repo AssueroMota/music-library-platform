@@ -92,7 +92,7 @@ Os retornos ficam em `config.online.success_url`, `pending_url` e `failure_url`,
 2. Cadastre `${FRONTEND_URL}/biblioteca` em **Authentication → URL Configuration → Redirect URLs** e configure a Site URL. Faça o mesmo para desenvolvimento, se necessário.
 3. Configure a duração do link no Auth para a janela operacional de envio. Um link expirado pode ser substituído pela opção **Receber link de acesso** na biblioteca.
 4. No frontend, use apenas URL e chave pública anon/publishable. O servidor verifica a sessão por `auth.getUser`; dados do navegador não autorizam downloads.
-5. Crie o bucket `music-library` como **privado**, sem políticas de leitura pública ou acesso direto por usuários autenticados. O servidor gera URLs de 60 segundos após validar direitos no banco.
+5. Crie o bucket `music-library` como **privado**, sem políticas de leitura pública ou acesso direto por usuários autenticados. Após validar direitos no banco, o servidor gera URLs de 60 segundos para download ou 10 minutos para reprodução e visualização.
 6. Publique somente arquivos comerciais autorizados. A prévia de `public/` continua demonstrativa.
 
 Adapte [library-manifest.example.json](library-manifest.example.json). Os caminhos `file` são relativos ao manifesto:
@@ -101,7 +101,11 @@ Adapte [library-manifest.example.json](library-manifest.example.json). Os caminh
 npm run library:import -- caminho/do/manifesto.json
 ```
 
-O importador exige bucket privado, aceita PDF/MP3/WAV e não sobrescreve objetos. Metadados registrados podem ser atualizados sem reenviar arquivo. Se o upload ocorreu, mas o registro no banco falhou, confira o objeto órfão no painel antes de repetir; a CLI evita substituição silenciosa.
+O importador exige bucket privado, aceita PDF/PNG para partituras e MP3/WAV para áudios, e não sobrescreve objetos. Metadados registrados podem ser atualizados sem reenviar arquivo. Se o upload ocorreu, mas o registro no banco falhou, confira o objeto órfão no painel antes de repetir; a CLI evita substituição silenciosa.
+
+Use os mesmos `songTitle`, `artist` e `instrument` nos arquivos da mesma música para reuni-los na mesma linha. `style` alimenta o filtro de estilo; campos antigos sem metadados continuam disponíveis pelo `title`. A biblioteca privada oferece busca por música/artista, filtros de instrumento/estilo, áudio com controles e partitura com zoom. PDFs são renderizados na página com PDF.js, com navegação por páginas; PNGs são exibidos diretamente. Várias versões da partitura ou do áudio podem ser escolhidas no mesmo painel.
+
+A rota `/api/library/assets/:id/view` aplica a mesma autenticação, compra aprovada, instrumento e revogação de `/download`. As URLs são solicitadas ao abrir o material; a ação “Renovar acesso ao arquivo” revalida o direito e substitui uma URL expirada. URLs temporárias não são persistidas no navegador. Aplique a migração `202610240001_library_repertoire` antes de publicar o novo servidor.
 
 Completo permite os seis instrumentos; individual permite os arquivos daquele instrumento. Não publique materiais comerciais em `public/`, nem exponha chaves do storage em respostas.
 
@@ -163,4 +167,4 @@ Há rate limiting por processo e CORS restrito. Com múltiplas instâncias/proxy
 
 Configure fallback de `/checkout/*` e `/biblioteca` para `index.html`, preserve `/api/*` no proxy e não cacheie a API. A página define referrer `no-referrer`. Configure logs de proxy sem Authorization, tokens ou corpos sensíveis. Banco, chaves e `.env` não são públicos.
 
-Uma URL de download emitida pode funcionar por até 60 segundos após revogação; novas URLs serão negadas. A biblioteca mostra estado vazio se os materiais não foram importados, sem prometer arquivos inexistentes.
+Uma URL de download emitida pode funcionar por até 60 segundos após revogação; para reprodução/visualização, até 10 minutos. Novas URLs serão negadas. Arquivos já carregados no dispositivo não podem ser recolhidos. A biblioteca mostra estado vazio se os materiais não foram importados, sem prometer arquivos inexistentes.

@@ -57,6 +57,7 @@ export interface Providers {
   sendLogin(email: string, link: string, key: string): Promise<void>
   authenticate(token: string): Promise<{ id: string; email: string } | null>
   signedDownload(storageKey: string): Promise<string>
+  signedView(storageKey: string): Promise<string>
 }
 
 export function createProviders(config: Config): Providers {
@@ -170,6 +171,13 @@ export function createProviders(config: Config): Providers {
         .from(config.SUPABASE_STORAGE_BUCKET)
         .createSignedUrl(storageKey, 60, { download: true })
       if (error || !data?.signedUrl) throw new Error('DOWNLOAD_FAILED')
+      return data.signedUrl
+    },
+    async signedView(storageKey) {
+      const { data, error } = await supabase.storage
+        .from(config.SUPABASE_STORAGE_BUCKET)
+        .createSignedUrl(storageKey, 600)
+      if (error || !data?.signedUrl) throw new Error('PREVIEW_FAILED')
       return data.signedUrl
     },
   }

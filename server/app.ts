@@ -5,6 +5,7 @@ import rateLimit from '@fastify/rate-limit'
 import { z, ZodError } from 'zod'
 import { CheckoutService, checkoutSchema, tokenSchema, uuidSchema } from './service.js'
 import { AppError, hashToken, validateSignature } from './security.js'
+import { libraryFileFormat } from '../shared/library.js'
 
 export function createApp(service: CheckoutService, logging = true) {
   const app = Fastify({
@@ -162,7 +163,16 @@ export function createApp(service: CheckoutService, logging = true) {
     const assets = rights.length
       ? await service.db.libraryAsset.findMany({
           where: complete ? {} : { instrument: { in: instruments } },
-          select: { id: true, title: true, kind: true, instrument: true },
+          select: {
+            id: true,
+            title: true,
+            songTitle: true,
+            artist: true,
+            style: true,
+            kind: true,
+            instrument: true,
+            storageKey: true,
+          },
           orderBy: { title: 'asc' },
         })
       : []
@@ -172,12 +182,15 @@ export function createApp(service: CheckoutService, logging = true) {
           rights.map((r) => [r.productId, { id: r.productId, name: r.product.name }]),
         ).values(),
       ],
-      assets,
+      assets: assets.map(({ storageKey, ...asset }) => ({
+        ...asset,
+        format: libraryFileFormat(storageKey),
+      })),
     }
   })
-  app.get('/api/library/assets/:id/download', async (request) => {
-    const user = await authenticate(request.headers.authorization)
-    const { id } = z.object({ id: uuidSchema }).parse(request.params)
+  async function authorizedAsset(header: string | undefined, params: unknown) {
+    const user = await authenticate(header)
+    const { id } = z.object({ id: uuidSchema }).parse(params)
     const asset = await service.db.libraryAsset.findUnique({ where: { id } })
     if (!asset) throw new AppError(404, 'NOT_FOUND', 'Arquivo não encontrado.')
     const right = await service.db.entitlement.findFirst({
@@ -195,7 +208,15 @@ export function createApp(service: CheckoutService, logging = true) {
     })
     if (!right)
       throw new AppError(403, 'ACCESS_DENIED', 'Este material não faz parte dos seus acessos.')
+    return asset
+  }
+  app.get('/api/library/assets/:id/download', async (request) => {
+    const asset = await authorizedAsset(request.headers.authorization, request.params)
     return { url: await service.providers.signedDownload(asset.storageKey) }
+  })
+  app.get('/api/library/assets/:id/view', async (request) => {
+    const asset = await authorizedAsset(request.headers.authorization, request.params)
+    return { url: await service.providers.signedView(asset.storageKey) }
   })
   return app
 }

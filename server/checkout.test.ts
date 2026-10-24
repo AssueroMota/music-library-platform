@@ -33,6 +33,7 @@ const providers: Providers = {
   sendLogin: vi.fn(async () => {}),
   authenticate: vi.fn(async () => ({ id: userId, email: buyerEmail })),
   signedDownload: vi.fn(async () => 'https://storage.example.test/signed'),
+  signedView: vi.fn(async () => 'https://storage.example.test/inline'),
 }
 let db: PrismaClient
 let service: CheckoutService
@@ -334,7 +335,7 @@ describe('webhooks, confirmação e liberação', () => {
     })
     expect(library.json().products).toEqual([])
   })
-  it('não libera download de outro instrumento, exige sessão e aplica revogação', async () => {
+  it('protege download e visualização, filtra materiais e aplica revogação', async () => {
     const { order } = await checkout()
     vi.mocked(providers.getOrder).mockResolvedValue(remote(order!))
     await service.reconcile(order!.providerOrderId!)
@@ -342,6 +343,9 @@ describe('webhooks, confirmação e liberação', () => {
     const violin = await db.libraryAsset.create({
       data: {
         title: 'Partitura',
+        songTitle: 'Fix You',
+        artist: 'Coldplay',
+        style: 'Pop internacional',
         instrument: 'violin',
         kind: 'score',
         storageKey: 'violin/test.pdf',
@@ -357,16 +361,41 @@ describe('webhooks, confirmação e liberação', () => {
     })
     const headers = { authorization: 'Bearer valid-test-session' }
     expect((await app.inject({ url: '/api/library' })).statusCode).toBe(401)
-    expect(
-      (await app.inject({ url: `/api/library/assets/${cello.id}/download`, headers })).statusCode,
-    ).toBe(403)
-    expect(
-      (await app.inject({ url: `/api/library/assets/${violin.id}/download`, headers })).statusCode,
-    ).toBe(200)
+    const library = await app.inject({ url: '/api/library', headers })
+    expect(library.json().assets).toEqual([
+      {
+        id: violin.id,
+        title: 'Partitura',
+        songTitle: 'Fix You',
+        artist: 'Coldplay',
+        style: 'Pop internacional',
+        instrument: 'violin',
+        kind: 'score',
+        format: 'pdf',
+      },
+    ])
+    expect(library.body).not.toContain('storageKey')
+    for (const action of ['download', 'view']) {
+      expect(
+        (await app.inject({ url: `/api/library/assets/${violin.id}/${action}` })).statusCode,
+      ).toBe(401)
+      expect(
+        (await app.inject({ url: `/api/library/assets/${cello.id}/${action}`, headers }))
+          .statusCode,
+      ).toBe(403)
+      expect(
+        (await app.inject({ url: `/api/library/assets/${violin.id}/${action}`, headers }))
+          .statusCode,
+      ).toBe(200)
+    }
+    expect(providers.signedView).toHaveBeenCalledWith('violin/test.pdf')
     vi.mocked(providers.getOrder).mockResolvedValue(remote(order!, 'refunded', 'refunded'))
     await service.reconcile(order!.providerOrderId!)
     expect(
       (await app.inject({ url: `/api/library/assets/${violin.id}/download`, headers })).statusCode,
+    ).toBe(403)
+    expect(
+      (await app.inject({ url: `/api/library/assets/${violin.id}/view`, headers })).statusCode,
     ).toBe(403)
   })
   it('não regride um aprovado para pendente com notificação fora de ordem', async () => {
