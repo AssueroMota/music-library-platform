@@ -27,6 +27,7 @@ model User {
   createdAt    DateTime      @default(now()) @db.Timestamptz(3)
   orders       Order[]
   entitlements Entitlement[]
+  previewAccess LibraryPreviewAccess[]
   @@map("users")
 }
 
@@ -132,4 +133,16 @@ model LibraryAsset {
   storageKey String @unique
   @@index([instrument])
   @@map("library_assets")
+}
+
+model LibraryPreviewAccess {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  user       User     @relation(fields: [userId], references: [id])
+  instrument String
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  expiresAt  DateTime @db.Timestamptz(3)
+  revokedAt  DateTime? @db.Timestamptz(3)
+  @@unique([userId, instrument])
+  @@map("library_preview_access")
 }

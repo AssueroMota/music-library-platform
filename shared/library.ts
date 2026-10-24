@@ -12,6 +12,7 @@ export interface MemberAsset {
 export interface MemberLibraryData {
   products: { id: string; name: string }[]
   assets: MemberAsset[]
+  previewAccess?: { instrument: string; expiresAt: string }[]
 }
 
 export function libraryFileFormat(key: string) {

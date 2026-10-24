@@ -5,6 +5,7 @@ import { auth } from '../lib/auth'
 import { api } from '../lib/api'
 import type { MemberLibraryData } from '../../shared/library'
 import { MemberRepertoire } from './MemberRepertoire'
+import { instruments } from '../data/content'
 
 export function MemberLibrary() {
   const [session, setSession] = useState<Session | null>(null)
@@ -151,7 +152,19 @@ export function MemberLibrary() {
                   {data.products.map((p) => (
                     <span key={p.id}>{p.name}</span>
                   ))}
+                  {data.previewAccess?.map((preview) => (
+                    <span key={`preview-${preview.instrument}`}>
+                      Acesso de teste ·{' '}
+                      {instruments.find((item) => item.id === preview.instrument)?.name}
+                    </span>
+                  ))}
                 </div>
+                {Boolean(data.previewAccess?.length) && (
+                  <p className="checkout-notice">
+                    O acesso de teste está ativo. Você pode ouvir e visualizar os materiais
+                    liberados.
+                  </p>
+                )}
                 <MemberRepertoire data={data} token={session.access_token} />
               </>
             )}

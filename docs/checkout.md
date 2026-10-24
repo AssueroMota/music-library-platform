@@ -109,6 +109,16 @@ A rota `/api/library/assets/:id/view` aplica a mesma autenticação, compra apro
 
 Completo permite os seis instrumentos; individual permite os arquivos daquele instrumento. Não publique materiais comerciais em `public/`, nem exponha chaves do storage em respostas.
 
+### Acesso temporário para revisão
+
+O operador pode liberar uma conta específica para revisar os materiais de um instrumento, sem criar pedido, pagamento ou concessão de compra:
+
+```sh
+npm run library:grant-preview -- --email pessoa@example.com --instrument violin --hours 48
+```
+
+A CLI prepara a identidade no Supabase e registra `library_preview_access` com RLS e prazo de 1 a 168 horas (padrão: 48). Ela não envia e-mail. A pessoa solicita o link pela tela `/biblioteca`; o servidor verifica a identidade, o instrumento, o prazo e a revogação antes de mostrar arquivos ou emitir URLs. O login retorna a mesma mensagem genérica para e-mails sem acesso. Para interromper a revisão antes do prazo, o operador define `revokedAt` no registro. A expiração/revogação não remove uma compra válida da mesma conta.
+
 ## Resend
 
 Verifique o domínio do remetente e configure `RESEND_API_KEY`, `EMAIL_FROM` e `SUPPORT_EMAIL`. O e-mail de confirmação contém HTML/texto, produto, instruções, botão, link pessoal temporário e suporte.

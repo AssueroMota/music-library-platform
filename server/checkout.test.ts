@@ -418,6 +418,110 @@ describe('webhooks, confirmação e liberação', () => {
     expect(res.statusCode).toBe(202)
     expect(providers.createLogin).not.toHaveBeenCalled()
   })
+  it('permite acesso de teste somente à pessoa e ao instrumento liberados, sem compras', async () => {
+    await db.user.create({ data: { id: userId, email: buyerEmail } })
+    await db.libraryPreviewAccess.create({
+      data: {
+        userId,
+        instrument: 'violin',
+        expiresAt: new Date(Date.now() + 3600000),
+      },
+    })
+    const own = await db.libraryAsset.create({
+      data: {
+        title: 'Fix You',
+        instrument: 'violin',
+        kind: 'score',
+        storageKey: 'violin/fix-you.png',
+      },
+    })
+    const other = await db.libraryAsset.create({
+      data: {
+        title: 'Outra partitura',
+        instrument: 'cello',
+        kind: 'score',
+        storageKey: 'cello/test.pdf',
+      },
+    })
+    const headers = { authorization: 'Bearer valid-test-session' }
+    const library = await app.inject({ url: '/api/library', headers })
+    expect(library.statusCode).toBe(200)
+    expect(library.json().assets.map((asset: { id: string }) => asset.id)).toEqual([own.id])
+    expect(library.json().previewAccess).toEqual([
+      { instrument: 'violin', expiresAt: expect.any(String) },
+    ])
+    expect(library.json().products).toEqual([])
+    for (const action of ['view', 'download']) {
+      expect(
+        (await app.inject({ url: `/api/library/assets/${own.id}/${action}`, headers })).statusCode,
+      ).toBe(200)
+      expect(
+        (await app.inject({ url: `/api/library/assets/${other.id}/${action}`, headers }))
+          .statusCode,
+      ).toBe(403)
+      expect(
+        (await app.inject({ url: `/api/library/assets/${own.id}/${action}` })).statusCode,
+      ).toBe(401)
+    }
+    vi.mocked(providers.authenticate).mockResolvedValueOnce({
+      id: randomUUID(),
+      email: 'someone@example.test',
+    })
+    expect(
+      (await app.inject({ url: `/api/library/assets/${own.id}/view`, headers })).statusCode,
+    ).toBe(403)
+    const login = await app.inject({
+      method: 'POST',
+      url: '/api/auth/link',
+      payload: { email: buyerEmail },
+    })
+    expect(login.statusCode).toBe(202)
+    expect(providers.sendLogin).toHaveBeenCalledWith(
+      buyerEmail,
+      expect.any(String),
+      expect.stringMatching(/^login\//),
+    )
+    expect(await db.order.count()).toBe(0)
+    expect(await db.entitlement.count()).toBe(0)
+    expect(providers.sendConfirmation).not.toHaveBeenCalled()
+  })
+  it.each(['expired', 'revoked'])(
+    'nega biblioteca, arquivos e envio de link após acesso de teste %s',
+    async (state) => {
+      await db.user.create({ data: { id: userId, email: buyerEmail } })
+      await db.libraryPreviewAccess.create({
+        data: {
+          userId,
+          instrument: 'violin',
+          createdAt: new Date(Date.now() - 7200000),
+          expiresAt: new Date(Date.now() + (state === 'expired' ? -60000 : 3600000)),
+          revokedAt: state === 'revoked' ? new Date() : null,
+        },
+      })
+      const asset = await db.libraryAsset.create({
+        data: {
+          title: 'Teste',
+          instrument: 'violin',
+          kind: 'score',
+          storageKey: 'violin/test.png',
+        },
+      })
+      const headers = { authorization: 'Bearer valid-test-session' }
+      const library = await app.inject({ url: '/api/library', headers })
+      expect(library.json().assets).toEqual([])
+      expect(library.json().previewAccess).toEqual([])
+      expect(
+        (await app.inject({ url: `/api/library/assets/${asset.id}/view`, headers })).statusCode,
+      ).toBe(403)
+      expect(
+        (await app.inject({ url: `/api/library/assets/${asset.id}/download`, headers })).statusCode,
+      ).toBe(403)
+      await app.inject({ method: 'POST', url: '/api/auth/link', payload: { email: buyerEmail } })
+      expect(providers.createLogin).not.toHaveBeenCalled()
+      expect(providers.signedView).not.toHaveBeenCalled()
+      expect(providers.signedDownload).not.toHaveBeenCalled()
+    },
+  )
   it('escapa conteúdo no template de confirmação', () => {
     const email = confirmationEmail(
       '<img src=x onerror=alert(1)>',

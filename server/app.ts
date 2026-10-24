@@ -139,43 +139,58 @@ export function createApp(service: CheckoutService, logging = true) {
         .parse(request.body)
       const user = await service.db.user.findUnique({
         where: { email },
-        include: { entitlements: { where: { revokedAt: null }, take: 1 } },
+        include: {
+          entitlements: { where: { revokedAt: null, order: { status: 'APPROVED' } }, take: 1 },
+          previewAccess: { where: { revokedAt: null, expiresAt: { gt: new Date() } }, take: 1 },
+        },
       })
-      if (user?.entitlements.length) {
+      if (user && (user.entitlements.length || user.previewAccess.length)) {
         const login = await service.providers.createLogin(email)
         if (login.userId !== user.id || login.email !== user.email)
           throw new Error('AUTH_USER_MISMATCH')
         await service.providers.sendLogin(email, login.link, `login/${randomUUID()}`)
       }
       return reply.code(202).send({
-        message: 'Se houver uma compra liberada para este e-mail, você receberá um link de acesso.',
+        message: 'Se houver acesso liberado para este e-mail, você receberá um link de acesso.',
       })
     },
   )
   app.get('/api/library', async (request) => {
     const user = await authenticate(request.headers.authorization)
-    const rights = await service.db.entitlement.findMany({
-      where: { userId: user.id, revokedAt: null, order: { status: 'APPROVED' } },
-      include: { product: true },
-    })
+    const [rights, previews] = await Promise.all([
+      service.db.entitlement.findMany({
+        where: { userId: user.id, revokedAt: null, order: { status: 'APPROVED' } },
+        include: { product: true },
+      }),
+      service.db.libraryPreviewAccess.findMany({
+        where: { userId: user.id, revokedAt: null, expiresAt: { gt: new Date() } },
+        select: { instrument: true, expiresAt: true },
+      }),
+    ])
     const complete = rights.some((r) => r.product.accessType === 'COMPLETE')
-    const instruments = rights.flatMap((r) => (r.product.instrument ? [r.product.instrument] : []))
-    const assets = rights.length
-      ? await service.db.libraryAsset.findMany({
-          where: complete ? {} : { instrument: { in: instruments } },
-          select: {
-            id: true,
-            title: true,
-            songTitle: true,
-            artist: true,
-            style: true,
-            kind: true,
-            instrument: true,
-            storageKey: true,
-          },
-          orderBy: { title: 'asc' },
-        })
-      : []
+    const instruments = [
+      ...new Set([
+        ...rights.flatMap((r) => (r.product.instrument ? [r.product.instrument] : [])),
+        ...previews.map((preview) => preview.instrument),
+      ]),
+    ]
+    const assets =
+      complete || instruments.length
+        ? await service.db.libraryAsset.findMany({
+            where: complete ? {} : { instrument: { in: instruments } },
+            select: {
+              id: true,
+              title: true,
+              songTitle: true,
+              artist: true,
+              style: true,
+              kind: true,
+              instrument: true,
+              storageKey: true,
+            },
+            orderBy: { title: 'asc' },
+          })
+        : []
     return {
       products: [
         ...new Map(
@@ -186,6 +201,7 @@ export function createApp(service: CheckoutService, logging = true) {
         ...asset,
         format: libraryFileFormat(storageKey),
       })),
+      previewAccess: previews,
     }
   })
   async function authorizedAsset(header: string | undefined, params: unknown) {
@@ -193,20 +209,30 @@ export function createApp(service: CheckoutService, logging = true) {
     const { id } = z.object({ id: uuidSchema }).parse(params)
     const asset = await service.db.libraryAsset.findUnique({ where: { id } })
     if (!asset) throw new AppError(404, 'NOT_FOUND', 'Arquivo não encontrado.')
-    const right = await service.db.entitlement.findFirst({
-      where: {
-        userId: user.id,
-        revokedAt: null,
-        order: { status: 'APPROVED' },
-        product: {
-          OR: [
-            { accessType: 'COMPLETE' },
-            { accessType: 'INSTRUMENT', instrument: asset.instrument },
-          ],
+    const [right, preview] = await Promise.all([
+      service.db.entitlement.findFirst({
+        where: {
+          userId: user.id,
+          revokedAt: null,
+          order: { status: 'APPROVED' },
+          product: {
+            OR: [
+              { accessType: 'COMPLETE' },
+              { accessType: 'INSTRUMENT', instrument: asset.instrument },
+            ],
+          },
         },
-      },
-    })
-    if (!right)
+      }),
+      service.db.libraryPreviewAccess.findFirst({
+        where: {
+          userId: user.id,
+          instrument: asset.instrument,
+          revokedAt: null,
+          expiresAt: { gt: new Date() },
+        },
+      }),
+    ])
+    if (!right && !preview)
       throw new AppError(403, 'ACCESS_DENIED', 'Este material não faz parte dos seus acessos.')
     return asset
   }
