@@ -180,7 +180,8 @@ export function CheckoutDialog({
             <CheckCircle2 size={16} /> Acesso liberado após a confirmação do pagamento.
           </li>
           <li>
-            <CheckCircle2 size={16} /> Link de acesso enviado ao e-mail informado no pagamento.
+            <CheckCircle2 size={16} /> Utilize um Gmail (@gmail.com) no pagamento para receber seu
+            link pessoal. Use o mesmo endereço para acessar a biblioteca.
           </li>
         </ul>
         {data && !data.checkoutEnabled && (

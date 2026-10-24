@@ -120,8 +120,12 @@ function MemberLibraryContent() {
         ) : !session ? (
           <>
             <p>
-              Entre com o e-mail informado na sua compra. Enviaremos um link pessoal para acessar
-              seus materiais.
+              Informe o mesmo e-mail usado na compra. Enviaremos seu link pessoal para acessar seus
+              materiais.
+            </p>
+            <p className="checkout-notice" id="member-email-help">
+              <strong>Utilize um e-mail Gmail (@gmail.com).</strong> Informe o mesmo endereço na
+              compra e no acesso à biblioteca para receber seu link pessoal.
             </p>
             <form onSubmit={login} className="member-login">
               <label htmlFor="member-email">Seu e-mail</label>
@@ -129,11 +133,12 @@ function MemberLibraryContent() {
                 id="member-email"
                 type="email"
                 autoComplete="email"
+                aria-describedby="member-email-help"
                 required
                 maxLength={254}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="voce@email.com"
+                placeholder="voce@gmail.com"
               />
               <button className="button button-primary" disabled={busy || !auth}>
                 {busy ? (
