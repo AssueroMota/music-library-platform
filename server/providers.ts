@@ -15,7 +15,9 @@ export const remoteOrderSchema = z.object({
   total_amount: z.string(),
   total_paid_amount: z.string().optional(),
   status: z.string(),
-  status_detail: z.string(),
+  // Newly created orders can omit the detail before any payment attempt.
+  // Approval still requires the explicit processed/accredited pair in verifyOrder.
+  status_detail: z.string().default(''),
   last_updated_date: z.iso.datetime({ offset: true }),
   checkout_url: z.string().optional(),
   payer: z.object({ email: z.email().transform((s) => s.trim().toLowerCase()) }).optional(),

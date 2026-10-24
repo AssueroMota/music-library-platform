@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { afterEach, expect, it, vi } from 'vitest'
 import { configSchema } from './config.js'
 import { createProviders } from './providers.js'
+import { remoteOrderSchema } from './providers.js'
 
 const config = configSchema.parse({
   DATABASE_URL: 'postgresql://localhost/unit-test-only',
@@ -18,6 +19,22 @@ const config = configSchema.parse({
   EMAIL_LINK_ENCRYPTION_KEY: 'a'.repeat(64),
 })
 afterEach(() => vi.unstubAllGlobals())
+
+it('aceita pedido criado sem status_detail antes de qualquer tentativa de pagamento', () => {
+  const remote = remoteOrderSchema.parse({
+    id: 'ORD123',
+    type: 'online',
+    processing_mode: 'manual',
+    external_reference: randomUUID(),
+    user_id: '123456',
+    currency: 'BRL',
+    total_amount: '1.00',
+    status: 'created',
+    last_updated_date: new Date().toISOString(),
+    items: [{ external_code: 'ML-VIOLIN', quantity: 1, unit_price: '1.00' }],
+  })
+  expect(remote.status_detail).toBe('')
+})
 
 it('emite visualização inline por dez minutos e mantém download separado', async () => {
   const fetchMock = vi.fn(

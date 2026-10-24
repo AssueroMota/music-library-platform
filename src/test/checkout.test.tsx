@@ -143,3 +143,60 @@ it('não consulta pedidos de outro navegador sem token', async () => {
   expect(screen.getByRole('status')).toHaveTextContent('Não foi possível identificar o pedido')
   expect(fetchMock).not.toHaveBeenCalled()
 })
+
+it('abre uma revisão de pagamento privativa e preserva o token para o retorno do Mercado Pago', async () => {
+  const id = crypto.randomUUID(),
+    token = 'a'.repeat(64)
+  window.history.replaceState({}, '', `/checkout/pending?order=${id}&iniciar=1#token=${token}`)
+  const checkoutUrl = 'https://www.mercadopago.com.br/checkout/v1/redirect?order_id=ORD123'
+  const fetchMock = vi.fn(() =>
+    response({
+      orderId: id,
+      productName: 'Biblioteca de Violino',
+      priceCents: 100,
+      checkoutUrl,
+      status: 'PENDING',
+      accessReady: false,
+      emailSent: false,
+    }),
+  )
+  vi.stubGlobal('fetch', fetchMock)
+  render(<CheckoutReturn />)
+  expect(await screen.findByRole('heading', { name: 'Confira seu pagamento.' })).toBeInTheDocument()
+  expect(screen.getByText('R$ 1,00')).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Continuar para o Mercado Pago' })).toHaveAttribute(
+    'href',
+    checkoutUrl,
+  )
+  expect(sessionStorage.getItem(`ml:order:${id}`)).toBe(token)
+  expect(window.location.hash).toBe('')
+  expect(fetchMock).toHaveBeenCalledWith(
+    expect.stringContaining(`/orders/${id}`),
+    expect.objectContaining({ headers: { 'X-Checkout-Token': token } }),
+  )
+})
+
+it('não mostra botão de pagamento para host inválido ou pedido finalizado', async () => {
+  const id = crypto.randomUUID()
+  sessionStorage.setItem(`ml:order:${id}`, 'a'.repeat(64))
+  window.history.replaceState({}, '', `/checkout/pending?order=${id}&iniciar=1`)
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(() =>
+      response({
+        orderId: id,
+        productName: 'Biblioteca de Violino',
+        priceCents: 100,
+        checkoutUrl: 'https://untrusted.example/pay',
+        status: 'PENDING',
+        accessReady: false,
+        emailSent: false,
+      }),
+    ),
+  )
+  render(<CheckoutReturn />)
+  await screen.findByRole('heading', { name: 'Aguardando confirmação' })
+  expect(
+    screen.queryByRole('link', { name: 'Continuar para o Mercado Pago' }),
+  ).not.toBeInTheDocument()
+})

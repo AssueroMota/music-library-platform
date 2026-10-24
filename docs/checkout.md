@@ -185,6 +185,10 @@ npm run checkout:reconcile -- IDENTIFICADOR_ORD_REAL
 
 A tentativa usa UUID/token aleatório em `sessionStorage`. O servidor só a reaproveita se produto/token coincidirem; o SDK recebe UUID estável para evitar duplicar a order externa. Status exige token, não mostra dados pessoais e ignora `status=approved` da URL. Outro navegador pode pedir acesso por e-mail.
 
+Para revisar um pedido já criado sem abrir vendas públicas, o operador pode entregar `/checkout/pending?order=UUID&iniciar=1#token=TOKEN`. O cliente guarda o token de consulta na sessão e remove o fragmento da barra; o servidor só retorna o preço e a URL de pagamento ao portador desse token. A página exibe o total e um botão para continuar ao domínio oficial do Mercado Pago. Não aprova o pedido, não cria outra cobrança e não abre o checkout público. Pedidos finalizados ou com mais de 23 horas não recebem URL para retomada. O retorno do Mercado Pago recupera o token da mesma sessão do navegador para consultar a confirmação.
+
+Orders recém-criadas podem não trazer `status_detail`. Nesse caso, o detalhe é normalizado para vazio e o pedido permanece pendente. A aprovação continua exigindo explicitamente `processed/accredited`, valores e identidade da compra correspondentes.
+
 Preço/código são copiados no pedido para preservar a compra após mudanças no catálogo. A aprovação exige `processed/accredited`, valor total/pago exato, BRL, item/quantidade, referência e conta correspondentes. Estados antigos não regridem aprovação; estornos são terminais e não reativam por notificações atrasadas. Reembolso parcial também suspende o acesso por política conservadora, sujeita à revisão comercial.
 
 Há rate limiting por processo e CORS restrito. Com múltiplas instâncias/proxy, configure limitação compartilhada no gateway e IPs somente de proxies confiáveis. O código não confia indiscriminadamente em `X-Forwarded-For`.

@@ -55,6 +55,8 @@ export interface ProductResponse {
 export interface OrderResponse {
   orderId: string
   productName: string
+  priceCents: number
+  checkoutUrl: string | null
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELED' | 'REFUNDED' | 'CHARGED_BACK'
   accessReady: boolean
   emailSent: boolean

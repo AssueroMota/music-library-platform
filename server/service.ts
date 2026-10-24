@@ -293,6 +293,11 @@ export class CheckoutService {
     return {
       orderId: order.id,
       productName: order.productName,
+      priceCents: order.priceCents,
+      checkoutUrl:
+        order.status === 'PENDING' && Date.now() - order.createdAt.getTime() < 23 * 3600000
+          ? order.checkoutUrl
+          : null,
       status: order.status,
       accessReady:
         order.status === 'APPROVED' && Boolean(order.entitlement && !order.entitlement.revokedAt),

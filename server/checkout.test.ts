@@ -188,6 +188,10 @@ describe('checkout e persistência real em PostgreSQL', () => {
       headers: { 'x-checkout-token': 'a'.repeat(64) },
     })
     expect(actual.json()).toMatchObject({ status: 'PENDING', accessReady: false })
+    expect(actual.json()).toMatchObject({
+      priceCents: 1790,
+      checkoutUrl: expect.stringContaining('https://www.mercadopago.com.br/checkout/'),
+    })
     expect(actual.body).not.toContain('buyerEmail')
   })
 })
@@ -206,6 +210,8 @@ describe('webhooks, confirmação e liberação', () => {
     expect(providers.sendConfirmation).toHaveBeenCalledTimes(1)
   })
   it.each([
+    ['created', '', 'PENDING'],
+    ['processed', '', 'PENDING'],
     ['processing', 'in_process', 'PENDING'],
     ['failed', 'rejected_by_issuer', 'REJECTED'],
     ['canceled', 'canceled', 'CANCELED'],

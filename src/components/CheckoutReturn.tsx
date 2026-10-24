@@ -1,18 +1,31 @@
 import { useEffect, useState } from 'react'
 import { CheckCircle2, Clock3, LoaderCircle, Mail, Music2 } from 'lucide-react'
-import { api, type OrderResponse } from '../lib/api'
+import { api, trustedCheckoutUrl, type OrderResponse } from '../lib/api'
 import { Logo } from './ui'
+import { formatBRL } from '../../shared/products'
 
 export function CheckoutReturn() {
   const [order, setOrder] = useState<OrderResponse | null>(null)
   const [error, setError] = useState('')
   const [refresh, setRefresh] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [startPayment] = useState(
+    () => new URLSearchParams(window.location.search).get('iniciar') === '1',
+  )
   useEffect(() => {
     document.title = 'Seu pedido | Music Library'
     const id = new URLSearchParams(window.location.search).get('order')
     let token: string | null = null
     try {
+      const suppliedToken = new URLSearchParams(window.location.hash.slice(1)).get('token')
+      if (id && suppliedToken && /^[a-f0-9]{64}$/.test(suppliedToken)) {
+        sessionStorage.setItem(`ml:order:${id}`, suppliedToken)
+        window.history.replaceState(
+          window.history.state,
+          '',
+          window.location.pathname + window.location.search,
+        )
+      }
       token = id && sessionStorage.getItem(`ml:order:${id}`)
     } catch {
       /* Private browsing may block storage. */
@@ -37,7 +50,7 @@ export function CheckoutReturn() {
         setOrder(result)
         if (
           polls++ < 40 &&
-          (result.status === 'PENDING' ||
+          ((!startPayment && result.status === 'PENDING') ||
             (result.status === 'APPROVED' && (!result.accessReady || !result.emailSent)))
         )
           timer = setTimeout(check, 3000)
@@ -53,7 +66,16 @@ export function CheckoutReturn() {
       controller.abort()
       clearTimeout(timer)
     }
-  }, [refresh])
+  }, [refresh, startPayment])
+
+  let checkoutUrl: string | null = null
+  if (startPayment && order?.status === 'PENDING' && order.checkoutUrl) {
+    try {
+      checkoutUrl = trustedCheckoutUrl(order.checkoutUrl)
+    } catch {
+      /* Never link to an untrusted payment host. */
+    }
+  }
 
   let title = 'Consultando seu pedido'
   let message = 'Estamos verificando a confirmação do pagamento no servidor.'
@@ -61,6 +83,11 @@ export function CheckoutReturn() {
     title = 'Aguardando confirmação'
     message =
       'Seu pagamento ainda não foi confirmado. Se você já pagou, aguarde a atualização. O acesso será liberado após a confirmação.'
+  }
+  if (checkoutUrl) {
+    title = 'Confira seu pagamento.'
+    message =
+      'O pagamento será concluído no Mercado Pago. Utilize um Gmail para receber seu link pessoal da biblioteca após a confirmação.'
   }
   if (order?.status === 'APPROVED') {
     title = order.accessReady ? 'Seu repertório está pronto.' : 'Pagamento confirmado.'
@@ -102,7 +129,18 @@ export function CheckoutReturn() {
         <span className="eyebrow">MUSIC LIBRARY</span>
         <h1>{error && !order ? 'Vamos conferir seu pedido.' : title}</h1>
         {order && <h2>{order.productName}</h2>}
+        {checkoutUrl && order && (
+          <div className="checkout-total" style={{ marginTop: 24 }}>
+            <span>Total a pagar</span>
+            <strong>{formatBRL(order.priceCents)}</strong>
+          </div>
+        )}
         <p role="status">{error || message}</p>
+        {checkoutUrl && (
+          <a className="button button-primary" href={checkoutUrl}>
+            Continuar para o Mercado Pago
+          </a>
+        )}
         <button
           className="button button-outline"
           disabled={loading}
@@ -113,7 +151,10 @@ export function CheckoutReturn() {
         >
           Atualizar status
         </button>
-        <a className="button button-primary" href="/biblioteca">
+        <a
+          className={`button ${checkoutUrl ? 'button-outline' : 'button-primary'}`}
+          href="/biblioteca"
+        >
           <Mail size={17} /> Acessar minha biblioteca
         </a>
         <a className="checkout-back" href="/#planos">
