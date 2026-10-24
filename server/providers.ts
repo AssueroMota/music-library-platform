@@ -50,6 +50,7 @@ export interface CheckoutInput {
   productCode: string
   productName: string
   priceCents: number
+  email: string
 }
 export interface Providers {
   createOrder(input: CheckoutInput): Promise<{ id: string; checkoutUrl: string }>
@@ -90,6 +91,7 @@ export function createProviders(config: Config): Providers {
           external_reference: input.id,
           expiration_time: 'P1D',
           description: input.productName,
+          payer: { email: input.email },
           items: [
             {
               external_code: input.productCode,

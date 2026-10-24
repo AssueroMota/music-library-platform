@@ -171,6 +171,21 @@ Sem credenciais externas, esse teste oficial permanece **pendente**. A suíte lo
 
 ## Operação e recuperação
 
+O checkout exige o e-mail de entrega antes de criar a cobrança. A migração
+`202610240004_checkout_delivery_email` adiciona `orders.deliveryEmail`, separado
+do e-mail que o provedor eventualmente retorna em `payer`. O destinatário é
+normalizado, fica vinculado à tentativa e é enviado em `payer.email` na criação
+da Order. Alterar o destinatário exige uma nova tentativa; a consulta pública de
+status nunca expõe esses endereços.
+
+Uma Order Pix liquidada pode retornar sem `payer`, inclusive após a aprovação.
+As verificações financeiras continuam exigindo `processed/accredited`, conta,
+referência, itens, moeda e valores exatos; a ausência de e-mail não transforma
+um pagamento liquidado em pendente. A entrega usa o destinatário registrado no
+checkout ou, para pedidos antigos, o e-mail válido do provedor. Se ambos estiverem
+ausentes, o pedido fica aprovado e a entrega aguarda recuperação administrativa
+do destinatário, sem inventar endereço nem liberar materiais a terceiros.
+
 Defina `NODE_ENV=production` na hospedagem. Isso também desativa os logs de diagnóstico do SDK do Resend que só são úteis no desenvolvimento local.
 
 `npm start` inicia API e fila a cada dois segundos. Exige processo Node persistente; hospedagem estática sozinha não executa o backend. Em containers, configure `HOST=0.0.0.0` e a porta da hospedagem.

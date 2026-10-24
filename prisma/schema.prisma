@@ -60,6 +60,7 @@ model Order {
   userId              String?       @db.Uuid
   user                User?         @relation(fields: [userId], references: [id])
   buyerEmail          String?
+  deliveryEmail       String?
   providerOrderId     String?       @unique
   checkoutUrl         String?
   providerUpdatedAt   DateTime?     @db.Timestamptz(3)

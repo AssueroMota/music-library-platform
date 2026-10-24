@@ -30,6 +30,9 @@ export function CheckoutDialog({
 }) {
   const dialog = useRef<HTMLDialogElement>(null)
   const [selectedInstrument, setSelectedInstrument] = useState(instrument ?? '')
+  const [email, setEmail] = useState('')
+  const deliveryEmail = email.trim().toLowerCase()
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(deliveryEmail)
   const [data, setData] = useState<ProductResponse | null>(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -67,12 +70,12 @@ export function CheckoutDialog({
   }, [plan, instrument, retry])
 
   async function purchase() {
-    if (!product?.available || !data?.checkoutEnabled || busy.current) return
+    if (!product?.available || !data?.checkoutEnabled || !emailValid || busy.current) return
     busy.current = true
     setSubmitting(true)
     setError('')
     try {
-      const attempt = checkoutAttempt(product.id)
+      const attempt = checkoutAttempt(`${product.id}:${deliveryEmail}`)
       const result = await api<{ orderId: string; checkoutUrl: string }>('/checkout', {
         method: 'POST',
         headers: {
@@ -80,7 +83,7 @@ export function CheckoutDialog({
           'Idempotency-Key': attempt.key,
           'X-Checkout-Token': attempt.token,
         },
-        body: JSON.stringify({ productId: product.id }),
+        body: JSON.stringify({ productId: product.id, email: deliveryEmail }),
       })
       const url = trustedCheckoutUrl(result.checkoutUrl)
       sessionStorage.setItem(`ml:order:${result.orderId}`, attempt.token)
@@ -90,7 +93,7 @@ export function CheckoutDialog({
         e instanceof ApiError &&
         ['ORDER_FINISHED', 'ORDER_EXPIRED', 'CHECKOUT_CONFLICT'].includes(e.code)
       )
-        sessionStorage.removeItem(`ml:checkout:${product.id}`)
+        sessionStorage.removeItem(`ml:checkout:${product.id}:${deliveryEmail}`)
       setError(
         e instanceof Error ? e.message : 'Não foi possível iniciar o pagamento. Tente novamente.',
       )
@@ -112,8 +115,15 @@ export function CheckoutDialog({
         if (e.target === dialog.current && !busy.current) onClose()
       }}
     >
-      <div className="checkout-dialog-body">
+      <form
+        className="checkout-dialog-body"
+        onSubmit={(event) => {
+          event.preventDefault()
+          void purchase()
+        }}
+      >
         <button
+          type="button"
           className="checkout-close"
           onClick={onClose}
           disabled={submitting}
@@ -151,6 +161,24 @@ export function CheckoutDialog({
             </select>
           </div>
         )}
+        <div className="checkout-field">
+          <label htmlFor="checkout-email">E-mail para receber seu acesso</label>
+          <input
+            id="checkout-email"
+            type="email"
+            autoComplete="email"
+            placeholder="voce@gmail.com"
+            maxLength={254}
+            required
+            value={email}
+            disabled={submitting}
+            onChange={(event) => setEmail(event.target.value)}
+          />
+          <p className="checkout-intro">
+            Utilize seu Gmail. Enviaremos seu link pessoal para este endereço após a confirmação do
+            pagamento.
+          </p>
+        </div>
         <div className="checkout-order-summary" aria-live="polite">
           <span className="checkout-product-icon">
             <Music2 size={27} />
@@ -197,13 +225,19 @@ export function CheckoutDialog({
         {error && (
           <div className="checkout-error" role="alert">
             <p>{error}</p>
-            {!data && <button onClick={() => setRetry((v) => v + 1)}>Tentar novamente</button>}
+            {!data && (
+              <button type="button" onClick={() => setRetry((v) => v + 1)}>
+                Tentar novamente
+              </button>
+            )}
           </div>
         )}
         <button
           className="button button-primary checkout-submit"
-          disabled={loading || submitting || !product?.available || !data?.checkoutEnabled}
-          onClick={purchase}
+          type="submit"
+          disabled={
+            loading || submitting || !product?.available || !data?.checkoutEnabled || !emailValid
+          }
         >
           {loading || submitting ? (
             <LoaderCircle size={18} className="checkout-spinner" />
@@ -220,10 +254,10 @@ export function CheckoutDialog({
         <p className="checkout-provider">
           <ExternalLink size={13} /> Você vai concluir a compra no Mercado Pago.
         </p>
-        <button className="checkout-back" onClick={onClose} disabled={submitting}>
+        <button type="button" className="checkout-back" onClick={onClose} disabled={submitting}>
           <ChevronLeft size={15} /> Voltar aos planos
         </button>
-      </div>
+      </form>
     </dialog>
   )
 }

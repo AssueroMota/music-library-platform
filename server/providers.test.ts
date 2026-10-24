@@ -74,6 +74,7 @@ it('executa o SDK oficial com contrato Orders e chave estável, sem campos de Pr
     productCode: 'ML-VIOLIN',
     productName: 'Biblioteca de Violino',
     priceCents: 1790,
+    email: 'delivery@example.test',
   })
   expect(result.id).toBe('ORDTST123')
   const [url, options] = vi.mocked(fetch).mock.calls[0]
@@ -85,6 +86,7 @@ it('executa o SDK oficial com contrato Orders e chave estável, sem campos de Pr
     processing_mode: 'manual',
     total_amount: '17.90',
     external_reference: id,
+    payer: { email: 'delivery@example.test' },
     items: [{ external_code: 'ML-VIOLIN', unit_price: '17.90', quantity: 1 }],
     config: {
       online: {
@@ -142,6 +144,7 @@ it('não aceita checkout de outra conta recebedora', async () => {
       productCode: 'ML-VIOLIN',
       productName: 'Violino',
       priceCents: 1790,
+      email: 'delivery@example.test',
     }),
   ).rejects.toThrow('CHECKOUT_ACCOUNT_MISMATCH')
 })

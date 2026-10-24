@@ -43,6 +43,8 @@ it('exige instrumento no Básico e usa o preço consultado no servidor', async (
   )
   expect(screen.getByText('Biblioteca de Violino')).toBeInTheDocument()
   expect(screen.getByText('R$ 19,90')).toBeInTheDocument()
+  expect(button).toBeDisabled()
+  await userEvent.type(screen.getByLabelText('E-mail para receber seu acesso'), 'buyer@gmail.com')
   expect(button).toBeEnabled()
 })
 
@@ -56,7 +58,7 @@ it('bloqueia o envio quando as vendas estão fechadas', async () => {
   expect(screen.getByRole('button', { name: 'Continuar para o pagamento' })).toBeDisabled()
 })
 
-it('envia somente productId, impede cliques repetidos e apresenta falha recuperável', async () => {
+it('envia produto e e-mail de entrega, impede cliques repetidos e apresenta falha recuperável', async () => {
   let fail: (value: Response) => void = () => {}
   const fetchMock = vi
     .fn()
@@ -71,11 +73,12 @@ it('envia somente productId, impede cliques repetidos e apresenta falha recuper�
   render(<CheckoutDialog plan="complete" instrument={null} onClose={() => {}} />)
   const user = userEvent.setup()
   const button = await screen.findByRole('button', { name: 'Continuar para o pagamento' })
+  await user.type(screen.getByLabelText('E-mail para receber seu acesso'), 'buyer@gmail.com')
   await waitFor(() => expect(button).toBeEnabled())
   await user.dblClick(button)
   expect(fetchMock).toHaveBeenCalledTimes(2)
   const init = fetchMock.mock.calls[1][1]
-  expect(JSON.parse(init.body)).toEqual({ productId: 'library-complete' })
+  expect(JSON.parse(init.body)).toEqual({ productId: 'library-complete', email: 'buyer@gmail.com' })
   expect(init.headers['Idempotency-Key']).toMatch(/^[a-f\d-]{36}$/)
   expect(init.headers['X-Checkout-Token']).toHaveLength(64)
   expect(screen.getByRole('button', { name: /Abrindo Mercado Pago/ })).toBeDisabled()

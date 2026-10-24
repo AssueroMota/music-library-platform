@@ -13,7 +13,10 @@ import {
   paymentUrl,
 } from './security.js'
 
-export const checkoutSchema = z.object({ productId: z.string().min(1).max(80) }).strict()
+export const deliveryEmailSchema = z.string().trim().toLowerCase().pipe(z.email().max(254))
+export const checkoutSchema = z
+  .object({ productId: z.string().min(1).max(80), email: deliveryEmailSchema })
+  .strict()
 export const uuidSchema = z.uuid()
 export const tokenSchema = z.string().regex(/^[a-f0-9]{64}$/)
 
@@ -65,7 +68,6 @@ export function verifyOrder(remote: RemoteOrder, order: Order, config: Config) {
         (p) => p.status === 'processed' && p.status_detail === 'accredited',
       ) ?? []
     if (
-      !remote.payer?.email ||
       cents(remote.total_paid_amount) !== order.priceCents ||
       payments.reduce((sum, p) => sum + cents(p.paid_amount), 0) !== order.priceCents ||
       payments.some((p) => cents(p.amount) !== cents(p.paid_amount))
@@ -84,7 +86,8 @@ export class CheckoutService {
     public config: Config,
   ) {}
 
-  async checkout(productId: string, key: string, token: string) {
+  async checkout(productId: string, key: string, token: string, email: string) {
+    const deliveryEmail = deliveryEmailSchema.parse(email)
     if (!this.config.CHECKOUT_ENABLED)
       throw new AppError(
         503,
@@ -95,7 +98,11 @@ export class CheckoutService {
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${key}))`
       const existing = await tx.order.findUnique({ where: { idempotencyKey: key } })
       if (existing) {
-        if (existing.productId !== productId || !checkToken(token, existing.statusTokenHash))
+        if (
+          existing.productId !== productId ||
+          existing.deliveryEmail !== deliveryEmail ||
+          !checkToken(token, existing.statusTokenHash)
+        )
           throw new AppError(409, 'CHECKOUT_CONFLICT', 'Inicie uma nova tentativa de compra.')
         return existing
       }
@@ -111,6 +118,7 @@ export class CheckoutService {
           currency: product.currency,
           idempotencyKey: key,
           statusTokenHash: hashToken(token),
+          deliveryEmail,
         },
       })
     })
@@ -135,6 +143,7 @@ export class CheckoutService {
           productCode: locked.productCode,
           productName: locked.productName,
           priceCents: locked.priceCents,
+          email: deliveryEmail,
         })
         const checkoutUrl = paymentUrl(remote.checkoutUrl)
         await tx.order.update({
@@ -233,9 +242,10 @@ export class CheckoutService {
       async (tx) => {
         const order = await this.lockOrder(tx, orderId)
         if (order.status !== 'APPROVED' || order.accessGrantedAt) return
-        if (!order.buyerEmail) throw new Error('BUYER_EMAIL_MISSING')
-        const login = await this.providers.createLogin(order.buyerEmail)
-        if (login.email !== order.buyerEmail) throw new Error('AUTH_EMAIL_MISMATCH')
+        const email = order.deliveryEmail ?? order.buyerEmail
+        if (!email) throw new Error('BUYER_EMAIL_MISSING')
+        const login = await this.providers.createLogin(email)
+        if (login.email !== email) throw new Error('AUTH_EMAIL_MISMATCH')
         const user = await tx.user.upsert({
           where: { id: login.userId },
           create: { id: login.userId, email: login.email },
@@ -268,11 +278,12 @@ export class CheckoutService {
       async (tx) => {
         const order = await this.lockOrder(tx, orderId)
         if (order.status !== 'APPROVED' || order.emailSentAt) return
-        if (!order.accessGrantedAt || !order.buyerEmail || !order.emailLinkCiphertext)
+        const email = order.deliveryEmail ?? order.buyerEmail
+        if (!order.accessGrantedAt || !email || !order.emailLinkCiphertext)
           throw new Error('ACCESS_NOT_READY')
         const link = decryptLink(order.emailLinkCiphertext, this.config.EMAIL_LINK_ENCRYPTION_KEY)
         await this.providers.sendConfirmation(
-          order.buyerEmail,
+          email,
           order.productName,
           link,
           `purchase/${order.id}`,

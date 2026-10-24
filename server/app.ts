@@ -83,10 +83,10 @@ export function createApp(service: CheckoutService, logging = true) {
     '/api/checkout',
     { config: { rateLimit: { max: 10, timeWindow: '1 minute' } } },
     async (request, reply) => {
-      const { productId } = checkoutSchema.parse(request.body)
+      const { productId, email } = checkoutSchema.parse(request.body)
       const key = uuidSchema.parse(request.headers['idempotency-key'])
       const token = tokenSchema.parse(request.headers['x-checkout-token'])
-      return reply.code(201).send(await service.checkout(productId, key, token))
+      return reply.code(201).send(await service.checkout(productId, key, token, email))
     },
   )
   app.get('/api/orders/:id', async (request) => {

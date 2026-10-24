@@ -65,12 +65,17 @@ afterAll(async () => {
   await db?.$disconnect()
 })
 
-async function checkout(productId = 'library-violin', key = randomUUID(), token = 'a'.repeat(64)) {
+async function checkout(
+  productId = 'library-violin',
+  key = randomUUID(),
+  token = 'a'.repeat(64),
+  email = buyerEmail,
+) {
   const response = await app.inject({
     method: 'POST',
     url: '/api/checkout',
     headers: { 'idempotency-key': key, 'x-checkout-token': token },
-    payload: { productId },
+    payload: { productId, email },
   })
   return {
     response,
@@ -134,6 +139,71 @@ async function notify(resourceId: string, requestId = randomUUID(), invalid = fa
 }
 
 describe('checkout e persistência real em PostgreSQL', () => {
+  it('exige e-mail de entrega válido antes de criar a cobrança', async () => {
+    for (const email of [undefined, '', 'XXXXXXXXXXX']) {
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/checkout',
+        headers: { 'idempotency-key': randomUUID(), 'x-checkout-token': 'a'.repeat(64) },
+        payload: { productId: 'library-violin', email },
+      })
+      expect(response.statusCode).toBe(400)
+    }
+    expect(await db.order.count()).toBe(0)
+    expect(providers.createOrder).not.toHaveBeenCalled()
+  })
+  it('preserva o destinatário na tentativa e impede trocar o e-mail de um pedido', async () => {
+    const first = await checkout(
+      'library-violin',
+      randomUUID(),
+      'a'.repeat(64),
+      ' Buyer@Example.Test ',
+    )
+    expect(first.order?.deliveryEmail).toBe(buyerEmail)
+    expect(providers.createOrder).toHaveBeenCalledWith(
+      expect.objectContaining({ email: buyerEmail }),
+    )
+    const changed = await checkout('library-violin', first.key, first.token, 'other@example.test')
+    expect(changed.response.statusCode).toBe(409)
+    expect(
+      (await db.order.findUniqueOrThrow({ where: { id: first.order!.id } })).deliveryEmail,
+    ).toBe(buyerEmail)
+  })
+  it('libera compra Pix liquidada sem payer na Order usando o e-mail informado no checkout', async () => {
+    const { order } = await checkout()
+    const approved = remote(order!)
+    delete approved.payer
+    vi.mocked(providers.getOrder).mockResolvedValue(approved)
+    await notify(order!.providerOrderId!)
+    await service.runJobs()
+    const updated = await db.order.findUniqueOrThrow({ where: { id: order!.id } })
+    expect(updated.status).toBe('APPROVED')
+    expect(updated.emailSentAt).not.toBeNull()
+    expect(updated.buyerEmail).toBeNull()
+    expect(providers.createLogin).toHaveBeenCalledWith(buyerEmail)
+    expect(providers.sendConfirmation).toHaveBeenCalledWith(
+      buyerEmail,
+      order!.productName,
+      expect.stringContaining('/biblioteca#id='),
+      `purchase/${order!.id}`,
+    )
+    expect(await db.entitlement.count({ where: { orderId: order!.id } })).toBe(1)
+    await service.reconcile(order!.providerOrderId!)
+    await service.runJobs()
+    expect(providers.sendConfirmation).toHaveBeenCalledTimes(1)
+  })
+  it('mantém confirmação financeira sem inventar destinatário em pedido antigo sem e-mail', async () => {
+    const { order } = await checkout()
+    await db.order.update({ where: { id: order!.id }, data: { deliveryEmail: null } })
+    const approved = remote(order!)
+    delete approved.payer
+    vi.mocked(providers.getOrder).mockResolvedValue(approved)
+    await service.reconcile(order!.providerOrderId!)
+    await expect(service.fulfill(order!.id)).rejects.toThrow('BUYER_EMAIL_MISSING')
+    expect((await db.order.findUniqueOrThrow({ where: { id: order!.id } })).status).toBe('APPROVED')
+    expect(await db.entitlement.count()).toBe(0)
+    expect(providers.sendConfirmation).not.toHaveBeenCalled()
+  })
   it('usa preço do banco, cria um pedido e reaproveita a mesma tentativa concorrente', async () => {
     await db.product.update({ where: { id: 'library-violin' }, data: { priceCents: 1990 } })
     const key = randomUUID()
