@@ -93,7 +93,7 @@ export function CheckoutReturn() {
     title = order.accessReady ? 'Seu repertório está pronto.' : 'Pagamento confirmado.'
     message = order.accessReady
       ? order.emailSent
-        ? 'Sua biblioteca foi liberada. Enviamos um link de acesso ao e-mail informado no Mercado Pago.'
+        ? 'Sua biblioteca foi liberada. Enviamos seu link pessoal ao e-mail informado na compra.'
         : 'Sua biblioteca foi liberada. O envio do e-mail está em processamento. Você já pode solicitar um link na página da biblioteca.'
       : 'Estamos preparando seu acesso à biblioteca. Você receberá as orientações por e-mail assim que ele estiver disponível.'
   }
