@@ -53,6 +53,43 @@ it('respeita a pausa escolhida ao retornar à página na mesma sessão', () => {
   expect(screen.getByRole('button', { name: 'Reproduzir música da visita' })).toBeInTheDocument()
 })
 
+it('minimiza e expande mantendo o áudio, a posição e o volume, sem interromper a reprodução', async () => {
+  const { container } = render(<VisitPlaylist />)
+  await screen.findByRole('button', { name: 'Pausar música da visita' })
+  const audio = container.querySelector('audio')!
+  audio.currentTime = 42
+  fireEvent.change(screen.getByRole('slider', { name: 'Volume da música da visita' }), {
+    target: { value: '8' },
+  })
+  const playCount = vi.mocked(HTMLMediaElement.prototype.play).mock.calls.length
+  const pauseCount = vi.mocked(HTMLMediaElement.prototype.pause).mock.calls.length
+  fireEvent.click(screen.getByRole('button', { name: 'Minimizar player de música' }))
+  expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Pausar música da visita' })).toBeInTheDocument()
+  expect(container.querySelector('audio')).toBe(audio)
+  expect(audio.currentTime).toBe(42)
+  expect(audio.volume).toBe(0.08)
+  expect(HTMLMediaElement.prototype.play).toHaveBeenCalledTimes(playCount)
+  expect(HTMLMediaElement.prototype.pause).toHaveBeenCalledTimes(pauseCount)
+  expect(sessionStorage.getItem('ml:visit-music-minimized')).toBe('true')
+  fireEvent.click(screen.getByRole('button', { name: 'Expandir player de música' }))
+  expect(screen.getByRole('combobox')).toHaveValue('0')
+  expect(screen.getByRole('slider', { name: 'Volume da música da visita' })).toHaveValue('8')
+  expect(sessionStorage.getItem('ml:visit-music-minimized')).toBe('false')
+})
+
+it('mantém a escolha de minimizar na mesma sessão e permite controlar a música recolhida', async () => {
+  sessionStorage.setItem('ml:visit-music-minimized', 'true')
+  render(<VisitPlaylist />)
+  expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
+  await screen.findByRole('button', { name: 'Pausar música da visita' })
+  fireEvent.click(screen.getByRole('button', { name: 'Pausar música da visita' }))
+  expect(screen.getByRole('button', { name: 'Reproduzir música da visita' })).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Expandir player de música' }))
+  expect(screen.getByRole('combobox')).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Reproduzir música da visita' })).toBeInTheDocument()
+})
+
 it('avança ao terminar, permite escolher a última faixa e retorna à primeira', async () => {
   const { container } = render(<VisitPlaylist />)
   const audio = container.querySelector('audio')!

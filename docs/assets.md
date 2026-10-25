@@ -97,6 +97,8 @@ Quatro MP3s fornecidos pelo usuário em `Desktop/Partituras RESTAURANTE/5 - Tem�
 
 `src/data/visit-playlist.ts` define a ordem da playlist. `VisitPlaylist` aparece somente na página pública de vendas e tenta iniciar a primeira faixa a 20% do volume. Se o navegador exigir interação, o visitante usa o play visível. Há seleção de faixa, anterior, próxima, pausa e volume; ao terminar a última, a lista retorna à primeira. A pausa manual é respeitada ao retornar à página na mesma sessão. A trilha pausa quando outro áudio ou vídeo da página começa; não retoma sozinha após a demonstração. Os arquivos públicos são a trilha da visita, sem alterar as permissões dos materiais pagos.
 
+O botão de menos no cabeçalho minimiza a playlist em um controle compacto com play/pausa e botão de expandir. A escolha é guardada em `sessionStorage` durante a sessão. O elemento de áudio permanece montado, mantendo a faixa, o tempo e o volume ao minimizar ou expandir. O formato compacto foi conferido nas larguras de 320, 390, 768 e 1440 px.
+
 ### Tipografia e leitura
 
 A interface utiliza Inter Variable, distribuída pelo pacote `@fontsource-variable/inter` e servida pelo próprio site. A importação segue a [documentação do Fontsource](https://fontsource.org/docs/getting-started/variable). Os títulos das partituras de demonstração preservam sua composição musical.

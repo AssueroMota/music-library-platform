@@ -1,9 +1,26 @@
 import { useEffect, useRef, useState } from 'react'
-import { Headphones, Pause, Play, SkipBack, SkipForward, Volume2 } from 'lucide-react'
+import {
+  Headphones,
+  Maximize2,
+  Minus,
+  Pause,
+  Play,
+  SkipBack,
+  SkipForward,
+  Volume2,
+} from 'lucide-react'
 import { visitPlaylist } from '../data/visit-playlist'
 import '../styles/visit-playlist.css'
 
 const preferenceKey = 'ml:visit-music-paused'
+const minimizedKey = 'ml:visit-music-minimized'
+function startsMinimized() {
+  try {
+    return sessionStorage.getItem(minimizedKey) === 'true'
+  } catch {
+    return false
+  }
+}
 function startsPlaying() {
   try {
     return sessionStorage.getItem(preferenceKey) !== 'true'
@@ -25,6 +42,7 @@ export function VisitPlaylist() {
   const attempt = useRef({ version: 0 })
   const [index, setIndex] = useState(0)
   const [playing, setPlaying] = useState(false)
+  const [minimized, setMinimized] = useState(startsMinimized)
   const [volume, setVolume] = useState(20)
   const [status, setStatus] = useState('Sua visita tem trilha sonora.')
   const track = visitPlaylist[index]
@@ -96,8 +114,31 @@ export function VisitPlaylist() {
     }
   }, [])
 
+  const playButton = (
+    <button
+      type="button"
+      className="visit-playlist-toggle"
+      aria-label={playing ? 'Pausar música da visita' : 'Reproduzir música da visita'}
+      onClick={() => {
+        if (playing) {
+          pause()
+          rememberPaused(true)
+        } else {
+          rememberPaused(false)
+          void play()
+        }
+      }}
+    >
+      {playing ? <Pause size={17} fill="currentColor" /> : <Play size={17} fill="currentColor" />}
+    </button>
+  )
+
   return (
-    <aside className="visit-playlist" aria-label="Músicas para sua visita">
+    <aside
+      className={`visit-playlist${minimized ? ' is-minimized' : ''}`}
+      aria-label="Músicas para sua visita"
+      title={minimized ? track.title : undefined}
+    >
       <audio
         ref={audioRef}
         src={track.src}
@@ -118,72 +159,81 @@ export function VisitPlaylist() {
       />
       <div className="visit-playlist-heading">
         <Headphones size={15} aria-hidden="true" />
-        <span>UMA TRILHA PARA SUA VISITA</span>
-        <span className="visit-playlist-position">
-          {index + 1}/{visitPlaylist.length}
-        </span>
-      </div>
-      <label className="sr-only" htmlFor="visit-track">
-        Escolher música da visita
-      </label>
-      <select
-        id="visit-track"
-        value={index}
-        onChange={(event) => selectTrack(Number(event.target.value))}
-      >
-        {visitPlaylist.map((item, position) => (
-          <option value={position} key={item.src}>
-            {item.title}
-          </option>
-        ))}
-      </select>
-      <div className="visit-playlist-controls">
+        {!minimized && (
+          <>
+            <span>UMA TRILHA PARA SUA VISITA</span>
+            <span className="visit-playlist-position">
+              {index + 1}/{visitPlaylist.length}
+            </span>
+          </>
+        )}
+        {minimized && playButton}
         <button
+          key="resize"
           type="button"
-          aria-label="Música anterior"
-          onClick={() => selectTrack((index - 1 + visitPlaylist.length) % visitPlaylist.length)}
-        >
-          <SkipBack size={17} />
-        </button>
-        <button
-          type="button"
-          className="visit-playlist-toggle"
-          aria-label={playing ? 'Pausar música da visita' : 'Reproduzir música da visita'}
+          className="visit-playlist-resize"
+          aria-label={minimized ? 'Expandir player de música' : 'Minimizar player de música'}
+          aria-expanded={!minimized}
+          title={minimized ? 'Expandir player de música' : 'Minimizar player de música'}
           onClick={() => {
-            if (playing) {
-              pause()
-              rememberPaused(true)
-            } else {
-              rememberPaused(false)
-              void play()
+            const next = !minimized
+            setMinimized(next)
+            try {
+              sessionStorage.setItem(minimizedKey, String(next))
+            } catch {
+              /* Optional preference. */
             }
           }}
         >
-          {playing ? (
-            <Pause size={17} fill="currentColor" />
-          ) : (
-            <Play size={17} fill="currentColor" />
-          )}
+          {minimized ? <Maximize2 size={17} /> : <Minus size={19} />}
         </button>
-        <button
-          type="button"
-          aria-label="Próxima música"
-          onClick={() => selectTrack((index + 1) % visitPlaylist.length)}
-        >
-          <SkipForward size={17} />
-        </button>
-        <Volume2 size={15} aria-hidden="true" />
-        <input
-          type="range"
-          min="0"
-          max="100"
-          value={volume}
-          aria-label="Volume da música da visita"
-          aria-valuetext={`${volume}%`}
-          onChange={(event) => setVolume(Number(event.target.value))}
-        />
       </div>
-      <p role="status">{status}</p>
+      {!minimized && (
+        <>
+          <label className="sr-only" htmlFor="visit-track">
+            Escolher música da visita
+          </label>
+          <select
+            id="visit-track"
+            value={index}
+            onChange={(event) => selectTrack(Number(event.target.value))}
+          >
+            {visitPlaylist.map((item, position) => (
+              <option value={position} key={item.src}>
+                {item.title}
+              </option>
+            ))}
+          </select>
+          <div className="visit-playlist-controls">
+            <button
+              type="button"
+              aria-label="Música anterior"
+              onClick={() => selectTrack((index - 1 + visitPlaylist.length) % visitPlaylist.length)}
+            >
+              <SkipBack size={17} />
+            </button>
+            {playButton}
+            <button
+              type="button"
+              aria-label="Próxima música"
+              onClick={() => selectTrack((index + 1) % visitPlaylist.length)}
+            >
+              <SkipForward size={17} />
+            </button>
+            <Volume2 size={15} aria-hidden="true" />
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={volume}
+              aria-label="Volume da música da visita"
+              aria-valuetext={`${volume}%`}
+              onChange={(event) => setVolume(Number(event.target.value))}
+            />
+          </div>
+          <p role="status">{status}</p>
+        </>
+      )}
     </aside>
   )
 }
