@@ -7,6 +7,9 @@ import { CheckoutService, checkoutSchema, tokenSchema, uuidSchema } from './serv
 import { AppError, checkToken, hashToken, validateSignature } from './security.js'
 import { libraryFileFormat } from '../shared/library.js'
 import { personalLibraryLink } from './library-access.js'
+import { violinOffers } from '../shared/products.js'
+import { violinPriceCents } from '../shared/violin-launch.js'
+import type { Prisma } from '@prisma/client'
 
 export function createApp(service: CheckoutService, logging = true) {
   const app = Fastify({
@@ -66,27 +69,35 @@ export function createApp(service: CheckoutService, logging = true) {
   })
   app.get('/api/products', async () => ({
     checkoutEnabled: service.config.CHECKOUT_ENABLED,
-    products: await service.db.product.findMany({
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        priceCents: true,
-        currency: true,
-        available: true,
-        accessType: true,
-        instrument: true,
-      },
-    }),
+    products: (
+      await service.db.product.findMany({
+        where: { id: { in: violinOffers.map((offer) => offer.id) } },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          priceCents: true,
+          currency: true,
+          available: true,
+          accessType: true,
+          instrument: true,
+        },
+      })
+    ).map((product) => ({
+      ...product,
+      priceCents: violinPriceCents(product.id, product.priceCents),
+    })),
   }))
   app.post(
     '/api/checkout',
     { config: { rateLimit: { max: 10, timeWindow: '1 minute' } } },
     async (request, reply) => {
-      const { productId, email } = checkoutSchema.parse(request.body)
+      const { productId, email, expectedPriceCents } = checkoutSchema.parse(request.body)
       const key = uuidSchema.parse(request.headers['idempotency-key'])
       const token = tokenSchema.parse(request.headers['x-checkout-token'])
-      return reply.code(201).send(await service.checkout(productId, key, token, email))
+      return reply
+        .code(201)
+        .send(await service.checkout(productId, key, token, email, expectedPriceCents))
     },
   )
   app.get('/api/orders/:id', async (request) => {
@@ -213,10 +224,21 @@ export function createApp(service: CheckoutService, logging = true) {
         ...previews.map((preview) => preview.instrument),
       ]),
     ]
+    const scopes: Prisma.LibraryAssetWhereInput[] = [
+      ...rights.flatMap(({ product }): Prisma.LibraryAssetWhereInput[] => {
+        if (product.accessType === 'COMPLETE') return [{}]
+        if (product.accessType === 'INSTRUMENT' && product.instrument)
+          return [{ instrument: product.instrument }]
+        if (product.accessType === 'SCORES' && product.instrument)
+          return [{ instrument: product.instrument, kind: 'score' }]
+        return []
+      }),
+      ...previews.map(({ instrument }) => ({ instrument })),
+    ]
     const assets =
       complete || instruments.length
         ? await service.db.libraryAsset.findMany({
-            where: complete ? {} : { instrument: { in: instruments } },
+            where: { OR: scopes },
             select: {
               id: true,
               title: true,
@@ -267,6 +289,9 @@ export function createApp(service: CheckoutService, logging = true) {
             OR: [
               { accessType: 'COMPLETE' },
               { accessType: 'INSTRUMENT', instrument: asset.instrument },
+              ...(asset.kind === 'score'
+                ? [{ accessType: 'SCORES', instrument: asset.instrument }]
+                : []),
             ],
           },
         },

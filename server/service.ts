@@ -4,6 +4,7 @@ import { z } from 'zod'
 import type { Config } from './config.js'
 import type { Providers, RemoteOrder } from './providers.js'
 import { personalLibraryLink } from './library-access.js'
+import { violinPriceCents } from '../shared/violin-launch.js'
 import {
   AppError,
   checkToken,
@@ -15,7 +16,11 @@ import {
 
 export const deliveryEmailSchema = z.string().trim().toLowerCase().pipe(z.email().max(254))
 export const checkoutSchema = z
-  .object({ productId: z.string().min(1).max(80), email: deliveryEmailSchema })
+  .object({
+    productId: z.string().min(1).max(80),
+    email: deliveryEmailSchema,
+    expectedPriceCents: z.number().int().positive().optional(),
+  })
   .strict()
 export const uuidSchema = z.uuid()
 export const tokenSchema = z.string().regex(/^[a-f0-9]{64}$/)
@@ -86,7 +91,13 @@ export class CheckoutService {
     public config: Config,
   ) {}
 
-  async checkout(productId: string, key: string, token: string, email: string) {
+  async checkout(
+    productId: string,
+    key: string,
+    token: string,
+    email: string,
+    expectedPriceCents?: number,
+  ) {
     const deliveryEmail = deliveryEmailSchema.parse(email)
     if (!this.config.CHECKOUT_ENABLED)
       throw new AppError(
@@ -104,17 +115,30 @@ export class CheckoutService {
           !checkToken(token, existing.statusTokenHash)
         )
           throw new AppError(409, 'CHECKOUT_CONFLICT', 'Inicie uma nova tentativa de compra.')
+        if (expectedPriceCents !== undefined && existing.priceCents !== expectedPriceCents)
+          throw new AppError(
+            409,
+            'PRODUCT_PRICE_CHANGED',
+            'O valor mudou. Confira o total atualizado antes de continuar.',
+          )
         return existing
       }
       const product = await tx.product.findUnique({ where: { id: productId } })
       if (!product?.available || product.priceCents <= 0 || product.currency !== 'BRL')
         throw new AppError(409, 'PRODUCT_UNAVAILABLE', 'Este produto está indisponível no momento.')
+      const priceCents = violinPriceCents(product.id, product.priceCents)
+      if (expectedPriceCents !== undefined && priceCents !== expectedPriceCents)
+        throw new AppError(
+          409,
+          'PRODUCT_PRICE_CHANGED',
+          'O valor mudou. Confira o total atualizado antes de continuar.',
+        )
       return tx.order.create({
         data: {
           productId: product.id,
           productCode: product.code,
           productName: product.name,
-          priceCents: product.priceCents,
+          priceCents,
           currency: product.currency,
           idempotencyKey: key,
           statusTokenHash: hashToken(token),
