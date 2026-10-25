@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { CheckoutDialog } from '../components/CheckoutDialog'
@@ -18,8 +18,81 @@ beforeEach(() => {
   window.history.replaceState({}, '', '/')
 })
 afterEach(() => {
+  vi.useRealTimers()
+  vi.restoreAllMocks()
   vi.unstubAllGlobals()
   window.history.replaceState({}, '', '/')
+})
+
+function delayedCatalog() {
+  vi.useFakeTimers()
+  vi.spyOn(AbortSignal, 'timeout').mockImplementation((milliseconds) => {
+    const controller = new AbortController()
+    setTimeout(() => controller.abort(new DOMException('Timed out', 'TimeoutError')), milliseconds)
+    return controller.signal
+  })
+  let finish: (response: Response) => void = () => {}
+  let signal: AbortSignal | undefined
+  const fetchMock = vi.fn(
+    (_url: string, init: RequestInit) =>
+      new Promise<Response>((resolve, reject) => {
+        finish = resolve
+        signal = init.signal ?? undefined
+        signal?.addEventListener('abort', () => reject(signal?.reason), { once: true })
+      }),
+  )
+  vi.stubGlobal('fetch', fetchMock)
+  return {
+    fetchMock,
+    finish: (body: unknown) => finish(new Response(JSON.stringify(body))),
+    aborted: () => signal?.aborted,
+  }
+}
+
+it('aguarda a API iniciar além de 15 segundos, avisa e apresenta o preço real sem criar cobrança', async () => {
+  const catalog = delayedCatalog()
+  render(<CheckoutDialog plan="complete" onClose={() => {}} />)
+  await act(async () => {
+    vi.advanceTimersByTime(16000)
+  })
+  expect(catalog.aborted()).toBe(false)
+  expect(screen.getByRole('status')).toHaveTextContent('Estamos confirmando o preço')
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  await act(async () => {
+    catalog.finish({ checkoutEnabled: true, products })
+  })
+  expect(screen.getByText('R$ 27,90')).toBeInTheDocument()
+  expect(screen.queryByRole('status')).not.toBeInTheDocument()
+  expect(catalog.fetchMock).toHaveBeenCalledTimes(1)
+})
+
+it('limita a consulta a um minuto e permite tentar novamente sem reenviar pagamentos', async () => {
+  const catalog = delayedCatalog()
+  render(<CheckoutDialog plan="basic" onClose={() => {}} />)
+  await act(async () => {
+    vi.advanceTimersByTime(60000)
+  })
+  expect(screen.getByRole('alert')).toHaveTextContent('O serviço demorou para responder')
+  expect(catalog.fetchMock).toHaveBeenCalledTimes(1)
+  fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }))
+  expect(catalog.fetchMock).toHaveBeenCalledTimes(2)
+  await act(async () => {
+    catalog.finish({ checkoutEnabled: true, products })
+  })
+  expect(screen.getByText('R$ 12,90')).toBeInTheDocument()
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+})
+
+it('cancela a consulta e o aviso quando o checkout é fechado durante a espera', async () => {
+  const catalog = delayedCatalog()
+  const { rerender } = render(<CheckoutDialog plan="basic" onClose={() => {}} />)
+  rerender(<CheckoutDialog plan={null} onClose={() => {}} />)
+  await act(async () => {
+    vi.advanceTimersByTime(60000)
+  })
+  expect(catalog.aborted()).toBe(true)
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  expect(catalog.fetchMock).toHaveBeenCalledTimes(1)
 })
 
 it('seleciona o plano de partituras para violino e usa o preço consultado no servidor', async () => {

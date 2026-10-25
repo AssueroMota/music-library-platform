@@ -17,6 +17,10 @@ import {
 } from '../lib/api'
 import { formatBRL, violinOffers } from '../../shared/products'
 
+// The hosted API may need time to start after inactivity. Only the read-only
+// catalog lookup gets this grace period; payment creation is never auto-retried.
+const catalogTimeoutMs = 60000
+
 export function CheckoutDialog({ plan, onClose }: { plan: string | null; onClose: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null)
   const [email, setEmail] = useState('')
@@ -25,6 +29,7 @@ export function CheckoutDialog({ plan, onClose }: { plan: string | null; onClose
   const [data, setData] = useState<ProductResponse | null>(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [slowLookup, setSlowLookup] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [retry, setRetry] = useState(0)
   const busy = useRef(false)
@@ -41,18 +46,22 @@ export function CheckoutDialog({ plan, onClose }: { plan: string | null; onClose
     setError('')
     setData(null)
     setLoading(true)
+    setSlowLookup(false)
     const controller = new AbortController()
-    api<ProductResponse>('/products', { signal: controller.signal })
+    const slowTimer = window.setTimeout(() => setSlowLookup(true), 5000)
+    api<ProductResponse>('/products', { signal: controller.signal }, catalogTimeoutMs)
       .then(setData)
       .catch((e: Error) => {
         if (!controller.signal.aborted) setError(e.message)
       })
       .finally(() => {
+        window.clearTimeout(slowTimer)
         if (!controller.signal.aborted) setLoading(false)
       })
     const previous = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
+      window.clearTimeout(slowTimer)
       controller.abort()
       document.body.style.overflow = previous
     }
@@ -91,7 +100,7 @@ export function CheckoutDialog({ plan, onClose }: { plan: string | null; onClose
         )
       if (e instanceof ApiError && e.code === 'PRODUCT_PRICE_CHANGED') {
         try {
-          setData(await api<ProductResponse>('/products'))
+          setData(await api<ProductResponse>('/products', undefined, catalogTimeoutMs))
         } catch {
           setData(null)
         }
@@ -208,6 +217,12 @@ export function CheckoutDialog({ plan, onClose }: { plan: string | null; onClose
               </button>
             )}
           </div>
+        )}
+        {loading && slowLookup && (
+          <p className="checkout-notice" role="status">
+            O serviço está demorando um pouco para responder. Estamos confirmando o preço do seu
+            plano; você ainda não foi cobrado.
+          </p>
         )}
         <button
           className="button button-primary checkout-submit"

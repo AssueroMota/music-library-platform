@@ -20,6 +20,11 @@ export async function api<T>(path: string, init?: RequestInit, timeoutMs = 15000
     })
   } catch (error) {
     if (init?.signal?.aborted) throw error
+    if (error instanceof DOMException && error.name === 'TimeoutError')
+      throw new ApiError(
+        'O serviço demorou para responder. Aguarde alguns instantes e tente novamente.',
+        'REQUEST_TIMEOUT',
+      )
     throw new ApiError(
       'Não foi possível conectar ao serviço. Tente novamente em instantes.',
       'NETWORK_ERROR',

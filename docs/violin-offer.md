@@ -22,6 +22,8 @@ O contador usa um prazo absoluto e não reinicia por visitante nem por atualiza�
 
 O checkout envia o total que o comprador viu como `expectedPriceCents`. Se o preço mudar antes da criação do pedido, o servidor recusa com `PRODUCT_PRICE_CHANGED`, sem criar cobrança. A interface consulta o novo total e exige outro clique. Pedidos já iniciados preservam o valor registrado e continuam sujeitos à expiração existente de pagamento. As tentativas de compra do navegador são separadas por produto, e-mail e valor.
 
+A consulta de catálogo no checkout aguarda até 60 segundos, permitindo que a API hospedada inicie após inatividade. Após cinco segundos, a interface informa que ainda está confirmando o preço. Ao esgotar o prazo, apresenta uma mensagem específica e oferece nova tentativa manual. Fechar o checkout cancela a consulta. A criação de cobrança mantém o prazo padrão e nunca é repetida automaticamente. A consulta no navegador ao site publicado confirmou os dois produtos disponíveis, com R$ 12,90 e R$ 27,90 durante o lançamento; isso não constitui teste de compra real.
+
 ## Apresentação e compra
 
 O Plano Completo recebe destaque visual com capa digital, partitura de exemplo, imagem de violinista, representação de playback e selo editorial de indicação. O plano não é apresentado como mais vendido ou acompanhado de avaliações inventadas. A comparação mostra somente os benefícios efetivamente incluídos. O CTA adicional e o atalho móvel levam ao Completo.
