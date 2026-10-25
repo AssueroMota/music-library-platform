@@ -29,9 +29,9 @@ O Vite encaminha `/api` para `http://127.0.0.1:3001`. A landing page pode ser ex
 
 ## Compra e entrega
 
-1. O visitante escolhe Básico e instrumento ou Completo, consultando preço e disponibilidade atuais.
-2. O navegador envia apenas `productId` no corpo de `POST /api/checkout`. Cabeçalhos identificam a tentativa e protegem a consulta de status.
-3. O servidor lê o produto no PostgreSQL, grava o pedido e cria uma order pelo SDK oficial, retornando `checkout_url`.
+1. O visitante escolhe 25 partituras para violino ou 100 partituras com playbacks, consultando preço e disponibilidade atuais.
+2. O navegador envia `productId`, e-mail de entrega e `expectedPriceCents` no corpo de `POST /api/checkout`. Cabeçalhos identificam a tentativa e protegem a consulta de status.
+3. O servidor lê o produto no PostgreSQL, aplica a regra compartilhada de lançamento, verifica o total esperado, grava o pedido e cria uma order pelo SDK oficial, retornando `checkout_url`.
 4. O comprador informa dados e paga no ambiente do Mercado Pago.
 5. Uma notificação assinada é persistida. A fila consulta a order no provedor, verifica conta, valor, moeda, referência e produto, e confirma o estado.
 6. Após aprovação real, a fila cria/localiza o usuário Supabase, grava o acesso e envia o link pelo Resend. Erros de e-mail não removem o acesso concedido.
@@ -41,7 +41,7 @@ As páginas `/checkout/success`, `/checkout/pending` e `/checkout/failure` consu
 
 ## Catálogo e arquivos
 
-`shared/products.ts` define os sete produtos iniciais: seis bibliotecas individuais a R$ 17,90 e acesso completo a R$ 27,90. O seed não sobrescreve preços ou disponibilidade existentes. O banco é a autoridade na compra; o resumo consulta a API antes de pagar. Atualize também a oferta pública se alterar os preços comerciais.
+`shared/products.ts` define os dois produtos atuais para violino: 25 partituras sem playback por R$ 12,90 e 100 partituras com playbacks por R$ 27,90 no lançamento. `shared/violin-launch.ts` define o prazo fixo até 27/10/2026 às 23h59 (Brasília) e o preço de R$ 49,90 do Completo a partir de 28/10/2026. O backend aplica a mesma regra no catálogo público e na criação da cobrança. O resumo consulta a API antes de pagar e pede uma nova confirmação se o valor mudar. Os produtos antigos permanecem no banco para preservar compras e acessos anteriores; a migração retira suas ofertas de venda. Consulte [docs/violin-offer.md](docs/violin-offer.md).
 
 Os estudos em `public/` são demonstrações; consulte [docs/assets.md](docs/assets.md). Os materiais comerciais precisam ser importados em bucket privado antes do lançamento, com `npm run library:import -- caminho/do/manifesto.json`.
 
@@ -69,12 +69,14 @@ npm test                 # Frontend + backend; inicia PostgreSQL isolado tempor�
 npm run typecheck
 npm run lint
 npm run build            # Frontend em dist/ e API em dist-server/
-npm start                # API compilada e processamento da fila
+npm start                # Aplica migrações pendentes e inicia API compilada e fila
 npm run preview          # Preview estático; configure VITE_API_URL para API em outra origem
 ```
 
 Os testes substituem os serviços externos por doubles controlados. Não acessam contas reais nem comprovam compra no sandbox oficial. Essa validação requer credenciais e segue o roteiro de [docs/checkout.md](docs/checkout.md).
 
 A API precisa de um processo Node persistente para executar a fila. Sirva `dist/` por HTTPS com fallback para `index.html` nas rotas do frontend e proxy de `/api` para a API. Não exponha a pasta do repositório ou `.env`. Configure `VITE_PUBLIC_SITE_URL` para canonical/Open Graph.
+
+No Render, use `npm start` como comando de início para executar também o `prestart` com `prisma migrate deploy`. A migração `202610240005_violin_offers` cria os planos atuais com os preços e permissões correspondentes. Se o serviço usar diretamente `node dist-server/server/index.js`, configure `npm run db:migrate` como comando de pré-deploy. Publique frontend e API da mesma revisão. O envio ao GitHub não confirma por si só que ambos os serviços concluíram o deploy.
 
 Para publicar o frontend na Vercel, use o `vercel.json` e siga [docs/vercel.md](docs/vercel.md). A configuração do frontend não publica automaticamente a API ou o processamento da fila.

@@ -4,6 +4,14 @@ import { cleanup } from '@testing-library/react'
 
 afterEach(cleanup)
 
+// JSDOM has no audio engine. Model a browser that requires a click for audio.
+HTMLMediaElement.prototype.play = vi
+  .fn()
+  .mockRejectedValue(new DOMException('User interaction required', 'NotAllowedError'))
+HTMLMediaElement.prototype.pause = vi.fn(function (this: HTMLMediaElement) {
+  this.dispatchEvent(new Event('pause'))
+})
+
 // JSDOM has no layout engine. Viewport animations are intentionally inert here;
 // visual responsiveness remains a separate real-browser check.
 vi.stubGlobal(

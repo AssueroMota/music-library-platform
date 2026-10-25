@@ -3,12 +3,11 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { CheckoutDialog } from '../components/CheckoutDialog'
 import { CheckoutReturn } from '../components/CheckoutReturn'
-import { catalog } from '../../shared/products'
+import { violinOffers } from '../../shared/products'
 
-const products = catalog.map((p) => ({
+const products = violinOffers.map((p) => ({
   ...p,
   available: true,
-  accessType: p.instrument ? 'INSTRUMENT' : 'COMPLETE',
 }))
 const response = (body: unknown, status = 200) =>
   Promise.resolve(
@@ -23,7 +22,7 @@ afterEach(() => {
   window.history.replaceState({}, '', '/')
 })
 
-it('exige instrumento no Básico e usa o preço consultado no servidor', async () => {
+it('seleciona o plano de partituras para violino e usa o preço consultado no servidor', async () => {
   vi.stubGlobal(
     'fetch',
     vi.fn(() =>
@@ -33,15 +32,12 @@ it('exige instrumento no Básico e usa o preço consultado no servidor', async (
       }),
     ),
   )
-  render(<CheckoutDialog plan="basic" instrument={null} onClose={() => {}} />)
+  render(<CheckoutDialog plan="basic" onClose={() => {}} />)
   const button = await screen.findByRole('button', { name: 'Continuar para o pagamento' })
   await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1))
-  expect(button).toBeDisabled()
-  await userEvent.selectOptions(
-    screen.getByRole('combobox', { name: 'Qual é o seu instrumento?' }),
-    'violin',
-  )
-  expect(screen.getByText('Biblioteca de Violino')).toBeInTheDocument()
+  expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
+  expect(screen.getByText('Violino · Partituras')).toBeInTheDocument()
+  expect(screen.getByText('25 partituras para violino. Não inclui playbacks.')).toBeInTheDocument()
   expect(screen.getByText('R$ 19,90')).toBeInTheDocument()
   expect(button).toBeDisabled()
   await userEvent.type(screen.getByLabelText('E-mail para receber seu acesso'), 'buyer@gmail.com')
@@ -53,7 +49,7 @@ it('bloqueia o envio quando as vendas estão fechadas', async () => {
     'fetch',
     vi.fn(() => response({ checkoutEnabled: false, products })),
   )
-  render(<CheckoutDialog plan="complete" instrument={null} onClose={() => {}} />)
+  render(<CheckoutDialog plan="complete" onClose={() => {}} />)
   expect(await screen.findByText(/As compras ainda não estão disponíveis/)).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Continuar para o pagamento' })).toBeDisabled()
 })
@@ -70,7 +66,7 @@ it('envia produto e e-mail de entrega, impede cliques repetidos e apresenta falh
         }),
     )
   vi.stubGlobal('fetch', fetchMock)
-  render(<CheckoutDialog plan="complete" instrument={null} onClose={() => {}} />)
+  render(<CheckoutDialog plan="complete" onClose={() => {}} />)
   const user = userEvent.setup()
   const button = await screen.findByRole('button', { name: 'Continuar para o pagamento' })
   await user.type(screen.getByLabelText('E-mail para receber seu acesso'), 'buyer@gmail.com')
@@ -78,7 +74,11 @@ it('envia produto e e-mail de entrega, impede cliques repetidos e apresenta falh
   await user.dblClick(button)
   expect(fetchMock).toHaveBeenCalledTimes(2)
   const init = fetchMock.mock.calls[1][1]
-  expect(JSON.parse(init.body)).toEqual({ productId: 'library-complete', email: 'buyer@gmail.com' })
+  expect(JSON.parse(init.body)).toEqual({
+    productId: 'library-violin-playbacks',
+    email: 'buyer@gmail.com',
+    expectedPriceCents: 2790,
+  })
   expect(init.headers['Idempotency-Key']).toMatch(/^[a-f\d-]{36}$/)
   expect(init.headers['X-Checkout-Token']).toHaveLength(64)
   expect(screen.getByRole('button', { name: /Abrindo pagamento/ })).toBeDisabled()
@@ -275,3 +275,38 @@ it.each([
     )
   },
 )
+
+it('atualiza o total quando a condição muda e exige novo clique antes de enviar ao pagamento', async () => {
+  const fetchMock = vi
+    .fn()
+    .mockImplementationOnce(() => response({ checkoutEnabled: true, products }))
+    .mockImplementationOnce(() =>
+      response(
+        {
+          code: 'PRODUCT_PRICE_CHANGED',
+          message: 'O valor mudou. Confira o total atualizado antes de continuar.',
+        },
+        409,
+      ),
+    )
+    .mockImplementationOnce(() =>
+      response({
+        checkoutEnabled: true,
+        products: products.map((product) => ({
+          ...product,
+          priceCents: product.id === 'library-violin-playbacks' ? 4990 : product.priceCents,
+        })),
+      }),
+    )
+  vi.stubGlobal('fetch', fetchMock)
+  const user = userEvent.setup()
+  render(<CheckoutDialog plan="complete" onClose={() => {}} />)
+  const button = await screen.findByRole('button', { name: 'Continuar para o pagamento' })
+  await user.type(screen.getByLabelText('E-mail para receber seu acesso'), 'buyer@gmail.com')
+  await waitFor(() => expect(button).toBeEnabled())
+  await user.click(button)
+  expect(await screen.findByRole('alert')).toHaveTextContent('O valor mudou.')
+  expect(screen.getByText('R$ 49,90')).toBeInTheDocument()
+  expect(fetchMock).toHaveBeenCalledTimes(3)
+  expect(button).toBeEnabled()
+})

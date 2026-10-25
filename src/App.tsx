@@ -9,6 +9,18 @@ import { FAQSection, Footer } from './components/ClosingSections'
 import { InfoDialog } from './components/InfoDialog'
 import { ScrollProgress } from './components/ScrollProgress'
 import { CheckoutDialog } from './components/CheckoutDialog'
+import { LaunchOfferHeader } from './components/LaunchOfferCountdown'
+import { ConfidenceSection } from './components/ConversionSections'
+import { VisitPlaylist } from './components/VisitPlaylist'
+import { ContactBubble } from './components/ContactBubble'
+import {
+  VideoSection,
+  StoriesSection,
+  PreparationSection,
+  FinalInvitation,
+} from './components/ViolinSalesSections'
+import './styles/violin.css'
+import './styles/typography.css'
 
 const CheckoutReturn = lazy(() =>
   import('./components/CheckoutReturn').then((m) => ({ default: m.CheckoutReturn })),
@@ -21,6 +33,7 @@ export default function App() {
   const [instrument, setInstrument] = useState<InstrumentId | null>(null)
   const [info, setInfo] = useState<{ title: string; text: string } | null>(null)
   const [checkout, setCheckout] = useState<string | null>(null)
+  const [contactOpen, setContactOpen] = useState(false)
   const showInfo = (title: string, text: string) => setInfo({ title, text })
   if (/^\/checkout\/(success|pending|failure)\/?$/.test(window.location.pathname))
     return (
@@ -37,19 +50,27 @@ export default function App() {
   return (
     <MotionConfig reducedMotion="user">
       <ScrollProgress />
+      <LaunchOfferHeader onCheckout={setCheckout} />
       <a className="skip-link" href="#conteudo">
         Pular para o conteúdo
       </a>
-      <main id="conteudo">
+      <main id="conteudo" className="violin-sales">
         <HeroSection />
-        <AudioComparison />
+        <StoriesSection />
+        <VideoSection />
+        <PreparationSection />
         <MaterialsSection instrument={instrument} onInstrumentChange={setInstrument} />
+        <AudioComparison />
+        <ConfidenceSection />
         <PricingSection onCheckout={setCheckout} />
         <FAQSection />
+        <FinalInvitation />
       </main>
-      <Footer onInfo={showInfo} />
+      <Footer onInfo={showInfo} onContact={() => setContactOpen(true)} />
+      <VisitPlaylist />
+      <ContactBubble open={contactOpen} onOpenChange={setContactOpen} />
       <InfoDialog info={info} onClose={() => setInfo(null)} />
-      <CheckoutDialog plan={checkout} instrument={instrument} onClose={() => setCheckout(null)} />
+      <CheckoutDialog plan={checkout} onClose={() => setCheckout(null)} />
     </MotionConfig>
   )
 }

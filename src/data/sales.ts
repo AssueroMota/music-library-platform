@@ -1,18 +1,30 @@
-export const salesFaqs = [
+﻿export const salesFaqs = [
   [
-    'O que vem no material?',
-    'Partituras e backing tracks organizados em pastas por instrumento. O conteúdo final de cada plano será informado no lançamento.',
+    'O material é só para violino?',
+    'Sim. Esta coleção é dedicada ao violino. A oferta atual não inclui bibliotecas de outros instrumentos.',
   ],
   [
-    'Qual a diferença entre os planos?',
-    'O Básico reúne os materiais de um instrumento. O Completo inclui as bibliotecas dos seis instrumentos, repertórios por ocasião e organização por música: você escolhe a faixa e encontra a partitura e o acompanhamento juntos.',
+    'Qual é a diferença entre os dois planos?',
+    'O Plano Básico inclui 25 partituras para violino, sem playbacks. O Plano Completo reúne 100 partituras para violino com seus respectivos playbacks. Os valores atuais e a condição de lançamento estão na seção de planos. A compra é única, sem assinatura.',
   ],
   [
-    'Como recebo o acesso?',
-    'A entrega é digital. Após a confirmação do pagamento pelo Mercado Pago, o acesso é preparado e as orientações são enviadas ao e-mail informado na compra. Você também pode solicitar um link na página da sua biblioteca.',
+    'Quais músicas estão incluídas?',
+    'O acervo está em preparação. As amostras desta página demonstram a organização e não representam a lista final de músicas. Confira o repertório disponível antes de comprar.',
   ],
   [
-    'Posso acessar pelo celular ou tablet?',
-    'Sim. A biblioteca é pensada para computador, tablet e celular. Você pode experimentar a organização dos materiais na prévia desta página.',
+    'Como funciona o valor de lançamento?',
+    'O Plano Completo tem valor de lançamento de R$ 27,90 para pedidos iniciados até 27/10/2026 às 23h59, no horário de Brasília. A partir de 28/10/2026, novos pedidos custam R$ 49,90. O contador acompanha esse prazo fixo e não reinicia ao atualizar a página. Um pedido já iniciado mantém o total registrado e segue o prazo de pagamento do checkout.',
+  ],
+  [
+    'O que é um playback?',
+    'É o acompanhamento que você reproduz enquanto toca a melodia no violino. Os playbacks fazem parte apenas do Plano Completo. Você pode ouvir uma demonstração nesta página.',
+  ],
+  [
+    'Como recebo meu acesso?',
+    'A entrega é digital. Após a confirmação do pagamento pelo Mercado Pago, preparamos seu acesso e enviamos o link pessoal ao e-mail informado na compra. Guarde esse link para voltar à biblioteca.',
+  ],
+  [
+    'Posso usar no celular ou tablet?',
+    'Sim. A biblioteca pode ser acessada pelo computador, tablet ou celular. Para tocar junto de um playback, utilize a reprodução de áudio do seu dispositivo.',
   ],
 ]

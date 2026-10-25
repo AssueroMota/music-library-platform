@@ -1,7 +1,8 @@
 import { createHmac, randomUUID } from 'node:crypto'
 import { PrismaClient } from '@prisma/client'
 import { afterAll, beforeAll, beforeEach, describe, expect, inject, it, vi } from 'vitest'
-import { catalog } from '../shared/products.js'
+import { catalog, violinOffers } from '../shared/products.js'
+import { violinLaunch, violinPriceCents } from '../shared/violin-launch.js'
 import { CheckoutService } from './service.js'
 import { createApp } from './app.js'
 import type { Config } from './config.js'
@@ -58,6 +59,9 @@ beforeEach(async () => {
       available: true,
       accessType: p.instrument ? 'INSTRUMENT' : 'COMPLETE',
     })),
+  })
+  await db.product.createMany({
+    data: violinOffers.map((offer) => ({ ...offer, available: true })),
   })
 })
 afterAll(async () => {
@@ -719,4 +723,159 @@ describe('webhooks, confirmação e liberação', () => {
     expect(email.html).toContain('Acessar minha biblioteca')
     expect(email.text).toContain('https://auth.example.test/')
   })
+})
+
+describe('oferta exclusiva de violino', () => {
+  it.each([
+    { productId: 'library-violin-scores', priceCents: 1290, phase: 'launch' },
+    { productId: violinLaunch.productId, priceCents: 2790, phase: 'launch' },
+    { productId: violinLaunch.productId, priceCents: 4990, phase: 'regular' },
+  ])(
+    'envia $priceCents centavos ao pagamento para $productId na fase $phase',
+    async ({ productId, priceCents, phase }) => {
+      // Keep app/database clocks aligned for order expiry; vary the campaign window.
+      const originalWindow = { startsAt: violinLaunch.startsAt, endsAt: violinLaunch.endsAt }
+      const now = Date.now()
+      Object.assign(violinLaunch, {
+        startsAt: new Date(now - 86400000).toISOString(),
+        endsAt: new Date(now + (phase === 'launch' ? 86400000 : -1000)).toISOString(),
+      })
+      try {
+        const key = randomUUID()
+        const response = await app.inject({
+          method: 'POST',
+          url: '/api/checkout',
+          headers: { 'idempotency-key': key, 'x-checkout-token': 'a'.repeat(64) },
+          payload: { productId, email: buyerEmail, expectedPriceCents: priceCents },
+        })
+        expect(response.statusCode).toBe(201)
+        expect(await db.order.findUnique({ where: { idempotencyKey: key } })).toMatchObject({
+          productId,
+          priceCents,
+        })
+        expect(providers.createOrder).toHaveBeenCalledWith(
+          expect.objectContaining({ priceCents, email: buyerEmail }),
+        )
+      } finally {
+        Object.assign(violinLaunch, originalWindow)
+      }
+    },
+  )
+
+  it('publica somente os dois planos atuais com seus preços e permissões', async () => {
+    const result = await app.inject({ url: '/api/products' })
+    expect(result.statusCode).toBe(200)
+    expect(result.json().products).toHaveLength(2)
+    for (const offer of violinOffers) {
+      expect(result.json().products).toContainEqual(
+        expect.objectContaining({
+          id: offer.id,
+          priceCents: violinPriceCents(offer.id, offer.priceCents),
+          instrument: 'violin',
+          accessType: offer.accessType,
+        }),
+      )
+    }
+  })
+
+  it.each(violinOffers)(
+    'respeita a permissão de $name na listagem, visualização e download',
+    async (offer) => {
+      const { order } = await checkout(offer.id)
+      expect(order?.priceCents).toBe(violinPriceCents(offer.id, offer.priceCents))
+      vi.mocked(providers.getOrder).mockResolvedValue(remote(order!))
+      await service.reconcile(order!.providerOrderId!)
+      await service.runJobs()
+      const score = await db.libraryAsset.create({
+        data: {
+          title: 'Partitura violino',
+          instrument: 'violin',
+          kind: 'score',
+          storageKey: 'violin/piece.pdf',
+        },
+      })
+      const audio = await db.libraryAsset.create({
+        data: {
+          title: 'Playback violino',
+          instrument: 'violin',
+          kind: 'audio',
+          storageKey: 'violin/piece.mp3',
+        },
+      })
+      const other = await db.libraryAsset.create({
+        data: {
+          title: 'Partitura cello',
+          instrument: 'cello',
+          kind: 'score',
+          storageKey: 'cello/piece.pdf',
+        },
+      })
+      const headers = { authorization: 'Bearer valid-test-session' }
+      const library = await app.inject({ url: '/api/library', headers })
+      const ids = library.json().assets.map((asset: { id: string }) => asset.id)
+      expect(ids).toContain(score.id)
+      expect(ids).not.toContain(other.id)
+      expect(ids.includes(audio.id)).toBe(offer.accessType === 'INSTRUMENT')
+      for (const action of ['view', 'download']) {
+        expect(
+          (await app.inject({ url: `/api/library/assets/${score.id}/${action}`, headers }))
+            .statusCode,
+        ).toBe(200)
+        expect(
+          (await app.inject({ url: `/api/library/assets/${audio.id}/${action}`, headers }))
+            .statusCode,
+        ).toBe(offer.accessType === 'SCORES' ? 403 : 200)
+        expect(
+          (await app.inject({ url: `/api/library/assets/${other.id}/${action}`, headers }))
+            .statusCode,
+        ).toBe(403)
+      }
+    },
+  )
+})
+
+it('aplica a virada de preço no catálogo público mesmo com o valor antigo salvo no banco', async () => {
+  const clock = vi.spyOn(Date, 'now')
+  try {
+    clock.mockReturnValue(Date.parse(violinLaunch.endsAt) - 1)
+    const before = await app.inject({ url: '/api/products' })
+    expect(
+      before
+        .json()
+        .products.find((product: { id: string }) => product.id === violinLaunch.productId)
+        .priceCents,
+    ).toBe(2790)
+    clock.mockReturnValue(Date.parse(violinLaunch.endsAt))
+    const after = await app.inject({ url: '/api/products' })
+    expect(
+      after.json().products.find((product: { id: string }) => product.id === violinLaunch.productId)
+        .priceCents,
+    ).toBe(4990)
+    expect(
+      after
+        .json()
+        .products.find((product: { id: string }) => product.id === 'library-violin-scores')
+        .priceCents,
+    ).toBe(1290)
+  } finally {
+    clock.mockRestore()
+  }
+})
+
+it('recusa total desatualizado sem criar pedido nem chamar o pagamento', async () => {
+  const expected = violinPriceCents(violinLaunch.productId, 2790)
+  const result = await app.inject({
+    method: 'POST',
+    url: '/api/checkout',
+    headers: { 'idempotency-key': randomUUID(), 'x-checkout-token': 'a'.repeat(64) },
+    payload: {
+      productId: violinLaunch.productId,
+      email: buyerEmail,
+      expectedPriceCents: expected + 1,
+    },
+  })
+  expect(result.statusCode).toBe(409)
+  expect(result.json().code).toBe('PRODUCT_PRICE_CHANGED')
+  expect(await db.order.count()).toBe(0)
+  expect(providers.createOrder).not.toHaveBeenCalled()
 })

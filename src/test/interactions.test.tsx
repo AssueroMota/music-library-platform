@@ -7,6 +7,8 @@ import { PricingSection } from '../components/PricingSection'
 import { AudioPlayer } from '../components/AudioPlayer'
 import type { InstrumentId } from '../types'
 import App from '../App'
+import { violinOffers } from '../../shared/products'
+import { violinPriceCents } from '../../shared/violin-launch'
 
 function LibraryDemo({ initialInstrument = null }: { initialInstrument?: InstrumentId | null }) {
   const [instrument, setInstrument] = useState<InstrumentId | null>(initialInstrument)
@@ -21,7 +23,8 @@ it('monta a página e permite abrir a organização dos materiais', async () => 
   const user = userEvent.setup()
   const { container } = render(<App />)
   expect(screen.getByRole('main')).toBeInTheDocument()
-  expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Partituras e bases/)
+  expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Seu violino/)
+  expect(screen.queryByText('Saxofone')).not.toBeInTheDocument()
   for (const link of container.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')) {
     expect(
       document.getElementById(link.hash.slice(1)),
@@ -36,11 +39,8 @@ it('monta a página e permite abrir a organização dos materiais', async () => 
 it('seleciona instrumento e combina busca, estilo e tonalidade', async () => {
   const user = userEvent.setup()
   render(<LibraryDemo />)
-  await user.selectOptions(
-    screen.getByRole('combobox', { name: 'Filtrar instrumento' }),
-    'saxophone',
-  )
-  expect(screen.getByRole('combobox', { name: 'Filtrar instrumento' })).toHaveValue('saxophone')
+  await user.selectOptions(screen.getByRole('combobox', { name: 'Filtrar instrumento' }), 'violin')
+  expect(screen.getByRole('combobox', { name: 'Filtrar instrumento' })).toHaveValue('violin')
   await user.selectOptions(screen.getByRole('combobox', { name: 'Filtrar tonalidade' }), 'Lá menor')
   expect(screen.getByText('2 arquivos')).toBeInTheDocument()
   expect(
@@ -82,7 +82,7 @@ it('filtra arquivos favoritos e retorna à raiz das pastas', async () => {
 it('navega em subpastas, ordena arquivos e abre a prévia com retorno de foco', async () => {
   const user = userEvent.setup()
   render(<LibraryDemo />)
-  expect(screen.getAllByRole('button', { name: /^Abrir pasta / })).toHaveLength(6)
+  expect(screen.getAllByRole('button', { name: /^Abrir pasta / })).toHaveLength(1)
   await user.click(screen.getByRole('button', { name: 'Abrir pasta Violino' }))
   await user.click(screen.getByRole('button', { name: 'Abrir pasta Partituras' }))
   expect(screen.getByText('2 arquivos')).toBeInTheDocument()
@@ -120,9 +120,18 @@ it('encaminha a escolha correta de cada plano para o checkout', async () => {
   const user = userEvent.setup()
   const onCheckout = vi.fn()
   render(<PricingSection onCheckout={onCheckout} />)
-  await user.click(screen.getByRole('button', { name: 'Quero o Plano Básico' }))
+  expect(screen.getByText('12,90')).toBeInTheDocument()
+  expect(
+    screen.getByText(
+      (violinPriceCents(violinOffers[1].id, violinOffers[1].priceCents) / 100).toLocaleString(
+        'pt-BR',
+        { minimumFractionDigits: 2 },
+      ),
+    ),
+  ).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Quero somente as partituras' }))
   expect(onCheckout).toHaveBeenLastCalledWith('basic')
-  await user.click(screen.getByRole('button', { name: 'Quero o Plano Completo' }))
+  await user.click(screen.getByRole('button', { name: 'Quero partituras + playbacks' }))
   expect(onCheckout).toHaveBeenLastCalledWith('complete')
 })
 

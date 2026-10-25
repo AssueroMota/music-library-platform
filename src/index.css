@@ -1,6 +1,4 @@
-@import '@fontsource/lato/latin-400.css';
-@import '@fontsource/lato/latin-700.css';
-@import '@fontsource/lato/latin-900.css';
+@import '@fontsource-variable/inter';
 @import '@fontsource/roboto-slab/latin-700.css';
 @import 'tailwindcss';
 @import './styles/library.css';
@@ -13,11 +11,11 @@
   --color-navy: #0b1627;
   --color-gold: #e7c66c;
   --color-paper: #faf8f3;
-  --font-sans: 'Lato', sans-serif;
+  --font-sans: 'Inter Variable', 'Segoe UI', Arial, sans-serif;
   --font-card: 'Roboto Slab', Georgia, serif;
 } /* Foundations */
 :root {
-  font-family: 'Lato', sans-serif;
+  font-family: var(--font-sans);
   color: #14263f;
   background: #faf8f3;
   font-synthesis: none;

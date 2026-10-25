@@ -23,8 +23,8 @@ export default defineConfig(({ mode }) => {
           if (!siteUrl) return html
           return {
             html: html.replace(
-              'content="/images/og-cover.jpg"',
-              `content="${siteUrl}/images/og-cover.jpg"`,
+              'content="/images/violin-cover.jpg"',
+              `content="${siteUrl}/images/violin-cover.jpg"`,
             ),
             tags: [
               { tag: 'link', attrs: { rel: 'canonical', href: `${siteUrl}/` }, injectTo: 'head' },

@@ -5,7 +5,7 @@ import { auth } from '../lib/auth'
 import { api } from '../lib/api'
 import type { MemberLibraryData } from '../../shared/library'
 import { MemberRepertoire } from './MemberRepertoire'
-import { instruments } from '../data/content'
+import { allInstruments as instruments } from '../data/content'
 import { readPersonalAccess } from '../lib/library-access'
 import { PersonalLibraryAccess } from './PersonalLibraryAccess'
 

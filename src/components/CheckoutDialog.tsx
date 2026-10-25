@@ -8,7 +8,6 @@ import {
   Music2,
   X,
 } from 'lucide-react'
-import { instruments } from '../data/content'
 import {
   api,
   ApiError,
@@ -16,19 +15,10 @@ import {
   trustedCheckoutUrl,
   type ProductResponse,
 } from '../lib/api'
-import { formatBRL } from '../../shared/products'
+import { formatBRL, violinOffers } from '../../shared/products'
 
-export function CheckoutDialog({
-  plan,
-  instrument,
-  onClose,
-}: {
-  plan: string | null
-  instrument: string | null
-  onClose: () => void
-}) {
+export function CheckoutDialog({ plan, onClose }: { plan: string | null; onClose: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null)
-  const [selectedInstrument, setSelectedInstrument] = useState(instrument ?? '')
   const [email, setEmail] = useState('')
   const deliveryEmail = email.trim().toLowerCase()
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(deliveryEmail)
@@ -38,7 +28,8 @@ export function CheckoutDialog({
   const [submitting, setSubmitting] = useState(false)
   const [retry, setRetry] = useState(0)
   const busy = useRef(false)
-  const productId = plan === 'complete' ? 'library-complete' : `library-${selectedInstrument}`
+  const offer = violinOffers[plan === 'complete' ? 1 : 0]
+  const productId = offer.id
   const product = data?.products.find((p) => p.id === productId)
 
   useEffect(() => {
@@ -47,7 +38,6 @@ export function CheckoutDialog({
       return
     }
     dialog.current?.showModal()
-    setSelectedInstrument(instrument ?? '')
     setError('')
     setData(null)
     setLoading(true)
@@ -66,7 +56,7 @@ export function CheckoutDialog({
       controller.abort()
       document.body.style.overflow = previous
     }
-  }, [plan, instrument, retry])
+  }, [plan, retry])
 
   async function purchase() {
     if (!product?.available || !data?.checkoutEnabled || !emailValid || busy.current) return
@@ -74,7 +64,7 @@ export function CheckoutDialog({
     setSubmitting(true)
     setError('')
     try {
-      const attempt = checkoutAttempt(`${product.id}:${deliveryEmail}`)
+      const attempt = checkoutAttempt(`${product.id}:${deliveryEmail}:${product.priceCents}`)
       const result = await api<{ orderId: string; checkoutUrl: string }>('/checkout', {
         method: 'POST',
         headers: {
@@ -82,7 +72,11 @@ export function CheckoutDialog({
           'Idempotency-Key': attempt.key,
           'X-Checkout-Token': attempt.token,
         },
-        body: JSON.stringify({ productId: product.id, email: deliveryEmail }),
+        body: JSON.stringify({
+          productId: product.id,
+          email: deliveryEmail,
+          expectedPriceCents: product.priceCents,
+        }),
       })
       const url = trustedCheckoutUrl(result.checkoutUrl)
       sessionStorage.setItem(`ml:order:${result.orderId}`, attempt.token)
@@ -92,7 +86,16 @@ export function CheckoutDialog({
         e instanceof ApiError &&
         ['ORDER_FINISHED', 'ORDER_EXPIRED', 'CHECKOUT_CONFLICT'].includes(e.code)
       )
-        sessionStorage.removeItem(`ml:checkout:${product.id}:${deliveryEmail}`)
+        sessionStorage.removeItem(
+          `ml:checkout:${product.id}:${deliveryEmail}:${product.priceCents}`,
+        )
+      if (e instanceof ApiError && e.code === 'PRODUCT_PRICE_CHANGED') {
+        try {
+          setData(await api<ProductResponse>('/products'))
+        } catch {
+          setData(null)
+        }
+      }
       setError(
         e instanceof Error ? e.message : 'Não foi possível iniciar o pagamento. Tente novamente.',
       )
@@ -139,27 +142,6 @@ export function CheckoutDialog({
         <p className="checkout-intro">
           Confira sua escolha e informe o e-mail que receberá seu acesso.
         </p>
-        {plan === 'basic' && (
-          <div className="checkout-field">
-            <label htmlFor="checkout-instrument">Qual é o seu instrumento?</label>
-            <select
-              id="checkout-instrument"
-              value={selectedInstrument}
-              disabled={submitting}
-              onChange={(e) => {
-                setSelectedInstrument(e.target.value)
-                setError('')
-              }}
-            >
-              <option value="">Selecione seu instrumento</option>
-              {instruments.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
         <div className="checkout-field">
           <label htmlFor="checkout-email">E-mail para receber seu acesso</label>
           <input
@@ -174,8 +156,7 @@ export function CheckoutDialog({
             onChange={(event) => setEmail(event.target.value)}
           />
           <p className="checkout-intro">
-            Utilize seu Gmail. Enviaremos seu link pessoal para este endereço após a confirmação do
-            pagamento.
+            Enviaremos seu link pessoal para este endereço após a confirmação do pagamento.
           </p>
         </div>
         <div className="checkout-order-summary" aria-live="polite">
@@ -184,15 +165,8 @@ export function CheckoutDialog({
           </span>
           <div>
             <span className="micro-label">SUA ESCOLHA</span>
-            <h3>
-              {product?.name ??
-                (plan === 'complete' ? 'Acesso Completo' : 'Biblioteca por instrumento')}
-            </h3>
-            <p>
-              {plan === 'complete'
-                ? 'Os seis instrumentos, em uma só biblioteca.'
-                : 'Partituras e backing tracks do seu instrumento.'}
-            </p>
+            <h3>{product?.name ?? offer.name}</h3>
+            <p>{offer.description}</p>
           </div>
           <div className="checkout-total">
             <span>Total</span>
@@ -218,6 +192,11 @@ export function CheckoutDialog({
         {product && !product.available && (
           <p className="checkout-notice" role="status">
             Este produto está indisponível no momento.
+          </p>
+        )}
+        {data && !product && (
+          <p className="checkout-notice" role="status">
+            Este plano ainda não está disponível. Volte em breve.
           </p>
         )}
         {error && (

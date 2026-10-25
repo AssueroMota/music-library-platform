@@ -11,7 +11,7 @@ export function FAQSection() {
           center
           title={
             <>
-              DÚVIDAS <em>RÁPIDAS.</em>
+              Tudo pronto para <em>escolher?</em>
             </>
           }
         />
@@ -31,20 +31,23 @@ export function FAQSection() {
   )
 }
 
-export function Footer({ onInfo }: { onInfo: (title: string, text: string) => void }) {
+export function Footer({
+  onInfo,
+  onContact,
+}: {
+  onInfo: (title: string, text: string) => void
+  onContact: () => void
+}) {
   return (
     <footer className="footer">
       <Container>
         <div className="footer-compact">
           <Logo light />
           <nav aria-label="Informações">
+            <a href="/biblioteca">Já sou cliente</a>
             <a href="#planos">Planos</a>
             <a href="#perguntas">Dúvidas</a>
-            <button
-              onClick={() => onInfo('Contato', 'O canal de suporte será divulgado no lançamento.')}
-            >
-              Contato
-            </button>
+            <button onClick={onContact}>Contato</button>
             <button
               onClick={() =>
                 onInfo(

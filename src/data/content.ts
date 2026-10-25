@@ -1,7 +1,7 @@
 import type { Instrument, Plan, Track } from '../types'
-import { catalog } from '../../shared/products'
+import { violinOffers } from '../../shared/products'
 
-export const instruments: Instrument[] = [
+export const allInstruments: Instrument[] = [
   {
     id: 'violin',
     name: 'Violino',
@@ -54,6 +54,8 @@ export const instruments: Instrument[] = [
   },
 ]
 
+export const instruments = allInstruments.filter((instrument) => instrument.id === 'violin')
+
 const pieces = [
   {
     slug: 'primeira-luz',
@@ -90,29 +92,29 @@ export const tracks: Track[] = instruments.flatMap((instrument) =>
 export const plans: Plan[] = [
   {
     id: 'basic',
-    price: catalog[0].priceCents / 100,
+    price: violinOffers[0].priceCents / 100,
     name: 'Plano Básico',
-    description: 'O essencial para organizar o repertório do seu instrumento.',
-    accessMode: 'Biblioteca por instrumento',
+    description: 'Para ter a partitura em mãos e estudar no seu ritmo.',
+    accessMode: 'Violino · somente partituras',
     benefits: [
-      'Um instrumento à sua escolha',
-      'Partituras e backing tracks',
-      'Materiais organizados em pastas',
+      '25 partituras exclusivamente para violino',
+      'Arquivos digitais organizados por música',
+      'Acesso pelo computador, tablet ou celular',
+      'Sem playbacks neste plano',
     ],
   },
   {
     id: 'complete',
-    price: catalog[6].priceCents / 100,
+    price: violinOffers[1].priceCents / 100,
     name: 'Plano Completo',
-    description: 'Todas as bibliotecas e mais possibilidades para o seu repertório.',
-    accessMode: 'Acesso completo',
+    description: 'Para abrir a partitura, dar o play e sentir a música acontecer.',
+    accessMode: 'Violino · partituras + playbacks',
     featured: true,
     benefits: [
-      'Bibliotecas dos seis instrumentos',
-      'Partituras e backing tracks reunidos',
-      'Repertórios para diferentes ocasiões',
-      'Pastas por instrumento e tipo de material',
-      'Organização por música: partitura e acompanhamento juntos',
+      '100 partituras exclusivamente para violino',
+      'Playbacks para acompanhar sua interpretação',
+      'Partitura e acompanhamento na mesma biblioteca',
+      'Acesso pelo computador, tablet ou celular',
     ],
   },
 ]

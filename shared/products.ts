@@ -1,4 +1,4 @@
-// Initial catalog used by the seed and the public offer. Checkout always reads PostgreSQL.
+// Seed/base catalog. Checkout reads PostgreSQL and applies the shared launch schedule.
 export const catalog = [
   {
     id: 'library-violin',
@@ -53,3 +53,25 @@ export const catalog = [
 
 export const formatBRL = (cents: number) =>
   (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+
+// New products preserve the terms of existing purchases in the legacy catalog.
+export const violinOffers = [
+  {
+    id: 'library-violin-scores',
+    code: 'ML-VIOLIN-SCORES',
+    name: 'Violino · Partituras',
+    instrument: 'violin',
+    accessType: 'SCORES',
+    priceCents: 1290,
+    description: '25 partituras para violino. Não inclui playbacks.',
+  },
+  {
+    id: 'library-violin-playbacks',
+    code: 'ML-VIOLIN-PLAYBACKS',
+    name: 'Violino · Partituras + Playbacks',
+    instrument: 'violin',
+    accessType: 'INSTRUMENT',
+    priceCents: 2790,
+    description: '100 partituras para violino com os respectivos playbacks.',
+  },
+] as const

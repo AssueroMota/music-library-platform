@@ -66,7 +66,7 @@ export function SectionHeading({
   light = false,
   center = false,
 }: {
-  eyebrow: string
+  eyebrow?: string
   title: ReactNode
   children?: ReactNode
   light?: boolean
@@ -81,10 +81,12 @@ export function SectionHeading({
       viewport={{ once: true, amount: 0.15 }}
       transition={{ duration: 0.55 }}
     >
-      <span className="eyebrow">
-        <i />
-        {eyebrow}
-      </span>
+      {eyebrow && (
+        <span className="eyebrow">
+          <i />
+          {eyebrow}
+        </span>
+      )}
       <h2>{title}</h2>
       {children && <p>{children}</p>}
     </motion.div>

@@ -1,0 +1,98 @@
+.visit-playlist {
+  position: fixed;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  left: 16px;
+  z-index: 65;
+  width: min(290px, calc(100vw - 32px));
+  padding: 14px 16px 11px;
+  border: 1px solid #ff75375c;
+  border-radius: 14px;
+  background: #15161ef5;
+  box-shadow: 0 8px 35px #0005;
+  color: #fff;
+  font-family: var(--font-sans);
+}
+.visit-playlist-heading {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #ffb47a;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+.visit-playlist-position {
+  margin-left: auto;
+  letter-spacing: 0;
+}
+.visit-playlist select {
+  display: block;
+  width: 100%;
+  margin: 6px 0 9px;
+  padding: 3px 0;
+  color: #fff;
+  background: #15161e;
+  border: 0;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+}
+.visit-playlist-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.visit-playlist-controls button {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #ffffff0d;
+  color: #fff;
+  cursor: pointer;
+}
+.visit-playlist-controls .visit-playlist-toggle {
+  background: #ff4b17;
+}
+.visit-playlist-controls button:hover {
+  background: #b83e18;
+}
+.visit-playlist-controls > svg {
+  margin-left: auto;
+  color: #ffb47a;
+  flex-shrink: 0;
+}
+.visit-playlist input {
+  width: 70px;
+  min-width: 0;
+  accent-color: #ff7537;
+  cursor: pointer;
+}
+.visit-playlist :focus-visible {
+  outline: 2px solid #ffb47a;
+  outline-offset: 3px;
+}
+.visit-playlist p {
+  margin: 8px 0 0;
+  color: #c9cad6;
+  font-size: 11px;
+  line-height: 1.4;
+}
+body:has(.visit-playlist) .footer {
+  padding-bottom: 170px;
+}
+@media (max-width: 600px) {
+  .visit-playlist {
+    bottom: max(12px, env(safe-area-inset-bottom));
+    left: 12px;
+    width: min(270px, calc(100vw - 24px));
+  }
+  .visit-playlist-controls button {
+    width: 36px;
+    height: 36px;
+  }
+}

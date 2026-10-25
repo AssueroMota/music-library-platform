@@ -1,6 +1,6 @@
 import 'dotenv/config'
 import { PrismaClient } from '@prisma/client'
-import { catalog } from '../shared/products.js'
+import { catalog, violinOffers } from '../shared/products.js'
 
 const db = new PrismaClient()
 try {
@@ -12,8 +12,15 @@ try {
         ...product,
         description: 'Partituras e backing tracks organizados em pastas.',
         accessType: product.instrument ? 'INSTRUMENT' : 'COMPLETE',
-        available: true,
+        available: false,
       },
+    })
+  }
+  for (const offer of violinOffers) {
+    await db.product.upsert({
+      where: { id: offer.id },
+      update: {},
+      create: { ...offer, available: true },
     })
   }
 } finally {

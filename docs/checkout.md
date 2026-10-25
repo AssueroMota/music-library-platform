@@ -72,7 +72,7 @@ As migrações criam `users`, `products`, `orders`, `payments`, `entitlements`, 
 
 RLS é habilitada sem políticas públicas nessas tabelas. A conexão do backend deve usar o proprietário das tabelas ou um papel de servidor com acesso. O frontend consulta exclusivamente a API, sem permissão direta para alterar pedidos ou acessos.
 
-O seed insere sete produtos disponíveis; a chave global `CHECKOUT_ENABLED` continua fechada. Ajuste preço, disponibilidade e descrição no banco antes do lançamento. Reexecutar o seed não altera produtos existentes. Para impedir uma venda específica, use `products.available=false`.
+O seed cria os dois planos de violino e mantém os produtos antigos arquivados. A migração `202610240005_violin_offers` cria 25 partituras sem playbacks por R$ 12,90 e 100 partituras com playbacks por R$ 27,90 no lançamento. A regra compartilhada em `shared/violin-launch.ts` altera o Completo para R$ 49,90 a partir de 28/10/2026, no horário de Brasília. A chave global `CHECKOUT_ENABLED` continua controlando a abertura das compras. Reexecutar o seed não altera produtos existentes. Para impedir uma venda específica, use `products.available=false`. `npm start` aplica as migrações pendentes antes de iniciar a API.
 
 ## Mercado Pago Developers
 

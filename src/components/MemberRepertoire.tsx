@@ -2,7 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react
 import { FileMusic, Headphones, LoaderCircle, RefreshCw, Search, X } from 'lucide-react'
 import type { MemberAsset, MemberLibraryData } from '../../shared/library'
 import { api } from '../lib/api'
-import { instruments } from '../data/content'
+import { allInstruments as instruments } from '../data/content'
 import { normalizeSearch } from '../data/library'
 
 const ScorePdf = lazy(() => import('./ScorePdf').then((module) => ({ default: module.ScorePdf })))
