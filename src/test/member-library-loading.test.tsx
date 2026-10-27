@@ -1,25 +1,33 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { MemberLibrary } from '../components/MemberLibrary'
+import type { AuthChangeEvent, Session } from '@supabase/supabase-js'
 
-const { getSession, signOut } = vi.hoisted(() => ({
+const { getSession, signOut, authListener } = vi.hoisted(() => ({
   getSession: vi.fn(),
   signOut: vi.fn(async () => {}),
+  authListener: {
+    callback: null as ((event: AuthChangeEvent, session: Session | null) => void) | null,
+  },
 }))
 vi.mock('../lib/auth', () => ({
   auth: {
     auth: {
       getSession,
       signOut,
-      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: vi.fn() } } }),
+      onAuthStateChange: (callback: (event: AuthChangeEvent, session: Session | null) => void) => {
+        authListener.callback = callback
+        return { data: { subscription: { unsubscribe: vi.fn() } } }
+      },
     },
   },
 }))
 
 beforeEach(() => {
+  authListener.callback = null
   window.history.replaceState({}, '', '/biblioteca')
   getSession.mockResolvedValue({
-    data: { session: { access_token: 'test-session-only' } },
+    data: { session: { access_token: 'test-session-only', user: { id: 'test-user' } } },
     error: null,
   })
   vi.useFakeTimers()
@@ -104,4 +112,52 @@ it('cancela a consulta ao sair da página sem renderizar uma resposta antiga', a
     await vi.advanceTimersByTimeAsync(90001)
   })
   expect(request.fetchMock).toHaveBeenCalledTimes(1)
+})
+
+it('mantém a busca e a biblioteca ao retornar à aba e renovar o token da mesma conta', async () => {
+  const request = delayedLibrary()
+  render(<MemberLibrary />)
+  await act(async () => {})
+  await act(async () => {
+    request.finish()
+  })
+  fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'Coldplay' } })
+  await act(async () => {
+    authListener.callback?.('SIGNED_IN', {
+      access_token: 'test-session-only',
+      user: { id: 'test-user' },
+    } as Session)
+    authListener.callback?.('TOKEN_REFRESHED', {
+      access_token: 'new-test-token',
+      user: { id: 'test-user' },
+    } as Session)
+  })
+  expect(request.fetchMock).toHaveBeenCalledTimes(1)
+  expect(screen.getByRole('searchbox')).toHaveValue('Coldplay')
+  expect(screen.getByRole('heading', { name: 'Seu repertório' })).toBeInTheDocument()
+  expect(screen.queryByText('Carregando seus materiais…')).not.toBeInTheDocument()
+})
+
+it('remove os materiais ao sair e consulta novamente ao trocar de conta', async () => {
+  const request = delayedLibrary()
+  render(<MemberLibrary />)
+  await act(async () => {})
+  await act(async () => {
+    request.finish()
+  })
+  await act(async () => {
+    authListener.callback?.('SIGNED_OUT', null)
+  })
+  expect(screen.queryByRole('heading', { name: 'Seu repertório' })).not.toBeInTheDocument()
+  expect(screen.getByLabelText('Seu e-mail')).toBeInTheDocument()
+  await act(async () => {
+    authListener.callback?.('SIGNED_IN', {
+      access_token: 'other-test-token',
+      user: { id: 'other-user' },
+    } as Session)
+  })
+  expect(request.fetchMock).toHaveBeenCalledTimes(2)
+  expect(request.fetchMock.mock.calls[1][1].headers).toEqual({
+    Authorization: 'Bearer other-test-token',
+  })
 })

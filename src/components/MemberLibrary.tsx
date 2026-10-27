@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Copy, LoaderCircle, LogOut, Mail, Music2 } from 'lucide-react'
 import type { Session } from '@supabase/supabase-js'
 import { auth } from '../lib/auth'
@@ -16,6 +16,8 @@ export function MemberLibrary() {
 
 function MemberLibraryContent() {
   const [session, setSession] = useState<Session | null>(null)
+  const currentSession = useRef<Session | null>(null)
+  const userId = session?.user.id
   const [checking, setChecking] = useState(true)
   const [email, setEmail] = useState('')
   const [data, setData] = useState<MemberLibraryData | null>(null)
@@ -31,25 +33,38 @@ function MemberLibraryContent() {
       return
     }
     let mounted = true
+    let receivedAuthEvent = false
+    function updateSession(next: Session | null) {
+      if (!mounted) return
+      const changedAccount = currentSession.current?.user.id !== next?.user.id
+      currentSession.current = next
+      setSession(next)
+      setChecking(false)
+      // SIGNED_IN can fire on tab focus; renewing the same account must not
+      // unmount the repertoire, discard filters or interrupt an open score.
+      if (changedAccount) {
+        setData(null)
+        setError('')
+        setNotice('')
+      }
+    }
     auth.auth
       .getSession()
       .then(({ data, error }) => {
-        if (mounted) {
-          setSession(data.session)
-          setChecking(false)
+        if (mounted && !receivedAuthEvent) {
+          updateSession(data.session)
           if (error) setError('O link expirou ou é inválido. Solicite um novo acesso.')
         }
       })
       .catch(() => {
-        if (mounted) {
+        if (mounted && !receivedAuthEvent) {
           setError('Não foi possível verificar sua sessão.')
           setChecking(false)
         }
       })
     const { data: listener } = auth.auth.onAuthStateChange((_event, current) => {
-      setSession(current)
-      setData(null)
-      setError('')
+      receivedAuthEvent = true
+      updateSession(current)
     })
     return () => {
       mounted = false
@@ -57,7 +72,8 @@ function MemberLibraryContent() {
     }
   }, [])
   useEffect(() => {
-    if (!session) return
+    const activeSession = currentSession.current
+    if (!activeSession || activeSession.user.id !== userId) return
     const controller = new AbortController()
     setError('')
     setWaitingLonger(false)
@@ -65,7 +81,7 @@ function MemberLibraryContent() {
     api<MemberLibraryData>(
       '/library',
       {
-        headers: { Authorization: `Bearer ${session.access_token}` },
+        headers: { Authorization: `Bearer ${activeSession.access_token}` },
         signal: controller.signal,
       },
       LIBRARY_REQUEST_TIMEOUT_MS,
@@ -81,7 +97,7 @@ function MemberLibraryContent() {
       clearTimeout(timer)
       controller.abort()
     }
-  }, [session, refresh])
+  }, [userId, refresh])
   async function login(event: FormEvent) {
     event.preventDefault()
     if (busy) return
@@ -116,6 +132,7 @@ function MemberLibraryContent() {
           <button
             onClick={async () => {
               await auth?.auth.signOut()
+              currentSession.current = null
               setSession(null)
               setData(null)
             }}

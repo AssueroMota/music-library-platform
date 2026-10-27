@@ -179,6 +179,13 @@ materiais estão sendo preparados. A espera continua limitada: se terminar sem
 resposta, o cliente pode usar "Tentar novamente". Não há repetição automática de
 solicitações que enviam e-mail nem alterações na validação dos direitos de acesso.
 
+Retornar à aba e renovar a autenticação da mesma conta preserva o catálogo,
+os filtros e o material aberto. A consulta inicial da biblioteca acompanha a
+identidade da conta, sem reiniciar a cada evento `SIGNED_IN` ou troca do token.
+Arquivos já abertos mantêm sua URL temporária; novas aberturas e a ação de renovar
+o arquivo usam a credencial atual. Sair ou trocar de conta limpa os materiais e
+cancela consultas antigas. A renovação automática de autenticação continua ativa.
+
 O checkout exige o e-mail de entrega antes de criar a cobrança. A migração
 `202610240004_checkout_delivery_email` adiciona `orders.deliveryEmail`, separado
 do e-mail que o provedor eventualmente retorna em `payer`. O destinatário é

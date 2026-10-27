@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { FileMusic, Headphones, LoaderCircle, RefreshCw, Search, X } from 'lucide-react'
 import type { MemberAsset, MemberLibraryData } from '../../shared/library'
 import { api, LIBRARY_REQUEST_TIMEOUT_MS } from '../lib/api'
@@ -281,16 +281,20 @@ function SongWorkspace({
 }
 
 function ProtectedMedia({ asset, token }: { asset: MemberAsset; token: string }) {
+  const currentToken = useRef(token)
   const [url, setUrl] = useState('')
   const [error, setError] = useState('')
   const [refresh, setRefresh] = useState(0)
   const [zoom, setZoom] = useState(100)
   useEffect(() => {
+    currentToken.current = token
+  }, [token])
+  useEffect(() => {
     const controller = new AbortController()
     api<{ url: string }>(
       `/library/assets/${asset.id}/view`,
       {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${currentToken.current}` },
         signal: controller.signal,
       },
       LIBRARY_REQUEST_TIMEOUT_MS,
@@ -303,7 +307,7 @@ function ProtectedMedia({ asset, token }: { asset: MemberAsset; token: string })
           setError(reason instanceof Error ? reason.message : 'Não foi possível abrir o arquivo.')
       })
     return () => controller.abort()
-  }, [asset.id, token, refresh])
+  }, [asset.id, refresh])
   const loadError = useCallback(
     () => setError('Não foi possível carregar o arquivo. Renove o acesso e tente novamente.'),
     [],
