@@ -72,7 +72,7 @@ As migrações criam `users`, `products`, `orders`, `payments`, `entitlements`, 
 
 RLS é habilitada sem políticas públicas nessas tabelas. A conexão do backend deve usar o proprietário das tabelas ou um papel de servidor com acesso. O frontend consulta exclusivamente a API, sem permissão direta para alterar pedidos ou acessos.
 
-O seed cria os dois planos de violino e mantém os produtos antigos arquivados. A migração `202610240005_violin_offers` cria 25 partituras sem playbacks por R$ 12,90 e 100 partituras com playbacks por R$ 27,90 no lançamento. A regra compartilhada em `shared/violin-launch.ts` altera o Completo para R$ 49,90 a partir de 28/10/2026, no horário de Brasília. A chave global `CHECKOUT_ENABLED` continua controlando a abertura das compras. Reexecutar o seed não altera produtos existentes. Para impedir uma venda específica, use `products.available=false`. `npm start` aplica as migrações pendentes antes de iniciar a API.
+O seed cria os dois planos de violino e mantém os produtos antigos arquivados. A oferta atual é a coleção de 100 partituras, em expansão, sem playbacks por R$ 12,90 ou com playbacks por R$ 27,90 no lançamento. Ambos incluem 10 setlists e acesso vitalício. A migração `202610270001_violin_lifetime_collection` atualiza as descrições da oferta original sem mudar valores ou disponibilidade. A regra compartilhada em `shared/violin-launch.ts` altera o Completo para R$ 49,90 a partir de 28/10/2026, no horário de Brasília. A chave global `CHECKOUT_ENABLED` continua controlando a abertura das compras. Reexecutar o seed não altera produtos existentes. Para impedir uma venda específica, use `products.available=false`. `npm start` aplica as migrações pendentes antes de iniciar a API.
 
 ## Mercado Pago Developers
 
@@ -106,6 +106,8 @@ O importador exige bucket privado, aceita PDF/PNG para partituras e MP3/WAV para
 Use os mesmos `songTitle`, `artist` e `instrument` nos arquivos da mesma música para reuni-los na mesma linha. `style` alimenta o filtro de estilo; campos antigos sem metadados continuam disponíveis pelo `title`. A biblioteca privada oferece busca por música/artista, filtros de instrumento/estilo, áudio com controles e partitura com zoom. PDFs são renderizados na página com PDF.js, com navegação por páginas; PNGs são exibidos diretamente. Várias versões da partitura ou do áudio podem ser escolhidas no mesmo painel.
 
 A rota `/api/library/assets/:id/view` aplica a mesma autenticação, compra aprovada, instrumento e revogação de `/download`. As URLs são solicitadas ao abrir o material; a ação “Renovar acesso ao arquivo” revalida o direito e substitui uma URL expirada. URLs temporárias não são persistidas no navegador. Aplique a migração `202610240001_library_repertoire` antes de publicar o novo servidor.
+
+Os 10 setlists de `src/data/setlists.ts` organizam as músicas por ocasião. A biblioteca resolve cada sequência somente a partir dos materiais retornados pela API autenticada, preserva a ordem sugerida e permite avançar/voltar entre as partituras. Músicas ausentes ou não liberadas não aparecem; não são criados arquivos, permissões ou URLs adicionais. Um mesmo material pode integrar várias seleções. Os acessos de compra não têm data de expiração; a validade dos acessos de prévia permanece independente.
 
 Completo permite os seis instrumentos; individual permite os arquivos daquele instrumento. Não publique materiais comerciais em `public/`, nem exponha chaves do storage em respostas.
 

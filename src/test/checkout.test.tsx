@@ -110,7 +110,7 @@ it('seleciona o plano de partituras para violino e usa o preço consultado no se
   await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1))
   expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
   expect(screen.getByText('Violino · Partituras')).toBeInTheDocument()
-  expect(screen.getByText('25 partituras para violino. Não inclui playbacks.')).toBeInTheDocument()
+  expect(screen.getByText(violinOffers[0].description)).toBeInTheDocument()
   expect(screen.getByText('R$ 19,90')).toBeInTheDocument()
   expect(button).toBeDisabled()
   await userEvent.type(screen.getByLabelText('E-mail para receber seu acesso'), 'buyer@gmail.com')

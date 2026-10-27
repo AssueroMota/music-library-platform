@@ -82,8 +82,9 @@ export function ConfidenceSection() {
               <span>02 · ESCOLHA COM SEGURANÇA</span>
               <h3>O plano é claro.</h3>
               <p>
-                {formatBRL(prices[0])} por 25 partituras. {formatBRL(prices[1])} por 100 partituras com
-                playbacks. Compra única e valor confirmado antes do pagamento pelo Mercado Pago.
+                {formatBRL(prices[0])} pela coleção de 100 partituras. {formatBRL(prices[1])} com
+                playbacks. Os dois planos incluem 10 setlists e acesso vitalício. Coleção em
+                expansão, com compra única e valor confirmado antes do pagamento.
               </p>
               <a href="#planos">
                 Comparar os dois planos <span aria-hidden="true">↗</span>

@@ -29,7 +29,7 @@ O Vite encaminha `/api` para `http://127.0.0.1:3001`. A landing page pode ser ex
 
 ## Compra e entrega
 
-1. O visitante escolhe 25 partituras para violino ou 100 partituras com playbacks, consultando preço e disponibilidade atuais.
+1. O visitante escolhe a coleção de 100 partituras para violino, sem ou com playbacks, consultando preço e disponibilidade atuais. Os dois planos incluem 10 setlists e acesso vitalício; a coleção está em expansão.
 2. O navegador envia `productId`, e-mail de entrega e `expectedPriceCents` no corpo de `POST /api/checkout`. Cabeçalhos identificam a tentativa e protegem a consulta de status.
 3. O servidor lê o produto no PostgreSQL, aplica a regra compartilhada de lançamento, verifica o total esperado, grava o pedido e cria uma order pelo SDK oficial, retornando `checkout_url`.
 4. O comprador informa dados e paga no ambiente do Mercado Pago.
@@ -41,7 +41,7 @@ As páginas `/checkout/success`, `/checkout/pending` e `/checkout/failure` consu
 
 ## Catálogo e arquivos
 
-`shared/products.ts` define os dois produtos atuais para violino: 25 partituras sem playback por R$ 12,90 e 100 partituras com playbacks por R$ 27,90 no lançamento. `shared/violin-launch.ts` define o prazo fixo até 27/10/2026 às 23h59 (Brasília) e o preço de R$ 49,90 do Completo a partir de 28/10/2026. O backend aplica a mesma regra no catálogo público e na criação da cobrança. O resumo consulta a API antes de pagar e pede uma nova confirmação se o valor mudar. Os produtos antigos permanecem no banco para preservar compras e acessos anteriores; a migração retira suas ofertas de venda. Consulte [docs/violin-offer.md](docs/violin-offer.md).
+`shared/products.ts` define os dois produtos atuais para violino: coleção de 100 partituras sem playback por R$ 12,90 e com playbacks por R$ 27,90 no lançamento. Ambos incluem 10 setlists e acesso vitalício. O site informa que o acervo está em expansão; a biblioteca conta somente os arquivos efetivamente publicados. `shared/violin-launch.ts` define o prazo fixo até 27/10/2026 às 23h59 (Brasília) e o preço de R$ 49,90 do Completo a partir de 28/10/2026. O backend aplica a mesma regra no catálogo público e na criação da cobrança. O resumo consulta a API antes de pagar e pede uma nova confirmação se o valor mudar. Os produtos antigos permanecem no banco para preservar compras e acessos anteriores; a migração retira suas ofertas de venda. Consulte [docs/violin-offer.md](docs/violin-offer.md).
 
 Os estudos em `public/` são demonstrações; consulte [docs/assets.md](docs/assets.md). Os materiais comerciais precisam ser importados em bucket privado antes do lançamento, com `npm run library:import -- caminho/do/manifesto.json`.
 

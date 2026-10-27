@@ -63,7 +63,8 @@ export const violinOffers = [
     instrument: 'violin',
     accessType: 'SCORES',
     priceCents: 1290,
-    description: '25 partituras para violino. Não inclui playbacks.',
+    description:
+      'Coleção de 100 partituras para violino, em expansão. 10 setlists prontos e acesso vitalício. Não inclui playbacks.',
   },
   {
     id: 'library-violin-playbacks',
@@ -72,6 +73,7 @@ export const violinOffers = [
     instrument: 'violin',
     accessType: 'INSTRUMENT',
     priceCents: 2790,
-    description: '100 partituras para violino com os respectivos playbacks.',
+    description:
+      'Coleção de 100 partituras para violino com playbacks, em expansão. 10 setlists prontos e acesso vitalício.',
   },
 ] as const

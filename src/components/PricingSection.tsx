@@ -99,15 +99,27 @@ function PricingCard({
               100 partituras <span>+ Playbacks</span>
             </>
           ) : (
-            <>25 partituras</>
+            <>100 partituras</>
           )}
         </h3>
       </header>
       <ProductArtwork complete={Boolean(plan.featured)} />
       <ul className="pricing-benefits">
         {(plan.featured
-          ? ['Partituras para violino', 'Playbacks para tocar junto', 'Acesso digital por e-mail']
-          : ['Partituras para violino', 'Acesso digital por e-mail', 'Sem playbacks']
+          ? [
+              'Partituras para violino',
+              'Playbacks para tocar junto',
+              '10 setlists prontos',
+              'Acesso vitalício',
+              'Link pessoal por e-mail',
+            ]
+          : [
+              'Partituras para violino',
+              '10 setlists prontos',
+              'Acesso vitalício',
+              'Link pessoal por e-mail',
+              'Sem playbacks',
+            ]
         ).map((benefit) => (
           <li key={benefit}>
             {benefit.startsWith('Sem ') ? (
@@ -142,7 +154,7 @@ function PricingCard({
         <Button onClick={() => onCheckout(plan.id)}>
           {plan.featured ? 'Quero partituras + playbacks' : 'Quero somente as partituras'}
         </Button>
-        <span className="offer-checkout-note">Pagamento único · sem mensalidade</span>
+        <span className="offer-checkout-note">Acesso vitalício · pagamento único</span>
       </div>
     </article>
   )
@@ -183,7 +195,8 @@ export function PricingSection({ onCheckout }: { onCheckout: (plan: string) => v
           </span>
         </div>
         <p className="pricing-disclaimer">
-          Acervo em preparação. Confira o repertório disponível e o valor final no checkout.
+          Coleção em expansão para 100 partituras. Os setlists usam os materiais já disponíveis na
+          biblioteca. Confira o repertório e o valor final no checkout.
         </p>
       </Container>
     </section>

@@ -50,12 +50,14 @@ export function HeroSection() {
             </div>
             <div className="hero-offer-price">
               <span>
-                25 partituras por{' '}
+                Coleção de 100 partituras por{' '}
                 <strong>
                   {plans[0].price?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                 </strong>
               </span>
-              <span className="hero-payment-note">Compra única. Sem mensalidade.</span>
+              <span className="hero-payment-note">
+                Acesso vitalício. Compra única, sem mensalidade.
+              </span>
             </div>
             <div className="hero-assurances">
               <span>

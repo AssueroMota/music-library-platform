@@ -4,8 +4,10 @@ A página pública oferece dois planos com pagamento único:
 
 | Produto                    | Preço                                                   | Permissão                                              |
 | -------------------------- | ------------------------------------------------------- | ------------------------------------------------------ |
-| `library-violin-scores`    | R$ 12,90                                                | 25 partituras de violino, sem áudios                   |
-| `library-violin-playbacks` | R$ 27,90 no lançamento; R$ 49,90 a partir de 28/10/2026 | 100 partituras de violino com os respectivos playbacks |
+| `library-violin-scores`    | R$ 12,90                                                | Coleção de 100 partituras de violino, sem áudios, 10 setlists e acesso vitalício |
+| `library-violin-playbacks` | R$ 27,90 no lançamento; R$ 49,90 a partir de 28/10/2026 | Coleção de 100 partituras de violino com playbacks, 10 setlists e acesso vitalício |
+
+A coleção está em expansão. A contagem da biblioteca reflete apenas os arquivos publicados, sem inventar materiais para completar a oferta. A migração `202610270001_violin_lifetime_collection` atualiza somente as descrições dos planos; não altera preços, disponibilidade, pedidos ou permissões.
 
 ## Condição real de lançamento
 

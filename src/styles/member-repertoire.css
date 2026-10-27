@@ -119,6 +119,217 @@
 .repertoire {
   margin-top: 24px;
 }
+.library-collection-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.library-collection-nav button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 48px;
+  padding: 11px 17px;
+  border: 1px solid #d7e2dd;
+  border-radius: 9px;
+  background: #fff;
+  color: #405367;
+  font-size: 14px;
+  font-weight: 600;
+}
+.library-collection-nav button[aria-pressed='true'] {
+  color: #fff;
+  background: #173e31;
+  border-color: #173e31;
+}
+.library-collection-nav button > span {
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: #d6e7df;
+  color: #214d3d;
+  font-size: 12px;
+}
+.library-setlists-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 22px;
+}
+.library-setlists-heading h2,
+.library-setlist-intro h2 {
+  font-size: clamp(21px, 2vw, 27px);
+  line-height: 1.35;
+  letter-spacing: -0.5px;
+}
+.library-setlists-heading p,
+.library-setlist-intro p {
+  max-width: 660px;
+  color: #637387;
+  font-size: 14px;
+  line-height: 1.7;
+  margin-top: 8px;
+}
+.library-setlists-heading > span {
+  flex-shrink: 0;
+  color: #406450;
+  font-size: 13px;
+  padding-top: 8px;
+}
+.library-setlist-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+.library-setlist-card {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  text-align: left;
+  min-width: 0;
+  padding: 24px;
+  border: 1px solid #dce5df;
+  border-radius: 13px;
+  background: #fff;
+  color: #142b42;
+}
+.library-setlist-card:hover {
+  border-color: #83ac96;
+  background: #fbfdfb;
+}
+.library-setlist-card-top {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  color: #43755c;
+}
+.library-setlist-card-top > span {
+  font-size: 12px;
+  color: #82958a;
+}
+.library-setlist-occasion {
+  display: block;
+  color: #52715f;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+}
+.library-setlist-card > strong {
+  margin-top: 7px;
+  font-size: 20px;
+  letter-spacing: -0.4px;
+  line-height: 1.35;
+}
+.library-setlist-description {
+  color: #637387;
+  font-size: 13px;
+  line-height: 1.7;
+  margin-block: 10px 18px;
+}
+.library-setlist-preview {
+  font-size: 12px;
+  line-height: 1.8;
+  color: #617767;
+  margin-top: auto;
+}
+.library-setlist-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e9eeea;
+  font-size: 12px;
+  color: #617467;
+}
+.library-setlist-card-footer > span:last-child {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #206044;
+  font-weight: 650;
+}
+.library-setlist-intro {
+  margin-bottom: 22px;
+  padding: 24px;
+  border: 1px solid #d7e4dc;
+  border-radius: 12px;
+  background: #eff5f1;
+}
+.library-setlist-intro > button {
+  margin-bottom: 22px;
+}
+.library-setlist-intro h2 {
+  margin-top: 5px;
+}
+.library-setlist-intro > span:last-child {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #406450;
+  margin-top: 14px;
+}
+.library-setlist-sequence {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 15px 18px;
+  background: #f4f8f5;
+  border-bottom: 1px solid #e0e8e2;
+}
+.library-setlist-sequence > span {
+  color: #576e5e;
+  font-size: 13px;
+}
+.library-setlist-sequence button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+@media (max-width: 1000px) {
+  .library-setlist-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .library-collection-nav {
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+  .library-collection-nav button {
+    flex: 1;
+    padding: 10px 8px;
+    gap: 6px;
+    font-size: 12px;
+  }
+  .library-collection-nav button > svg {
+    display: none;
+  }
+  .library-setlists-heading {
+    flex-direction: column;
+    gap: 4px;
+  }
+  .library-setlist-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .library-setlist-card {
+    padding: 21px;
+  }
+  .library-setlist-intro {
+    padding: 20px;
+  }
+  .library-setlist-sequence {
+    padding: 12px;
+  }
+}
 .repertoire-overview {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

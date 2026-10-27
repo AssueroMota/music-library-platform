@@ -3,12 +3,31 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, expect, it, vi } from 'vitest'
 import { MemberRepertoire } from '../components/MemberRepertoire'
 import type { MemberLibraryData } from '../../shared/library'
+import { resolveViolinSetlists, violinSetlists } from '../data/setlists'
 
 vi.mock('../components/ScorePdf', () => ({
   ScorePdf: ({ url, title }: { url: string; title: string }) => (
     <div title={title} data-url={url} />
   ),
 }))
+
+it('oferece dez setlists ordenados sem incluir músicas de outro instrumento ou fora do acesso', () => {
+  expect(violinSetlists).toHaveLength(10)
+  expect(new Set(violinSetlists.map((item) => item.id)).size).toBe(10)
+  for (const item of violinSetlists) {
+    expect(item.titles.length).toBeGreaterThanOrEqual(8)
+    expect(new Set(item.titles).size).toBe(item.titles.length)
+  }
+  const available = resolveViolinSetlists([
+    { title: 'Perfect', instrument: 'cello' },
+    { title: 'All of Me', instrument: 'violin' },
+    { title: 'A Thousand Years', instrument: 'violin' },
+  ])
+  expect(
+    available.find((item) => item.id === 'cerimonia-romantica')?.songs.map((song) => song.title),
+  ).toEqual(['A Thousand Years', 'All of Me'])
+  expect(resolveViolinSetlists([{ title: 'Perfect', instrument: 'cello' }])).toEqual([])
+})
 
 const data: MemberLibraryData = {
   products: [{ id: 'library-violin', name: 'Biblioteca de Violino' }],
@@ -208,4 +227,53 @@ it('amplia a área de estudo e volta à lista mantendo a partitura aberta', asyn
   expect(screen.getByRole('img', { name: 'Fix You - imagem' })).toBe(image)
   expect(screen.getByRole('combobox', { name: 'Zoom da partitura' })).toHaveValue('150')
   expect(fetchMock).toHaveBeenCalledTimes(1)
+})
+
+it('abre um setlist, mantém sua ordem e navega entre as partituras autorizadas', async () => {
+  const fetchMock = vi.fn(
+    async () => new Response(JSON.stringify({ url: 'https://storage.example.test/score.png' })),
+  )
+  vi.stubGlobal('fetch', fetchMock)
+  const titles = ['Perfect', "Can't Help Falling in Love", 'A Thousand Years']
+  const collection: MemberLibraryData = {
+    ...data,
+    assets: titles.map((songTitle, index) => ({
+      ...data.assets[0],
+      id: `setlist-score-${index}`,
+      title: songTitle,
+      songTitle,
+    })),
+  }
+  render(<MemberRepertoire data={collection} token="test-token" />)
+  const user = userEvent.setup()
+  await user.click(screen.getByRole('button', { name: /Setlists prontos/ }))
+  await user.click(screen.getByRole('button', { name: 'Abrir setlist Cerimônia romântica' }))
+  expect(screen.getByRole('heading', { name: 'Cerimônia romântica' })).toHaveFocus()
+  expect(screen.getByRole('combobox', { name: 'Ordenar por' })).toHaveValue('setlist')
+  expect(
+    screen
+      .getAllByRole('row')
+      .slice(1)
+      .map((row) => within(row).getByRole('button', { name: /Abrir materiais/ }).textContent),
+  ).toEqual([
+    expect.stringContaining('A Thousand Years'),
+    expect.stringContaining("Can't Help Falling in Love"),
+    expect.stringContaining('Perfect'),
+  ])
+  expect(fetchMock).not.toHaveBeenCalled()
+  await user.click(screen.getByRole('button', { name: 'Ver partitura de A Thousand Years' }))
+  await screen.findByRole('img', { name: 'A Thousand Years' })
+  expect(screen.getByRole('button', { name: 'Música anterior do setlist' })).toBeDisabled()
+  await user.click(screen.getByRole('button', { name: 'Próxima música do setlist' }))
+  await screen.findByRole('img', { name: "Can't Help Falling in Love" })
+  expect(screen.getByRole('navigation', { name: 'Navegar pelo setlist' })).toHaveTextContent(
+    '2 de 3',
+  )
+  await user.click(screen.getByRole('button', { name: 'Próxima música do setlist' }))
+  await screen.findByRole('img', { name: 'Perfect' })
+  expect(screen.getByRole('button', { name: 'Próxima música do setlist' })).toBeDisabled()
+  await user.click(screen.getByRole('button', { name: 'Voltar aos setlists' }))
+  expect(screen.queryByRole('img', { name: 'Perfect' })).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: /Todas as músicas/ }))
+  expect(screen.getByRole('heading', { name: 'Seu repertório' })).toBeInTheDocument()
 })
