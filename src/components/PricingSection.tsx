@@ -109,7 +109,7 @@ function PricingCard({
           ? [
               'Partituras para violino',
               'Playbacks para tocar junto',
-              '10 setlists prontos',
+              '42 setlists prontos',
               'Acesso vitalício',
               'Link pessoal por e-mail',
             ]

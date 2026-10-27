@@ -121,7 +121,8 @@ it('encaminha a escolha correta de cada plano para o checkout', async () => {
   const onCheckout = vi.fn()
   render(<PricingSection onCheckout={onCheckout} />)
   expect(screen.getAllByText('Acesso vitalício', { exact: true })).toHaveLength(2)
-  expect(screen.getAllByText('10 setlists prontos', { exact: true })).toHaveLength(2)
+  expect(screen.getByText('10 setlists prontos', { exact: true })).toBeInTheDocument()
+  expect(screen.getByText('42 setlists prontos', { exact: true })).toBeInTheDocument()
   expect(
     screen
       .getAllByRole('heading', { level: 3 })
