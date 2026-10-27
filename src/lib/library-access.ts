@@ -1,4 +1,4 @@
-import { api } from './api'
+import { api, LIBRARY_REQUEST_TIMEOUT_MS } from './api'
 import { publicEnv } from './public-env'
 
 export type PersonalAccess = { id: string; token: string } | 'invalid' | null
@@ -26,7 +26,7 @@ export function redeemPersonalAccess(access: Exclude<PersonalAccess, 'invalid' |
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(access),
     },
-    60000,
+    LIBRARY_REQUEST_TIMEOUT_MS,
   ).finally(() => pending.delete(key))
   pending.set(key, result)
   return result

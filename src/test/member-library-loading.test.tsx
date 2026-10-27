@@ -1,0 +1,107 @@
+import { act, fireEvent, render, screen } from '@testing-library/react'
+import { afterEach, beforeEach, expect, it, vi } from 'vitest'
+import { MemberLibrary } from '../components/MemberLibrary'
+
+const { getSession, signOut } = vi.hoisted(() => ({
+  getSession: vi.fn(),
+  signOut: vi.fn(async () => {}),
+}))
+vi.mock('../lib/auth', () => ({
+  auth: {
+    auth: {
+      getSession,
+      signOut,
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: vi.fn() } } }),
+    },
+  },
+}))
+
+beforeEach(() => {
+  window.history.replaceState({}, '', '/biblioteca')
+  getSession.mockResolvedValue({
+    data: { session: { access_token: 'test-session-only' } },
+    error: null,
+  })
+  vi.useFakeTimers()
+  vi.spyOn(AbortSignal, 'timeout').mockImplementation((milliseconds) => {
+    const controller = new AbortController()
+    setTimeout(() => controller.abort(new DOMException('Timed out', 'TimeoutError')), milliseconds)
+    return controller.signal
+  })
+})
+afterEach(() => {
+  vi.useRealTimers()
+  vi.restoreAllMocks()
+  vi.unstubAllGlobals()
+  window.history.replaceState({}, '', '/')
+})
+
+function delayedLibrary() {
+  let finish: (response: Response) => void = () => {}
+  let signal: AbortSignal | undefined
+  const fetchMock = vi.fn(
+    (_url: string, init: RequestInit) =>
+      new Promise<Response>((resolve, reject) => {
+        finish = resolve
+        signal = init.signal ?? undefined
+        signal?.addEventListener('abort', () => reject(signal?.reason), { once: true })
+      }),
+  )
+  vi.stubGlobal('fetch', fetchMock)
+  return {
+    fetchMock,
+    signal: () => signal,
+    finish: () => finish(new Response(JSON.stringify({ products: [], assets: [] }))),
+  }
+}
+
+it('aguarda a inicialização por mais de 15 segundos e carrega sem pedir novo login', async () => {
+  const request = delayedLibrary()
+  render(<MemberLibrary />)
+  await act(async () => {})
+  expect(request.fetchMock).toHaveBeenCalledTimes(1)
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(65000)
+  })
+  expect(request.signal()?.aborted).toBe(false)
+  expect(screen.getByRole('status')).toHaveTextContent('Estamos preparando seus materiais')
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  await act(async () => {
+    request.finish()
+  })
+  expect(screen.getByRole('heading', { name: 'Seu repertório' })).toBeInTheDocument()
+  expect(signOut).not.toHaveBeenCalled()
+  expect(request.fetchMock).toHaveBeenCalledTimes(1)
+})
+
+it('encerra a espera com opção de tentar novamente e preserva a sessão', async () => {
+  const request = delayedLibrary()
+  render(<MemberLibrary />)
+  await act(async () => {})
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(90001)
+  })
+  expect(screen.getByRole('alert')).toHaveTextContent('O serviço demorou para responder')
+  await act(async () => {
+    fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }))
+  })
+  expect(request.fetchMock).toHaveBeenCalledTimes(2)
+  await act(async () => {
+    request.finish()
+  })
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'Seu repertório' })).toBeInTheDocument()
+  expect(signOut).not.toHaveBeenCalled()
+})
+
+it('cancela a consulta ao sair da página sem renderizar uma resposta antiga', async () => {
+  const request = delayedLibrary()
+  const mounted = render(<MemberLibrary />)
+  await act(async () => {})
+  mounted.unmount()
+  expect(request.signal()?.aborted).toBe(true)
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(90001)
+  })
+  expect(request.fetchMock).toHaveBeenCalledTimes(1)
+})

@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Copy, LoaderCircle, LogOut, Mail, Music2 } from 'lucide-react'
 import type { Session } from '@supabase/supabase-js'
 import { auth } from '../lib/auth'
-import { api } from '../lib/api'
+import { api, LIBRARY_REQUEST_TIMEOUT_MS } from '../lib/api'
 import type { MemberLibraryData } from '../../shared/library'
 import { MemberRepertoire } from './MemberRepertoire'
 import { allInstruments as instruments } from '../data/content'
@@ -23,6 +23,7 @@ function MemberLibraryContent() {
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
   const [refresh, setRefresh] = useState(0)
+  const [waitingLonger, setWaitingLonger] = useState(false)
   useEffect(() => {
     document.title = 'Minha biblioteca | Music Library'
     if (!auth) {
@@ -59,15 +60,27 @@ function MemberLibraryContent() {
     if (!session) return
     const controller = new AbortController()
     setError('')
-    api<MemberLibraryData>('/library', {
-      headers: { Authorization: `Bearer ${session.access_token}` },
-      signal: controller.signal,
-    })
-      .then(setData)
+    setWaitingLonger(false)
+    const timer = setTimeout(() => setWaitingLonger(true), 8000)
+    api<MemberLibraryData>(
+      '/library',
+      {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        signal: controller.signal,
+      },
+      LIBRARY_REQUEST_TIMEOUT_MS,
+    )
+      .then((result) => {
+        if (!controller.signal.aborted) setData(result)
+      })
       .catch((e: Error) => {
         if (!controller.signal.aborted) setError(e.message)
       })
-    return () => controller.abort()
+      .finally(() => clearTimeout(timer))
+    return () => {
+      clearTimeout(timer)
+      controller.abort()
+    }
   }, [session, refresh])
   async function login(event: FormEvent) {
     event.preventDefault()
@@ -76,11 +89,15 @@ function MemberLibraryContent() {
     setError('')
     setNotice('')
     try {
-      const result = await api<{ message: string }>('/auth/link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim() }),
-      })
+      const result = await api<{ message: string }>(
+        '/auth/link',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email.trim() }),
+        },
+        LIBRARY_REQUEST_TIMEOUT_MS,
+      )
       setNotice(result.message)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Não foi possível enviar o link.')
@@ -199,7 +216,14 @@ function MemberLibraryContent() {
                 <MemberRepertoire data={data} token={session.access_token} />
               </>
             )}
-            {!data && !error && <p role="status">Carregando seus materiais…</p>}
+            {!data && !error && (
+              <p role="status">
+                <LoaderCircle className="checkout-spinner" size={18} />{' '}
+                {waitingLonger
+                  ? 'Estamos preparando seus materiais. Isso pode levar cerca de um minuto. Mantenha esta página aberta.'
+                  : 'Carregando seus materiais…'}
+              </p>
+            )}
             {error && (
               <button className="button button-outline" onClick={() => setRefresh((v) => v + 1)}>
                 Tentar novamente

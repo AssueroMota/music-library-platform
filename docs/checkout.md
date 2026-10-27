@@ -171,6 +171,14 @@ Sem credenciais externas, esse teste oficial permanece **pendente**. A suíte lo
 
 ## Operação e recuperação
 
+A biblioteca, a abertura do link pessoal, a solicitação de e-mail e a emissão
+de URLs para visualizar materiais aguardam até 90 segundos pela API. Isso
+acomoda a inicialização de uma instância após inatividade sem encerrar a sessão.
+Após oito segundos de espera pelo catálogo privado, a interface informa que os
+materiais estão sendo preparados. A espera continua limitada: se terminar sem
+resposta, o cliente pode usar "Tentar novamente". Não há repetição automática de
+solicitações que enviam e-mail nem alterações na validação dos direitos de acesso.
+
 O checkout exige o e-mail de entrega antes de criar a cobrança. A migração
 `202610240004_checkout_delivery_email` adiciona `orders.deliveryEmail`, separado
 do e-mail que o provedor eventualmente retorna em `payer`. O destinatário é

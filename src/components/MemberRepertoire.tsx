@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { FileMusic, Headphones, LoaderCircle, RefreshCw, Search, X } from 'lucide-react'
 import type { MemberAsset, MemberLibraryData } from '../../shared/library'
-import { api } from '../lib/api'
+import { api, LIBRARY_REQUEST_TIMEOUT_MS } from '../lib/api'
 import { allInstruments as instruments } from '../data/content'
 import { normalizeSearch } from '../data/library'
 
@@ -287,10 +287,14 @@ function ProtectedMedia({ asset, token }: { asset: MemberAsset; token: string })
   const [zoom, setZoom] = useState(100)
   useEffect(() => {
     const controller = new AbortController()
-    api<{ url: string }>(`/library/assets/${asset.id}/view`, {
-      headers: { Authorization: `Bearer ${token}` },
-      signal: controller.signal,
-    })
+    api<{ url: string }>(
+      `/library/assets/${asset.id}/view`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        signal: controller.signal,
+      },
+      LIBRARY_REQUEST_TIMEOUT_MS,
+    )
       .then((result) => {
         if (!controller.signal.aborted) setUrl(result.url)
       })

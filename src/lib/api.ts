@@ -2,6 +2,9 @@ import { publicEnv } from './public-env'
 
 const apiBase = publicEnv(import.meta.env.VITE_API_URL).replace(/\/$/, '')
 
+// Library requests can be the first request after the API has been idle.
+export const LIBRARY_REQUEST_TIMEOUT_MS = 90000
+
 export class ApiError extends Error {
   code: string
   constructor(message: string, code: string) {
