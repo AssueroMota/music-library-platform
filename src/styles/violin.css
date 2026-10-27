@@ -694,6 +694,16 @@
   position: relative;
   overflow: hidden;
 }
+.video-frame.video-frame--portrait {
+  width: min(100%, 340px);
+  justify-self: center;
+  transform: none;
+}
+.video-frame--portrait video {
+  height: auto;
+  aspect-ratio: 9/16;
+  object-fit: contain;
+}
 .video-placeholder > img {
   width: 100%;
   height: 100%;

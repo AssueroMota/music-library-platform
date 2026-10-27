@@ -127,6 +127,7 @@ it('coordena a playlist e a demonstração para não reproduzir as duas juntas',
   container.append(video)
   fireEvent.play(video)
   expect(screen.getByRole('button', { name: 'Reproduzir música da visita' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Expandir player de música' })).toBeInTheDocument()
 })
 
 it('permite trocar uma faixa indisponível sem repetir tentativas automaticamente', async () => {

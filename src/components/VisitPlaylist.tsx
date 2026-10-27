@@ -102,6 +102,7 @@ export function VisitPlaylist() {
   useEffect(() => {
     const pauseForMedia = (event: Event) => {
       if (event.target instanceof HTMLMediaElement && event.target !== audioRef.current) pause()
+      if (event.target instanceof HTMLVideoElement) setMinimized(true)
     }
     const pauseForPlayer = (event: Event) => {
       if ((event as CustomEvent).detail !== audioRef.current) pause()
