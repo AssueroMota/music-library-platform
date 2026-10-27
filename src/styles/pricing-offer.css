@@ -1118,12 +1118,12 @@ body:has(.site-offer-header) [id] {
   display: block;
 }
 .violin-sales .pricing-showcase.pricing-compact .pricing-card {
-  padding: 25px 28px 22px;
+  padding: 22px 24px 18px;
   border-radius: 11px;
   min-height: 0;
 }
 .violin-sales .pricing-showcase.pricing-compact .pricing-featured {
-  padding-top: 28px;
+  padding-top: 24px;
 }
 .violin-sales .pricing-showcase.pricing-compact .pricing-card h3 {
   font-size: 28px;
@@ -1139,22 +1139,22 @@ body:has(.site-offer-header) [id] {
   top: -13px;
 }
 .pricing-compact .offer-art-frame {
-  height: 165px;
+  height: 116px;
   overflow: hidden;
   position: relative;
-  margin: 0 -9px 8px;
+  margin: 0 0 6px;
 }
 .pricing-compact .offer-art {
-  width: 128.205%;
+  width: 181.818%;
   height: 211px;
-  transform: scale(0.78);
+  transform: scale(0.55);
   transform-origin: top left;
   margin: 0;
   overflow: hidden;
 }
 .violin-sales .pricing-showcase.pricing-compact .pricing-benefits {
-  margin: 0 0 15px;
-  padding-top: 15px;
+  margin: 0 0 12px;
+  padding-top: 12px;
   gap: 8px;
 }
 .violin-sales .pricing-showcase.pricing-compact .pricing-benefits li {
@@ -1193,7 +1193,7 @@ body:has(.site-offer-header) [id] {
   color: #949aaf;
 }
 .violin-sales .pricing-showcase.pricing-compact .pricing-price {
-  padding: 0 0 16px;
+  padding: 0 0 12px;
   display: block;
   margin: 0;
 }
@@ -1270,7 +1270,7 @@ body:has(.site-offer-header) [id] {
     gap: 20px;
   }
   .violin-sales .pricing-showcase.pricing-compact .pricing-card {
-    padding: 23px 23px 20px;
+    padding: 22px 20px 18px;
   }
   .violin-sales .pricing-showcase.pricing-compact .pricing-card h3 {
     font-size: 25px;
@@ -1282,11 +1282,11 @@ body:has(.site-offer-header) [id] {
     font-size: 9px;
   }
   .pricing-compact .offer-art-frame {
-    height: 150px;
+    height: 106px;
   }
   .pricing-compact .offer-art {
-    transform: scale(0.71);
-    width: 140.845%;
+    transform: scale(0.5);
+    width: 200%;
   }
 }
 @media (max-width: 600px) {
@@ -1343,17 +1343,17 @@ body:has(.site-offer-header) [id] {
     margin-top: 29px;
   }
   .violin-sales .pricing-showcase.pricing-compact .pricing-card {
-    padding: 24px 26px 21px;
+    padding: 22px 20px 18px;
   }
   .violin-sales .pricing-showcase.pricing-compact .pricing-card h3 {
     font-size: 28px;
   }
   .pricing-compact .offer-art-frame {
-    height: 156px;
+    height: 106px;
   }
   .pricing-compact .offer-art {
-    transform: scale(0.75);
-    width: 133.333%;
+    transform: scale(0.5);
+    width: 200%;
   }
   .violin-sales .pricing-showcase.pricing-compact .pricing-value {
     font-size: 58px;

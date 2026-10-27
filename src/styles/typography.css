@@ -196,16 +196,16 @@
   max-width: 920px;
 }
 .violin-sales .pricing-showcase.pricing-compact .pricing-card h3 {
-  font-size: 2rem;
+  font-size: 1.75rem;
   line-height: 1.15;
   font-weight: 800;
 }
 .violin-sales .pricing-showcase.pricing-compact .pricing-benefits {
-  gap: 11px;
+  gap: 7px;
 }
 .violin-sales .pricing-showcase.pricing-compact .pricing-benefits li {
-  font-size: 1rem;
-  line-height: 1.6;
+  font-size: 0.9375rem;
+  line-height: 1.5;
   color: #4e5a70;
 }
 .violin-sales .pricing-showcase.pricing-compact .pricing-featured .pricing-benefits li {
@@ -216,9 +216,9 @@
   margin-top: 4px;
 }
 .violin-sales .pricing-showcase.pricing-compact .pricing-card .button {
-  font-size: var(--text-action);
-  min-height: 54px;
-  padding: 15px 12px;
+  font-size: 0.875rem;
+  min-height: 48px;
+  padding: 12px;
 }
 .violin-sales .pricing-compact .offer-recommendation {
   font-size: var(--text-label);
@@ -239,7 +239,7 @@
   line-height: 1.6;
 }
 .violin-sales .pricing-showcase.pricing-compact .pricing-value {
-  font-size: 4rem;
+  font-size: 3.375rem;
 }
 .violin-sales .pricing-showcase.pricing-compact .pricing-trust,
 .violin-sales .pricing-showcase.pricing-compact .pricing-disclaimer {

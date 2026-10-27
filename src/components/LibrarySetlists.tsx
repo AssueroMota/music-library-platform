@@ -36,12 +36,11 @@ export function LibrarySetlists({
             aria-label={`Abrir setlist ${setlist.title}`}
           >
             <span className="library-setlist-card-top">
-              <ListMusic size={22} />
+              <ListMusic size={18} />
+              <span className="library-setlist-occasion">{setlist.occasion}</span>
               <span>{String(index + 1).padStart(2, '0')}</span>
             </span>
-            <span className="library-setlist-occasion">{setlist.occasion}</span>
             <strong>{setlist.title}</strong>
-            <span className="library-setlist-description">{setlist.description}</span>
             <span className="library-setlist-preview">
               {setlist.songs
                 .slice(0, 3)

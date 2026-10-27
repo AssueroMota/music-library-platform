@@ -9,6 +9,10 @@ A página pública oferece dois planos com pagamento único:
 
 A coleção está em expansão. A contagem da biblioteca reflete apenas os arquivos publicados, sem inventar materiais para completar a oferta. A migração `202610270001_violin_lifetime_collection` atualiza somente as descrições dos planos; não altera preços, disponibilidade, pedidos ou permissões.
 
+## Próxima versão: 42 setlists
+
+O proprietário definiu em 27/10/2026 a meta de 42 setlists prontos para a próxima versão, prevista para 28/10/2026. Antes de anunciar essa quantidade, montar e conferir as 42 sequências com os materiais do acervo e atualizar a biblioteca, os benefícios, o FAQ e as descrições do catálogo. A versão publicada atualmente oferece 10 setlists. Esta previsão não agenda publicação nem altera automaticamente a quantidade anunciada.
+
 ## Condição real de lançamento
 
 O usuário autorizou criar uma condição de lançamento com mudança de preço. Foi definida a seguinte regra para o Plano Completo:
@@ -54,6 +58,8 @@ Os testes cobrem a virada de preço no fuso de Brasília, o término do contador
 
 O contador agora aparece em `LaunchOfferHeader`, em uma faixa aderente ao topo da página de vendas. Ele permanece visível durante a rolagem no computador e no celular e inclui um botão para abrir diretamente o checkout do Plano Completo. Ao expirar, a faixa some e os preços passam para o valor regular. A área da biblioteca e as páginas de retorno de pagamento não recebem essa faixa.
 
-O banner grande da seção de planos e o atalho fixo inferior foram retirados. Os cartões usam uma apresentação visual menor, três benefícios essenciais, preço e botão. Foram retirados números decorativos, descrições repetidas, a caixa de economia e o CTA duplicado abaixo dos planos. Os cartões seguem a altura natural do conteúdo, sem esticar o Básico para igualar o Completo.
+O banner grande da seção de planos e o atalho fixo inferior foram retirados. Os cartões usam uma apresentação visual menor, os benefícios do pacote, preço e botão. Foram retirados números decorativos, descrições repetidas, a caixa de economia e o CTA duplicado abaixo dos planos. Os cartões seguem a altura natural do conteúdo, sem esticar o Básico para igualar o Completo.
+
+Os cards de setlists priorizam ocasião, título, amostra de músicas e quantidade. A descrição completa aparece ao abrir a seleção. A grade usa quatro colunas em telas largas, três ou duas em telas intermediárias e uma no celular. Os planos usam ilustrações menores e espaçamentos reduzidos, mantendo benefícios legíveis e botões com pelo menos 48 px de altura.
 
 O preço de R$ 49,90 aparece riscado sobre o valor de lançamento de R$ 27,90, acompanhado da legenda curta `preço de 28/10`, mantendo claro que é o preço futuro. O prazo real e a proteção do checkout continuam em vigor.

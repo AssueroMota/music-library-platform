@@ -180,8 +180,8 @@
 }
 .library-setlist-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
 }
 .library-setlist-card {
   display: flex;
@@ -189,7 +189,7 @@
   align-items: start;
   text-align: left;
   min-width: 0;
-  padding: 24px;
+  padding: 18px;
   border: 1px solid #dce5df;
   border-radius: 13px;
   background: #fff;
@@ -200,16 +200,22 @@
   background: #fbfdfb;
 }
 .library-setlist-card-top {
-  display: flex;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  gap: 8px;
   width: 100%;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
+  margin-bottom: 12px;
   color: #43755c;
 }
-.library-setlist-card-top > span {
-  font-size: 12px;
+.library-setlist-card-top > span:last-child {
+  font-size: 11px;
   color: #82958a;
+}
+.library-setlist-card-top .library-setlist-occasion {
+  font-size: 10px;
+  letter-spacing: 0.4px;
+  line-height: 1.5;
 }
 .library-setlist-occasion {
   display: block;
@@ -220,22 +226,19 @@
   text-transform: uppercase;
 }
 .library-setlist-card > strong {
-  margin-top: 7px;
-  font-size: 20px;
+  font-size: 18px;
   letter-spacing: -0.4px;
   line-height: 1.35;
 }
-.library-setlist-description {
-  color: #637387;
-  font-size: 13px;
-  line-height: 1.7;
-  margin-block: 10px 18px;
-}
 .library-setlist-preview {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
   font-size: 12px;
-  line-height: 1.8;
+  line-height: 1.65;
   color: #617767;
-  margin-top: auto;
+  margin-block: 8px 14px;
 }
 .library-setlist-card-footer {
   display: flex;
@@ -243,8 +246,8 @@
   justify-content: space-between;
   gap: 8px;
   width: 100%;
-  margin-top: 20px;
-  padding-top: 16px;
+  margin-top: auto;
+  padding-top: 10px;
   border-top: 1px solid #e9eeea;
   font-size: 12px;
   color: #617467;
@@ -293,7 +296,12 @@
   opacity: 0.4;
   cursor: default;
 }
-@media (max-width: 1000px) {
+@media (max-width: 1199px) {
+  .library-setlist-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 899px) {
   .library-setlist-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -318,10 +326,10 @@
   }
   .library-setlist-grid {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 10px;
   }
   .library-setlist-card {
-    padding: 21px;
+    padding: 16px;
   }
   .library-setlist-intro {
     padding: 20px;
