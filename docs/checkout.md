@@ -186,6 +186,14 @@ Arquivos já abertos mantêm sua URL temporária; novas aberturas e a ação de 
 o arquivo usam a credencial atual. Sair ou trocar de conta limpa os materiais e
 cancela consultas antigas. A renovação automática de autenticação continua ativa.
 
+A área de membros reúne busca por música/artista, filtro de estilo, ordenação
+por nome/artista e opção de mostrar somente músicas com áudio. O filtro de
+instrumento aparece quando a conta tem materiais de mais de um instrumento.
+No desktop, a lista e os materiais ficam lado a lado; ampliar a área de estudo
+oculta a lista sem desmontar o PDF ou áudio. No celular, o material selecionado
+fica antes da lista e recebe foco. Todos os selects mantêm controles nativos
+com rótulos associados para teclado e tecnologias assistivas.
+
 O checkout exige o e-mail de entrega antes de criar a cobrança. A migração
 `202610240004_checkout_delivery_email` adiciona `orders.deliveryEmail`, separado
 do e-mail que o provedor eventualmente retorna em `payer`. O destinatário é

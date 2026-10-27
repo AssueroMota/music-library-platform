@@ -1,5 +1,14 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { Copy, LoaderCircle, LogOut, Mail, Music2 } from 'lucide-react'
+import {
+  ArrowLeft,
+  Check,
+  Copy,
+  LoaderCircle,
+  LogOut,
+  Mail,
+  Music2,
+  ShieldCheck,
+} from 'lucide-react'
 import type { Session } from '@supabase/supabase-js'
 import { auth } from '../lib/auth'
 import { api, LIBRARY_REQUEST_TIMEOUT_MS } from '../lib/api'
@@ -26,6 +35,7 @@ function MemberLibraryContent() {
   const [busy, setBusy] = useState(false)
   const [refresh, setRefresh] = useState(0)
   const [waitingLonger, setWaitingLonger] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
   useEffect(() => {
     document.title = 'Minha biblioteca | Music Library'
     if (!auth) {
@@ -46,6 +56,7 @@ function MemberLibraryContent() {
         setData(null)
         setError('')
         setNotice('')
+        setLinkCopied(false)
       }
     }
     auth.auth
@@ -122,12 +133,14 @@ function MemberLibraryContent() {
     }
   }
   return (
-    <div className="checkout-page">
+    <div className={`checkout-page member-page ${session ? 'member-page-authenticated' : ''}`}>
       <header className="checkout-page-header">
         <a href="/" className="member-brand">
           <Music2 size={24} /> music library.
         </a>
-        <span>MINHA BIBLIOTECA</span>
+        <span className="member-header-label">
+          <ShieldCheck size={16} /> Área do aluno
+        </span>
         {session && (
           <button
             onClick={async () => {
@@ -142,11 +155,34 @@ function MemberLibraryContent() {
         )}
       </header>
       <main className={`checkout-status-card ${session ? 'member-library' : ''}`}>
-        <span className="eyebrow">SEU ESPAÇO PARA TOCAR</span>
-        <h1>{session ? 'Minha biblioteca.' : 'Seu repertório espera por você.'}</h1>
-        {session && (
-          <p>Encontre sua música, ouça o acompanhamento e abra a partitura para tocar.</p>
-        )}
+        <div className="member-library-intro">
+          <div>
+            <span className="eyebrow">SEU ESPAÇO PARA TOCAR</span>
+            <h1>{session ? 'Minha biblioteca' : 'Seu repertório espera por você.'}</h1>
+            {session && <p>Escolha uma música e comece a tocar.</p>}
+          </div>
+          {session && data?.personalLink && (
+            <button
+              className="member-access-link"
+              aria-label="Copiar meu link pessoal"
+              title="Copiar meu link pessoal"
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(data.personalLink!)
+                  setLinkCopied(true)
+                  setNotice(
+                    'Link copiado. Guarde nos favoritos e não compartilhe seu acesso pessoal.',
+                  )
+                } catch {
+                  setNotice('Não foi possível copiar. Seu link também está no e-mail da compra.')
+                }
+              }}
+            >
+              {linkCopied ? <Check size={17} /> : <Copy size={17} />}
+              <span>{linkCopied ? 'Link copiado' : 'Copiar meu acesso'}</span>
+            </button>
+          )}
+        </div>
         {checking ? (
           <p role="status">
             <LoaderCircle className="checkout-spinner" /> Verificando seu acesso…
@@ -194,25 +230,6 @@ function MemberLibraryContent() {
           <>
             {data && (
               <>
-                {data.personalLink && (
-                  <button
-                    className="repertoire-action"
-                    onClick={async () => {
-                      try {
-                        await navigator.clipboard.writeText(data.personalLink!)
-                        setNotice(
-                          'Seu link pessoal foi copiado. Guarde nos favoritos para entrar novamente.',
-                        )
-                      } catch {
-                        setError(
-                          'Não foi possível copiar seu link. Solicite-o por e-mail na tela de entrada.',
-                        )
-                      }
-                    }}
-                  >
-                    <Copy size={16} /> Copiar meu link pessoal
-                  </button>
-                )}
                 <div className="member-products">
                   {data.products.map((p) => (
                     <span key={p.id}>{p.name}</span>
@@ -259,7 +276,7 @@ function MemberLibraryContent() {
           </p>
         )}
         <a className="checkout-back" href="/#planos">
-          Voltar ao site
+          <ArrowLeft size={15} /> Voltar ao site
         </a>
       </main>
     </div>

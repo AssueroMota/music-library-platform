@@ -1,9 +1,23 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { FileMusic, Headphones, LoaderCircle, RefreshCw, Search, X } from 'lucide-react'
+import {
+  ArrowLeft,
+  BookOpen,
+  Check,
+  FileMusic,
+  Headphones,
+  LoaderCircle,
+  Maximize2,
+  Music2,
+  RefreshCw,
+  Search,
+  SlidersHorizontal,
+  X,
+} from 'lucide-react'
 import type { MemberAsset, MemberLibraryData } from '../../shared/library'
 import { api, LIBRARY_REQUEST_TIMEOUT_MS } from '../lib/api'
 import { allInstruments as instruments } from '../data/content'
 import { normalizeSearch } from '../data/library'
+import { LibrarySelect } from './LibrarySelect'
 
 const ScorePdf = lazy(() => import('./ScorePdf').then((module) => ({ default: module.ScorePdf })))
 
@@ -25,6 +39,9 @@ export function MemberRepertoire({ data, token }: { data: MemberLibraryData; tok
   const [instrument, setInstrument] = useState('')
   const [style, setStyle] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [order, setOrder] = useState('title')
+  const [audioOnly, setAudioOnly] = useState(false)
+  const [focusMode, setFocusMode] = useState(false)
   const songs = useMemo(() => {
     const grouped = new Map<string, Song>()
     for (const asset of data.assets) {
@@ -50,149 +67,283 @@ export function MemberRepertoire({ data, token }: { data: MemberLibraryData; tok
   }, [data.assets])
   const styles = [...new Set(songs.map((song) => song.style).filter(Boolean))].sort()
   const availableInstruments = [...new Set(songs.map((song) => song.instrument))]
-  const filtered = songs.filter(
-    (song) =>
-      (!instrument || song.instrument === instrument) &&
-      (!style || song.style === style) &&
-      normalizeSearch(`${song.title} ${song.artist}`).includes(normalizeSearch(search.trim())),
-  )
+  const audioCount = songs.filter((song) =>
+    song.assets.some((asset) => asset.kind === 'audio'),
+  ).length
+  const scoreCount = data.assets.filter((asset) => asset.kind === 'score').length
+  const filtered = songs
+    .filter(
+      (song) =>
+        (!instrument || song.instrument === instrument) &&
+        (!style || song.style === style) &&
+        (!audioOnly || song.assets.some((asset) => asset.kind === 'audio')) &&
+        normalizeSearch(`${song.title} ${song.artist}`).includes(normalizeSearch(search.trim())),
+    )
+    .sort((a, b) =>
+      order === 'artist'
+        ? (a.artist || a.title).localeCompare(b.artist || b.title, 'pt-BR') ||
+          a.title.localeCompare(b.title, 'pt-BR')
+        : order === 'title-desc'
+          ? b.title.localeCompare(a.title, 'pt-BR')
+          : a.title.localeCompare(b.title, 'pt-BR'),
+    )
   const selected = songs.find((song) => song.id === selectedId)
-  const hasFilters = Boolean(search || instrument || style)
+  const hasFilters = Boolean(search || instrument || style || audioOnly)
+  function clearFilters() {
+    setSearch('')
+    setInstrument('')
+    setStyle('')
+    setAudioOnly(false)
+  }
+  function openSong(id: string) {
+    setFocusMode(false)
+    setSelectedId(id)
+  }
 
   return (
-    <section className="repertoire" aria-label="Repertório disponível">
+    <section
+      className={`repertoire ${selected ? 'has-selection' : ''} ${focusMode ? 'is-focus-mode' : ''}`}
+      aria-label="Repertório disponível"
+    >
+      <div className="repertoire-overview" role="group" aria-label="Resumo da coleção">
+        <div>
+          <span className="repertoire-stat-icon">
+            <Music2 size={20} />
+          </span>
+          <span>
+            <strong>{songs.length}</strong>
+            <span>músicas na coleção</span>
+          </span>
+        </div>
+        <div>
+          <span className="repertoire-stat-icon">
+            <BookOpen size={20} />
+          </span>
+          <span>
+            <strong>{scoreCount}</strong>
+            <span>partituras disponíveis</span>
+          </span>
+        </div>
+        <div>
+          <span className="repertoire-stat-icon">
+            <SlidersHorizontal size={20} />
+          </span>
+          <span>
+            <strong>{styles.length}</strong>
+            <span>estilos para explorar</span>
+          </span>
+        </div>
+      </div>
       <div className="repertoire-filters">
-        <label className="repertoire-search">
-          <Search size={19} aria-hidden="true" />
-          <span className="sr-only">Buscar música ou artista</span>
-          <input
-            type="search"
-            placeholder="Buscar música ou artista"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-          />
-        </label>
-        <label>
-          <span>Instrumento</span>
-          <select value={instrument} onChange={(event) => setInstrument(event.target.value)}>
+        <div className="repertoire-search-field">
+          <label htmlFor="repertoire-search">Encontre sua próxima música</label>
+          <div className="repertoire-search">
+            <Search size={19} aria-hidden="true" />
+            <input
+              id="repertoire-search"
+              aria-label="Buscar música ou artista"
+              type="search"
+              placeholder="Busque por música ou artista…"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+            {search && (
+              <button aria-label="Limpar busca" onClick={() => setSearch('')}>
+                <X size={17} />
+              </button>
+            )}
+          </div>
+        </div>
+        {availableInstruments.length > 1 && (
+          <LibrarySelect
+            label="Instrumento"
+            value={instrument}
+            onChange={(event) => setInstrument(event.target.value)}
+          >
             <option value="">Todos os instrumentos</option>
             {availableInstruments.map((id) => (
               <option key={id} value={id}>
                 {instrumentName(id)}
               </option>
             ))}
-          </select>
-        </label>
-        <label>
-          <span>Estilo</span>
-          <select value={style} onChange={(event) => setStyle(event.target.value)}>
-            <option value="">Todos os estilos</option>
-            {styles.map((name) => (
-              <option key={name}>{name}</option>
-            ))}
-          </select>
-        </label>
+          </LibrarySelect>
+        )}
+        <LibrarySelect
+          label="Estilo"
+          value={style}
+          onChange={(event) => setStyle(event.target.value)}
+        >
+          <option value="">Todos</option>
+          {styles.map((name) => (
+            <option key={name} value={name}>
+              {name} ({songs.filter((song) => song.style === name).length})
+            </option>
+          ))}
+        </LibrarySelect>
+        <LibrarySelect
+          label="Ordenar por"
+          value={order}
+          onChange={(event) => setOrder(event.target.value)}
+        >
+          <option value="title">Nome: A–Z</option>
+          <option value="title-desc">Nome: Z–A</option>
+          <option value="artist">Artista: A–Z</option>
+        </LibrarySelect>
+      </div>
+      <div className="repertoire-filter-summary">
+        <span>
+          <Music2 size={15} />{' '}
+          {availableInstruments.length === 1
+            ? instrumentName(availableInstruments[0])
+            : 'Sua coleção'}
+        </span>
+        {audioCount > 0 && (
+          <label className="repertoire-audio-filter">
+            <input
+              type="checkbox"
+              checked={audioOnly}
+              onChange={(event) => setAudioOnly(event.target.checked)}
+            />{' '}
+            Somente com áudio <span>{audioCount}</span>
+          </label>
+        )}
         {hasFilters && (
-          <button
-            className="repertoire-clear"
-            onClick={() => {
-              setSearch('')
-              setInstrument('')
-              setStyle('')
-            }}
-          >
-            Limpar filtros
+          <button className="repertoire-clear" onClick={clearFilters}>
+            <X size={14} /> Limpar filtros
           </button>
         )}
       </div>
-
-      <div className="repertoire-heading">
-        <h2>Seu repertório</h2>
-        <p aria-live="polite">
-          {filtered.length} {filtered.length === 1 ? 'música' : 'músicas'}
-        </p>
-      </div>
-      {songs.length > 0 && (
-        <div className="repertoire-table-wrap">
-          <table className="repertoire-table">
-            <caption className="sr-only">Músicas, áudios e partituras da sua biblioteca</caption>
-            <thead>
-              <tr>
-                <th scope="col">Nome</th>
-                <th scope="col">Estilo</th>
-                <th scope="col">Áudio</th>
-                <th scope="col">Partitura</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((song) => {
-                const audio = song.assets.some((asset) => asset.kind === 'audio')
-                const score = song.assets.some((asset) => asset.kind === 'score')
-                return (
-                  <tr key={song.id} className={selectedId === song.id ? 'repertoire-selected' : ''}>
-                    <th scope="row">
-                      <strong>{song.title}</strong>
-                      <small>
-                        {[song.artist, instrumentName(song.instrument)].filter(Boolean).join(' · ')}
-                      </small>
+      <div className="repertoire-content">
+        <div className="repertoire-catalog">
+          <div className="repertoire-heading">
+            <div>
+              <h2>Seu repertório</h2>
+              <span>Escolha uma música para abrir os materiais.</span>
+            </div>
+            <p aria-live="polite">
+              <span>
+                {filtered.length} {filtered.length === 1 ? 'música' : 'músicas'}
+              </span>
+            </p>
+          </div>
+          {filtered.length > 0 && (
+            <div className="repertoire-table-wrap">
+              <table className="repertoire-table">
+                <caption className="sr-only">
+                  Músicas, áudios e partituras da sua biblioteca
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Música</th>
+                    <th scope="col" className="repertoire-style-column">
+                      Estilo
                     </th>
-                    <td>
-                      <span className="repertoire-style">{song.style || 'Não informado'}</span>
-                    </td>
-                    <td>
-                      {audio ? (
-                        <button
-                          className="repertoire-action"
-                          onClick={() => setSelectedId(song.id)}
-                          aria-label={`Abrir áudio de ${song.title}`}
-                        >
-                          <Headphones size={17} /> Ouvir
-                        </button>
-                      ) : (
-                        <span className="repertoire-unavailable">—</span>
-                      )}
-                    </td>
-                    <td>
-                      {score ? (
-                        <button
-                          className="repertoire-action"
-                          onClick={() => setSelectedId(song.id)}
-                          aria-label={`Ver partitura de ${song.title}`}
-                        >
-                          <FileMusic size={17} /> Ver partitura
-                        </button>
-                      ) : (
-                        <span className="repertoire-unavailable">—</span>
-                      )}
-                    </td>
+                    <th scope="col">Materiais</th>
                   </tr>
-                )
-              })}
-            </tbody>
-          </table>
+                </thead>
+                <tbody>
+                  {filtered.map((song) => {
+                    const audio = song.assets.some((asset) => asset.kind === 'audio')
+                    const score = song.assets.some((asset) => asset.kind === 'score')
+                    return (
+                      <tr
+                        key={song.id}
+                        className={selectedId === song.id ? 'repertoire-selected' : ''}
+                      >
+                        <th scope="row">
+                          <button
+                            className="repertoire-song"
+                            onClick={() => openSong(song.id)}
+                            aria-label={`Abrir materiais de ${song.title}`}
+                            aria-pressed={selectedId === song.id}
+                          >
+                            <span
+                              className={`repertoire-song-icon ${selectedId === song.id ? 'is-selected' : ''}`}
+                            >
+                              {selectedId === song.id ? <Check size={18} /> : <Music2 size={18} />}
+                            </span>
+                            <span className="repertoire-song-details">
+                              <strong>{song.title}</strong>
+                              <small>
+                                {[song.artist, instrumentName(song.instrument)]
+                                  .filter(Boolean)
+                                  .join(' · ')}
+                              </small>
+                              <span className="repertoire-inline-style">
+                                {song.style || 'Sem estilo'}
+                              </span>
+                            </span>
+                          </button>
+                        </th>
+                        <td className="repertoire-style-column">
+                          <span className="repertoire-style">{song.style || 'Não informado'}</span>
+                        </td>
+                        <td className="repertoire-materials-cell">
+                          <div className="repertoire-row-actions">
+                            {audio ? (
+                              <button
+                                className="repertoire-action"
+                                onClick={() => openSong(song.id)}
+                                aria-label={`Abrir áudio de ${song.title}`}
+                              >
+                                <Headphones size={17} /> <span>Ouvir</span>
+                              </button>
+                            ) : null}
+                            {score ? (
+                              <button
+                                className="repertoire-action repertoire-score-action"
+                                onClick={() => openSong(song.id)}
+                                aria-label={`Ver partitura de ${song.title}`}
+                              >
+                                <FileMusic size={17} /> <span>Partitura</span>
+                              </button>
+                            ) : (
+                              <span className="repertoire-unavailable">—</span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {!filtered.length && (
+            <div className="repertoire-empty">
+              <FileMusic size={30} />
+              <h3>
+                {songs.length ? 'Nenhuma música encontrada.' : 'Seu repertório está a caminho.'}
+              </h3>
+              <p>
+                {songs.length
+                  ? 'Experimente outro nome ou limpe os filtros.'
+                  : data.products.length
+                    ? 'Os materiais do seu instrumento ainda não foram publicados. Fale com o suporte informado no e-mail de compra.'
+                    : 'Entre com o e-mail da sua compra. Os materiais aparecem aqui após a confirmação do pagamento e a liberação do acesso.'}
+              </p>
+              {songs.length > 0 && (
+                <button className="repertoire-action" onClick={clearFilters}>
+                  Ver todo o repertório
+                </button>
+              )}
+            </div>
+          )}
         </div>
-      )}
-      {!filtered.length && (
-        <div className="repertoire-empty">
-          <FileMusic size={30} />
-          <h3>{songs.length ? 'Nenhuma música encontrada.' : 'Seu repertório está a caminho.'}</h3>
-          <p>
-            {songs.length
-              ? 'Experimente outro nome ou limpe os filtros.'
-              : data.products.length
-                ? 'Os materiais do seu instrumento ainda não foram publicados. Fale com o suporte informado no e-mail de compra.'
-                : 'Entre com o e-mail da sua compra. Os materiais aparecem aqui após a confirmação do pagamento e a liberação do acesso.'}
-          </p>
-        </div>
-      )}
-      {selected && (
-        <SongWorkspace
-          key={selected.id}
-          song={selected}
-          token={token}
-          onClose={() => setSelectedId(null)}
-        />
-      )}
+        {selected && (
+          <SongWorkspace
+            key={selected.id}
+            song={selected}
+            token={token}
+            onClose={() => {
+              setSelectedId(null)
+              setFocusMode(false)
+            }}
+            expanded={focusMode}
+            onToggleExpanded={() => setFocusMode((value) => !value)}
+          />
+        )}
+      </div>
     </section>
   )
 }
@@ -201,28 +352,59 @@ function SongWorkspace({
   song,
   token,
   onClose,
+  expanded,
+  onToggleExpanded,
 }: {
   song: Song
   token: string
   onClose: () => void
+  expanded: boolean
+  onToggleExpanded: () => void
 }) {
   const audios = song.assets.filter((asset) => asset.kind === 'audio')
   const scores = song.assets.filter((asset) => asset.kind === 'score')
   const [audioId, setAudioId] = useState(audios[0]?.id ?? '')
   const [scoreId, setScoreId] = useState(scores[0]?.id ?? '')
+  const panel = useRef<HTMLElement>(null)
+  const heading = useRef<HTMLHeadingElement>(null)
+  useEffect(() => {
+    const previousFocus = document.activeElement
+    heading.current?.focus({ preventScroll: true })
+    if (window.matchMedia('(max-width: 1099px)').matches)
+      panel.current?.scrollIntoView?.({ behavior: 'smooth', block: 'start' })
+    return () => {
+      if (previousFocus instanceof HTMLElement && previousFocus.isConnected)
+        previousFocus.focus({ preventScroll: true })
+    }
+  }, [])
   return (
-    <section className="repertoire-workspace" aria-label={`Materiais de ${song.title}`}>
+    <section ref={panel} className="repertoire-workspace" aria-label={`Materiais de ${song.title}`}>
       <header>
         <div>
-          <span className="eyebrow">HORA DE TOCAR</span>
-          <h2>{song.title}</h2>
+          <span className="eyebrow">
+            <BookOpen size={14} /> ÁREA DE ESTUDO
+          </span>
+          <h2 ref={heading} tabIndex={-1}>
+            {song.title}
+          </h2>
           <p>
             {[song.artist, instrumentName(song.instrument), song.style].filter(Boolean).join(' · ')}
           </p>
         </div>
-        <button onClick={onClose} aria-label="Fechar materiais">
-          <X size={21} />
-        </button>
+        <div className="repertoire-workspace-actions">
+          <button
+            className="repertoire-expand"
+            onClick={onToggleExpanded}
+            aria-label={expanded ? 'Mostrar lista de músicas' : 'Ampliar área de estudo'}
+            aria-pressed={expanded}
+            title={expanded ? 'Mostrar lista de músicas' : 'Ampliar área de estudo'}
+          >
+            {expanded ? <ArrowLeft size={18} /> : <Maximize2 size={18} />}
+          </button>
+          <button onClick={onClose} aria-label="Fechar materiais" title="Fechar materiais">
+            <X size={21} />
+          </button>
+        </div>
       </header>
       {audios.length > 0 && (
         <div className="repertoire-audio">
@@ -231,16 +413,17 @@ function SongWorkspace({
               <Headphones size={19} /> Áudio
             </h3>
             {audios.length > 1 && (
-              <label>
-                <span className="sr-only">Escolher áudio</span>
-                <select value={audioId} onChange={(event) => setAudioId(event.target.value)}>
-                  {audios.map((asset) => (
-                    <option key={asset.id} value={asset.id}>
-                      {asset.title}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <LibrarySelect
+                label="Escolher áudio"
+                value={audioId}
+                onChange={(event) => setAudioId(event.target.value)}
+              >
+                {audios.map((asset) => (
+                  <option key={asset.id} value={asset.id}>
+                    {asset.title}
+                  </option>
+                ))}
+              </LibrarySelect>
             )}
           </div>
           <ProtectedMedia
@@ -257,16 +440,17 @@ function SongWorkspace({
               <FileMusic size={19} /> Partitura
             </h3>
             {scores.length > 1 && (
-              <label>
-                <span className="sr-only">Escolher partitura</span>
-                <select value={scoreId} onChange={(event) => setScoreId(event.target.value)}>
-                  {scores.map((asset) => (
-                    <option key={asset.id} value={asset.id}>
-                      {asset.title} ({asset.format?.toUpperCase()})
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <LibrarySelect
+                label="Escolher partitura"
+                value={scoreId}
+                onChange={(event) => setScoreId(event.target.value)}
+              >
+                {scores.map((asset) => (
+                  <option key={asset.id} value={asset.id}>
+                    {asset.title} ({asset.format?.toUpperCase()})
+                  </option>
+                ))}
+              </LibrarySelect>
             )}
           </div>
           <ProtectedMedia
@@ -326,14 +510,16 @@ function ProtectedMedia({ asset, token }: { asset: MemberAsset; token: string })
         <audio controls preload="metadata" src={url} aria-label={asset.title} onError={loadError} />
       ) : asset.format === 'png' ? (
         <>
-          <label className="repertoire-zoom">
-            Zoom da partitura
-            <select value={zoom} onChange={(event) => setZoom(Number(event.target.value))}>
-              <option value={100}>100%</option>
-              <option value={150}>150%</option>
-              <option value={200}>200%</option>
-            </select>
-          </label>
+          <LibrarySelect
+            className="repertoire-zoom"
+            label="Zoom da partitura"
+            value={zoom}
+            onChange={(event) => setZoom(Number(event.target.value))}
+          >
+            <option value={100}>100%</option>
+            <option value={150}>150%</option>
+            <option value={200}>200%</option>
+          </LibrarySelect>
           <div className="repertoire-image">
             <img src={url} alt={asset.title} style={{ width: `${zoom}%` }} onError={loadError} />
           </div>

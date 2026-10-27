@@ -7,6 +7,7 @@ import {
   type RenderTask,
 } from 'pdfjs-dist'
 import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
+import { LibrarySelect } from './LibrarySelect'
 
 GlobalWorkerOptions.workerSrc = workerUrl
 
@@ -93,9 +94,9 @@ export function ScorePdf({
   }, [document, page, zoom, width, title, onError])
 
   return (
-    <div>
+    <div className="repertoire-pdf-viewer">
       <div className="repertoire-pdf-controls">
-        <div>
+        <div className="repertoire-page-navigation">
           <button
             aria-label="Página anterior"
             disabled={!document || page === 1}
@@ -120,20 +121,18 @@ export function ScorePdf({
             <ChevronRight size={19} />
           </button>
         </div>
-        <label>
-          Zoom da partitura
-          <select
-            value={zoom}
-            onChange={(event) => {
-              setRendering(true)
-              setZoom(Number(event.target.value))
-            }}
-          >
-            <option value={100}>Ajustar à largura</option>
-            <option value={150}>150%</option>
-            <option value={200}>200%</option>
-          </select>
-        </label>
+        <LibrarySelect
+          label="Zoom da partitura"
+          value={zoom}
+          onChange={(event) => {
+            setRendering(true)
+            setZoom(Number(event.target.value))
+          }}
+        >
+          <option value={100}>Ajustar à largura</option>
+          <option value={150}>150%</option>
+          <option value={200}>200%</option>
+        </LibrarySelect>
       </div>
       {rendering && (
         <p role="status" className="repertoire-loading">

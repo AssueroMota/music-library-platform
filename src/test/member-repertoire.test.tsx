@@ -176,3 +176,36 @@ it('mostra recusa de acesso e permite repetir sem deixar arquivo aberto', async 
   expect(screen.queryByRole('img')).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Tentar novamente' })).toBeInTheDocument()
 })
+
+it('ordena a coleção e filtra músicas com áudio sem novas consultas', async () => {
+  const fetchMock = vi.fn()
+  vi.stubGlobal('fetch', fetchMock)
+  render(<MemberRepertoire data={data} token="test-token" />)
+  const user = userEvent.setup()
+  await user.selectOptions(screen.getByRole('combobox', { name: 'Ordenar por' }), 'title-desc')
+  expect(screen.getAllByRole('row')[1]).toHaveTextContent('Fix You')
+  await user.click(screen.getByRole('checkbox', { name: /Somente com áudio/ }))
+  expect(screen.getAllByRole('row')).toHaveLength(2)
+  expect(screen.queryByRole('row', { name: /Canção de estudo/ })).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Limpar filtros' }))
+  expect(screen.getAllByRole('row')).toHaveLength(3)
+  expect(fetchMock).not.toHaveBeenCalled()
+})
+
+it('amplia a área de estudo e volta à lista mantendo a partitura aberta', async () => {
+  const fetchMock = vi.fn(
+    async () => new Response(JSON.stringify({ url: 'https://storage.example.test/score.png' })),
+  )
+  vi.stubGlobal('fetch', fetchMock)
+  render(<MemberRepertoire data={{ ...data, assets: [data.assets[0]] }} token="test-token" />)
+  const user = userEvent.setup()
+  await user.click(screen.getByRole('button', { name: 'Ver partitura de Fix You' }))
+  const image = await screen.findByRole('img', { name: 'Fix You - imagem' })
+  await user.selectOptions(screen.getByRole('combobox', { name: 'Zoom da partitura' }), '150')
+  await user.click(screen.getByRole('button', { name: 'Ampliar área de estudo' }))
+  expect(screen.getByRole('region', { name: 'Repertório disponível' })).toHaveClass('is-focus-mode')
+  await user.click(screen.getByRole('button', { name: 'Mostrar lista de músicas' }))
+  expect(screen.getByRole('img', { name: 'Fix You - imagem' })).toBe(image)
+  expect(screen.getByRole('combobox', { name: 'Zoom da partitura' })).toHaveValue('150')
+  expect(fetchMock).toHaveBeenCalledTimes(1)
+})
