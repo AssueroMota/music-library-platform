@@ -6,6 +6,7 @@ export const violinSetlists = [
     title: 'Cerimônia romântica',
     occasion: 'Casamentos',
     description: 'Uma sequência delicada para entradas e momentos de celebração.',
+    artists: { 'All of Me': 'John Legend' },
     titles: [
       'A Thousand Years',
       "Can't Help Falling in Love",
@@ -165,17 +166,27 @@ export const violinSetlists = [
 ] as const
 
 // Resolve only from the authenticated collection; never manufacture assets or media URLs.
-export function resolveViolinSetlists<T extends { title: string; instrument: string }>(songs: T[]) {
-  const available = new Map(
-    songs
-      .filter((song) => song.instrument === 'violin')
-      .map((song) => [normalizeSearch(song.title), song]),
-  )
+export function resolveViolinSetlists<
+  T extends { title: string; instrument: string; artist?: string },
+>(songs: T[]) {
+  const available = songs.filter((song) => song.instrument === 'violin')
   return violinSetlists
     .map((setlist) => ({
       ...setlist,
       songs: setlist.titles.flatMap((title) => {
-        const song = available.get(normalizeSearch(title))
+        const matches = available.filter(
+          (song) => normalizeSearch(song.title) === normalizeSearch(title),
+        )
+        const artists: Readonly<Record<string, string>> =
+          'artists' in setlist ? setlist.artists : {}
+        const expectedArtist = artists[title]
+        const song = expectedArtist
+          ? matches.find(
+              (song) => normalizeSearch(song.artist || '') === normalizeSearch(expectedArtist),
+            )
+          : matches.length === 1
+            ? matches[0]
+            : undefined
         return song ? [song] : []
       }),
     }))

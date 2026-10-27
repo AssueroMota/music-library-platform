@@ -20,13 +20,27 @@ it('oferece dez setlists ordenados sem incluir músicas de outro instrumento ou 
   }
   const available = resolveViolinSetlists([
     { title: 'Perfect', instrument: 'cello' },
-    { title: 'All of Me', instrument: 'violin' },
+    { title: 'All of Me', artist: 'John Legend', instrument: 'violin' },
     { title: 'A Thousand Years', instrument: 'violin' },
   ])
   expect(
     available.find((item) => item.id === 'cerimonia-romantica')?.songs.map((song) => song.title),
   ).toEqual(['A Thousand Years', 'All of Me'])
   expect(resolveViolinSetlists([{ title: 'Perfect', instrument: 'cello' }])).toEqual([])
+})
+
+it('mantém músicas de mesmo título separadas e escolhe o artista correto no setlist', () => {
+  const john = { title: 'All of Me', artist: 'John Legend', instrument: 'violin' }
+  const elvis = { title: 'All of Me', artist: 'Elvis Presley', instrument: 'violin' }
+  for (const songs of [
+    [john, elvis],
+    [elvis, john],
+  ]) {
+    expect(
+      resolveViolinSetlists(songs).find((setlist) => setlist.id === 'cerimonia-romantica')?.songs,
+    ).toEqual([john])
+  }
+  expect(resolveViolinSetlists([elvis])).toEqual([])
 })
 
 const data: MemberLibraryData = {
