@@ -1065,7 +1065,8 @@
     gap: 14px 10px;
     padding: 16px;
   }
-  .repertoire-search-field {
+  .repertoire-search-field,
+  .repertoire-playback-filter {
     grid-column: 1 / -1;
   }
   .repertoire-search input,

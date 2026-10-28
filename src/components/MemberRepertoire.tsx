@@ -250,15 +250,6 @@ export function MemberRepertoire({
               ))}
             </LibrarySelect>
             <LibrarySelect
-              label="Playback"
-              value={playback}
-              onChange={(event) => setPlayback(event.target.value)}
-            >
-              <option value="all">Todas as músicas ({collection.length})</option>
-              <option value="with">Com playback ({audioCount})</option>
-              <option value="without">Sem playback ({collection.length - audioCount})</option>
-            </LibrarySelect>
-            <LibrarySelect
               label="Ordenar por"
               value={order}
               onChange={(event) => setOrder(event.target.value)}
@@ -267,6 +258,16 @@ export function MemberRepertoire({
               <option value="title">Nome: A–Z</option>
               <option value="title-desc">Nome: Z–A</option>
               <option value="artist">Artista: A–Z</option>
+            </LibrarySelect>
+            <LibrarySelect
+              label="Playback"
+              className="repertoire-playback-filter"
+              value={playback}
+              onChange={(event) => setPlayback(event.target.value)}
+            >
+              <option value="all">Todas as músicas ({collection.length})</option>
+              <option value="with">Com playback ({audioCount})</option>
+              <option value="without">Sem playback ({collection.length - audioCount})</option>
             </LibrarySelect>
           </div>
           <div className="repertoire-filter-summary">
