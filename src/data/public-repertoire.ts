@@ -24,7 +24,7 @@ export const publicRepertoire: readonly (readonly [string, string, string, boole
   ['Carol of the Bells', '', 'Natal', true],
   ['Céu de Santo Amaro', '', 'MPB', true],
   ['Cinema Paradiso - Love Theme', 'Ennio Morricone', 'Trilha sonora', true],
-  ['Close to You', 'Carpenters', 'Pop internacional', false],
+  ['Close to You', 'Carpenters', 'Pop internacional', true],
   ['Como É Grande o Meu Amor por Você', 'Roberto Carlos', 'MPB', true],
   ['De Janeiro a Janeiro', 'Roberta Campos e Nando Reis', 'MPB', true],
   ['Deus de Promessas', 'Davi Sacer', 'Gospel', true],
