@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { MemberLibrary } from '../components/MemberLibrary'
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js'
+import { publicRepertoire } from '../data/public-repertoire'
 
 const { getSession, signOut, authListener } = vi.hoisted(() => ({
   getSession: vi.fn(),
@@ -160,4 +161,36 @@ it('remove os materiais ao sair e consulta novamente ao trocar de conta', async 
   expect(request.fetchMock.mock.calls[1][1].headers).toEqual({
     Authorization: 'Bearer other-test-token',
   })
+})
+
+it('mostra a prévia básica para o titular completo sem alterar os materiais da conta', async () => {
+  const assets = publicRepertoire.flatMap(([songTitle, artist, style], index) =>
+    ['score', 'audio'].map((kind) => ({
+      id: `${kind}-${index}`,
+      title: songTitle,
+      songTitle,
+      artist,
+      style,
+      instrument: 'violin',
+      kind,
+      format: kind === 'score' ? 'pdf' : 'mp3',
+    })),
+  )
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () => new Response(JSON.stringify({ setlistLimit: 42, products: [], assets }))),
+  )
+  window.history.replaceState({}, '', '/biblioteca?visualizar=basico')
+  const mounted = render(<MemberLibrary />)
+  await act(async () => {})
+  expect(screen.queryByRole('button', { name: /Abrir áudio/ })).not.toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: /Setlists prontos/ }))
+  expect(screen.getAllByRole('button', { name: /Abrir setlist/ })).toHaveLength(10)
+  mounted.unmount()
+  window.history.replaceState({}, '', '/biblioteca')
+  render(<MemberLibrary />)
+  await act(async () => {})
+  expect(screen.getAllByRole('button', { name: /Abrir áudio/ })).toHaveLength(103)
+  fireEvent.click(screen.getByRole('button', { name: /Setlists prontos/ }))
+  expect(screen.getAllByRole('button', { name: /Abrir setlist/ })).toHaveLength(42)
 })

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import {
   ArrowLeft,
   Check,
@@ -19,18 +19,25 @@ import { PersonalLibraryAccess } from './PersonalLibraryAccess'
 
 export function MemberLibrary() {
   const [access, setAccess] = useState(() => readPersonalAccess(window.location.hash))
+  const [basicPreview] = useState(
+    () => new URLSearchParams(window.location.search).get('visualizar') === 'basico',
+  )
   const authenticated = useCallback(() => {
-    window.history.replaceState({}, '', '/biblioteca')
+    window.history.replaceState(
+      {},
+      '',
+      basicPreview ? '/biblioteca?visualizar=basico' : '/biblioteca',
+    )
     setAccess(null)
-  }, [])
+  }, [basicPreview])
   return access ? (
     <PersonalLibraryAccess access={access} onAuthenticated={authenticated} />
   ) : (
-    <MemberLibraryContent />
+    <MemberLibraryContent basicPreview={basicPreview} />
   )
 }
 
-function MemberLibraryContent() {
+function MemberLibraryContent({ basicPreview }: { basicPreview: boolean }) {
   const [session, setSession] = useState<Session | null>(null)
   const currentSession = useRef<Session | null>(null)
   const userId = session?.user.id
@@ -43,6 +50,19 @@ function MemberLibraryContent() {
   const [refresh, setRefresh] = useState(0)
   const [waitingLonger, setWaitingLonger] = useState(false)
   const [linkCopied, setLinkCopied] = useState(false)
+  // A Complete member can inspect the Basic presentation without changing their rights.
+  // This view only removes materials; authorization remains enforced by the API.
+  const repertoireData = useMemo<MemberLibraryData | null>(
+    () =>
+      data && basicPreview
+        ? {
+            ...data,
+            setlistLimit: 10,
+            assets: data.assets.filter((asset) => asset.kind === 'score'),
+          }
+        : data,
+    [data, basicPreview],
+  )
   useEffect(() => {
     document.title = 'Minha biblioteca | Music Library'
     if (!auth) {
@@ -173,7 +193,9 @@ function MemberLibraryContent() {
               title="Copiar meu link pessoal"
               onClick={async () => {
                 try {
-                  await navigator.clipboard.writeText(data.personalLink!)
+                  const link = new URL(data.personalLink!)
+                  if (basicPreview) link.searchParams.set('visualizar', 'basico')
+                  await navigator.clipboard.writeText(link.href)
                   setLinkCopied(true)
                   setNotice(
                     'Link copiado. Guarde nos favoritos e não compartilhe seu acesso pessoal.',
@@ -241,7 +263,7 @@ function MemberLibraryContent() {
                     liberados.
                   </p>
                 )}
-                <MemberRepertoire data={data} token={session.access_token} />
+                <MemberRepertoire data={repertoireData!} token={session.access_token} />
               </>
             )}
             {!data && !error && (

@@ -58,6 +58,8 @@ A prévia pública permite comparar os dois planos. A busca e o estilo são os �
 
 O ponto de entrada carrega a biblioteca e o retorno do checkout sem baixar o código de animação e os estilos da página de vendas. O link pessoal continua fixo: a API valida o segredo e os direitos ativos antes de reutilizar uma sessão da mesma pessoa. Sem sessão compatível, o navegador confirma o token temporário pelo SDK do Supabase e abre a biblioteca sem redirecionamento externo nem recarregar o site. A confirmação inteira é deduplicada em efeitos concorrentes. A geração do link existente usa somente uma leitura do banco; a criação concorrente e a rotação mantêm suas proteções anteriores.
 
+Para o titular do Completo conferir a apresentação do Básico nos próprios dispositivos, `?visualizar=basico` restringe a tela a partituras e 10 setlists. Esse parâmetro só remove materiais da visualização; não concede direitos nem altera compras. O modo é preservado na confirmação do login e ao copiar o link pessoal. Sem o parâmetro, a conta volta a mostrar os materiais do plano adquirido.
+
 ## Validação
 
 Os testes cobrem a virada de preço no fuso de Brasília, o término do contador sem recarregar, a atualização do catálogo público, o bloqueio de totais desatualizados, o novo clique exigido no checkout e o encaminhamento dos CTAs para o plano correto. A validação visual em navegador depende de uma sessão disponível.
