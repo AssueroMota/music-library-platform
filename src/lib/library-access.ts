@@ -14,16 +14,23 @@ export function readPersonalAccess(hash: string): PersonalAccess {
     : 'invalid'
 }
 
-const pending = new Map<string, Promise<{ url: string }>>()
-export function redeemPersonalAccess(access: Exclude<PersonalAccess, 'invalid' | null>) {
-  const key = JSON.stringify(access)
+export type PersonalAccessResult = { url: string } | { authenticated: true }
+const pending = new Map<string, Promise<PersonalAccessResult>>()
+export function redeemPersonalAccess(
+  access: Exclude<PersonalAccess, 'invalid' | null>,
+  sessionToken?: string,
+) {
+  const key = JSON.stringify([access, sessionToken])
   const existing = pending.get(key)
   if (existing) return existing
-  const result = api<{ url: string }>(
+  const result = api<PersonalAccessResult>(
     '/auth/access',
     {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {}),
+      },
       body: JSON.stringify(access),
     },
     LIBRARY_REQUEST_TIMEOUT_MS,

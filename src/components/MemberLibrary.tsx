@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import {
   ArrowLeft,
   Check,
@@ -18,8 +18,16 @@ import { readPersonalAccess } from '../lib/library-access'
 import { PersonalLibraryAccess } from './PersonalLibraryAccess'
 
 export function MemberLibrary() {
-  const [access] = useState(() => readPersonalAccess(window.location.hash))
-  return access ? <PersonalLibraryAccess access={access} /> : <MemberLibraryContent />
+  const [access, setAccess] = useState(() => readPersonalAccess(window.location.hash))
+  const authenticated = useCallback(() => {
+    window.history.replaceState({}, '', '/biblioteca')
+    setAccess(null)
+  }, [])
+  return access ? (
+    <PersonalLibraryAccess access={access} onAuthenticated={authenticated} />
+  ) : (
+    <MemberLibraryContent />
+  )
 }
 
 function MemberLibraryContent() {

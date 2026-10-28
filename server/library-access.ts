@@ -12,6 +12,15 @@ export async function personalLibraryLink(
   encryptionKey: string,
   rotate = false,
 ) {
+  const existing = await db.libraryAccessLink.findUnique({ where: { userId } })
+  if (existing && !rotate) {
+    const url = new URL('/biblioteca', origin)
+    url.hash = new URLSearchParams({
+      id: existing.id,
+      acesso: decryptLink(existing.secretCiphertext, encryptionKey),
+    }).toString()
+    return url.href
+  }
   const secret = randomBytes(32).toString('hex')
   const credentials = {
     secretHash: hashToken(secret),

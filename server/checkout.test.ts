@@ -573,6 +573,26 @@ describe('webhooks, confirmação e liberação', () => {
       })
       expect(response.headers['cache-control']).toBe('no-store')
     }
+    const created = vi.mocked(providers.createLogin).mock.calls.length
+    const headers = { authorization: 'Bearer valid-test-session' }
+    const reused = await app.inject({
+      method: 'POST',
+      url: '/api/auth/access',
+      payload: { id, token },
+      headers,
+    })
+    expect(reused.json()).toEqual({ authenticated: true })
+    expect(providers.createLogin).toHaveBeenCalledTimes(created)
+    vi.mocked(providers.authenticate).mockResolvedValueOnce({ id: other.id, email: other.email })
+    const switched = await app.inject({
+      method: 'POST',
+      url: '/api/auth/access',
+      payload: { id, token },
+      headers,
+    })
+    expect(switched.json()).toHaveProperty('url')
+    expect(switched.json()).not.toHaveProperty('authenticated')
+    expect(providers.createLogin).toHaveBeenCalledTimes(created + 1)
     expect(await db.order.count()).toBe(0)
     expect(providers.sendLogin).not.toHaveBeenCalled()
     const rotated = await personalLibraryLink(
@@ -595,6 +615,7 @@ describe('webhooks, confirmação e liberação', () => {
           method: 'POST',
           url: '/api/auth/access',
           payload: { id, token: rotatedParams.get('acesso') },
+          headers,
         })
       ).statusCode,
     ).toBe(200)
@@ -605,6 +626,7 @@ describe('webhooks, confirmação e liberação', () => {
           method: 'POST',
           url: '/api/auth/access',
           payload: { id, token: rotatedParams.get('acesso') },
+          headers,
         })
       ).statusCode,
     ).toBe(403)

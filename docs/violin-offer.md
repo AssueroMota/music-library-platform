@@ -56,6 +56,8 @@ A biblioteca diferencia o Básico (somente partituras e 10 setlists) do Completo
 
 A prévia pública permite comparar os dois planos. A busca e o estilo são os únicos filtros; o repertório usa ordem alfabética e cada setlist mantém sua sequência sugerida. A interface segue o laranja da página de vendas, usa uma tabela mais legível e amplia a área útil até 1760 px no desktop. Foram removidos o nome do produto repetido, o selo de instrumento acima do repertório, os textos de introdução redundantes e os controles de ordenação e playback.
 
+O ponto de entrada carrega a biblioteca e o retorno do checkout sem baixar o código de animação e os estilos da página de vendas. O link pessoal continua fixo: a API valida o segredo e os direitos ativos antes de reutilizar uma sessão da mesma pessoa. Sem sessão compatível, o navegador confirma o token temporário pelo SDK do Supabase e abre a biblioteca sem redirecionamento externo nem recarregar o site. A confirmação inteira é deduplicada em efeitos concorrentes. A geração do link existente usa somente uma leitura do banco; a criação concorrente e a rotação mantêm suas proteções anteriores.
+
 ## Validação
 
 Os testes cobrem a virada de preço no fuso de Brasília, o término do contador sem recarregar, a atualização do catálogo público, o bloqueio de totais desatualizados, o novo clique exigido no checkout e o encaminhamento dos CTAs para o plano correto. A validação visual em navegador depende de uma sessão disponível.

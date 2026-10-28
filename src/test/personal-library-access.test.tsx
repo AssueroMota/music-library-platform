@@ -1,8 +1,18 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { readPersonalAccess, redeemPersonalAccess, trustedLoginUrl } from '../lib/library-access'
 import { PersonalLibraryAccess } from '../components/PersonalLibraryAccess'
+import { openPersonalLibrary } from '../lib/personal-login'
+
+const { getSession, verifyOtp } = vi.hoisted(() => ({ getSession: vi.fn(), verifyOtp: vi.fn() }))
+vi.mock('../lib/auth', () => ({ auth: { auth: { getSession, verifyOtp } } }))
+beforeEach(() => {
+  getSession.mockReset().mockResolvedValue({ data: { session: null }, error: null })
+  verifyOtp
+    .mockReset()
+    .mockResolvedValue({ data: { session: { access_token: 'new-session-test' } }, error: null })
+})
 
 const id = '11111111-1111-4111-8111-111111111111',
   token = 'a'.repeat(64)
@@ -64,7 +74,7 @@ it('oferece nova tentativa quando o link foi recusado ou a API está indisponív
       ),
   )
   vi.stubGlobal('fetch', fetchMock)
-  render(<PersonalLibraryAccess access={{ id, token }} />)
+  render(<PersonalLibraryAccess access={{ id, token }} onAuthenticated={vi.fn()} />)
   expect(await screen.findByRole('alert')).toHaveTextContent('Este link não está disponível.')
   await userEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }))
   expect(await screen.findByRole('alert')).toBeInTheDocument()
@@ -72,5 +82,72 @@ it('oferece nova tentativa quando o link foi recusado ou a API está indisponív
   expect(screen.getByRole('link', { name: 'Solicitar meu link por e-mail' })).toHaveAttribute(
     'href',
     '/biblioteca',
+  )
+})
+
+it('confirma o token uma só vez sem navegação externa ou recarregar a página', async () => {
+  vi.stubEnv('VITE_SUPABASE_URL', 'https://project.supabase.co')
+  const fetchMock = vi.fn(
+    async () =>
+      new Response(
+        JSON.stringify({
+          url: 'https://project.supabase.co/auth/v1/verify?token=hash-for-test&type=magiclink',
+        }),
+      ),
+  )
+  vi.stubGlobal('fetch', fetchMock)
+  await Promise.all([openPersonalLibrary({ id, token }), openPersonalLibrary({ id, token })])
+  expect(fetchMock).toHaveBeenCalledTimes(1)
+  expect(verifyOtp).toHaveBeenCalledTimes(1)
+  expect(verifyOtp).toHaveBeenCalledWith({ token_hash: 'hash-for-test', type: 'magiclink' })
+})
+
+it('reutiliza a sessão somente depois da confirmação do link pessoal pela API', async () => {
+  getSession.mockResolvedValue({ data: { session: { access_token: 'existing-test-session' } } })
+  const fetchMock = vi.fn(async () => new Response(JSON.stringify({ authenticated: true })))
+  vi.stubGlobal('fetch', fetchMock)
+  const authenticated = vi.fn()
+  render(<PersonalLibraryAccess access={{ id, token }} onAuthenticated={authenticated} />)
+  await vi.waitFor(() => expect(authenticated).toHaveBeenCalledTimes(1))
+  expect(fetchMock).toHaveBeenCalledWith(
+    expect.stringContaining('/api/auth/access'),
+    expect.objectContaining({
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer existing-test-session',
+      },
+      body: JSON.stringify({ id, token }),
+    }),
+  )
+  expect(verifyOtp).not.toHaveBeenCalled()
+})
+
+it('não confirma sessão para link externo ou token recusado', async () => {
+  vi.stubEnv('VITE_SUPABASE_URL', 'https://project.supabase.co')
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({ url: 'https://evil.example/auth/v1/verify?token=hash&type=magiclink' }),
+        ),
+    ),
+  )
+  await expect(openPersonalLibrary({ id, token })).rejects.toThrow()
+  expect(verifyOtp).not.toHaveBeenCalled()
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            url: 'https://project.supabase.co/auth/v1/verify?token=hash&type=magiclink',
+          }),
+        ),
+    ),
+  )
+  verifyOtp.mockResolvedValue({ data: { session: null }, error: { message: 'invalid' } })
+  await expect(openPersonalLibrary({ id, token })).rejects.toThrow(
+    'Não foi possível confirmar seu acesso.',
   )
 })

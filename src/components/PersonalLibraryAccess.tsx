@@ -1,8 +1,15 @@
 import { useEffect, useState } from 'react'
 import { LoaderCircle, Music2 } from 'lucide-react'
-import { redeemPersonalAccess, trustedLoginUrl, type PersonalAccess } from '../lib/library-access'
+import type { PersonalAccess } from '../lib/library-access'
+import { openPersonalLibrary } from '../lib/personal-login'
 
-export function PersonalLibraryAccess({ access }: { access: Exclude<PersonalAccess, null> }) {
+export function PersonalLibraryAccess({
+  access,
+  onAuthenticated,
+}: {
+  access: Exclude<PersonalAccess, null>
+  onAuthenticated: () => void
+}) {
   const [error, setError] = useState(
     access === 'invalid' ? 'O link pessoal está incompleto. Solicite seu link novamente.' : '',
   )
@@ -10,9 +17,9 @@ export function PersonalLibraryAccess({ access }: { access: Exclude<PersonalAcce
   useEffect(() => {
     if (access === 'invalid') return
     let active = true
-    redeemPersonalAccess(access)
-      .then(({ url }) => {
-        if (active) window.location.replace(trustedLoginUrl(url))
+    openPersonalLibrary(access)
+      .then(() => {
+        if (active) onAuthenticated()
       })
       .catch((reason: unknown) => {
         if (active)
@@ -21,7 +28,7 @@ export function PersonalLibraryAccess({ access }: { access: Exclude<PersonalAcce
     return () => {
       active = false
     }
-  }, [access, attempt])
+  }, [access, attempt, onAuthenticated])
   return (
     <div className="checkout-page">
       <header className="checkout-page-header">

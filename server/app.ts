@@ -199,6 +199,12 @@ export function createApp(service: CheckoutService, logging = true) {
           'ACCESS_LINK_UNAVAILABLE',
           'Este link não está disponível. Solicite seu link novamente ou entre em contato com o suporte.',
         )
+      const header = request.headers.authorization
+      if (header?.startsWith('Bearer ')) {
+        const current = await service.providers.authenticate(header.slice(7))
+        if (current?.id === link.userId && current.email === link.user.email)
+          return { authenticated: true as const }
+      }
       const login = await service.providers.createLogin(link.user.email)
       if (login.userId !== link.userId || login.email !== link.user.email)
         throw new Error('AUTH_USER_MISMATCH')
