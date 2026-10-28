@@ -203,7 +203,7 @@
   gap: 18px;
   justify-content: space-between;
   min-height: 90px;
-  padding: 22px max(24px, calc((100% - 1120px) / 2));
+  padding: 8px max(24px, calc((100% - 1120px) / 2));
   background: #0b1627;
   color: #fff;
 }
@@ -315,13 +315,6 @@
   font-size: 12px;
   color: #5f6b7b;
 }
-.member-brand {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 20px;
-  font-weight: 900;
-}
 .checkout-page-header > button {
   display: flex;
   align-items: center;
@@ -430,8 +423,5 @@
   .checkout-page-header > span {
     font-size: 8px;
     letter-spacing: 0.5px;
-  }
-  .member-brand {
-    font-size: 16px;
   }
 }

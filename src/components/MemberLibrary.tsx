@@ -16,7 +16,6 @@ import {
   LoaderCircle,
   LogOut,
   Mail,
-  Music2,
   ShieldCheck,
 } from 'lucide-react'
 import type { Session } from '@supabase/supabase-js'
@@ -28,6 +27,7 @@ import { formatBRL } from '../../shared/products'
 import { MemberRepertoire } from './MemberRepertoire'
 import { readPersonalAccess } from '../lib/library-access'
 import { PersonalLibraryAccess } from './PersonalLibraryAccess'
+import { Logo } from './BrandLogo'
 const LibraryUpgrade = lazy(() =>
   import('./LibraryUpgrade').then((module) => ({ default: module.LibraryUpgrade })),
 )
@@ -216,9 +216,7 @@ function MemberLibraryContent({
   return (
     <div className={`checkout-page member-page ${session ? 'member-page-authenticated' : ''}`}>
       <header className="checkout-page-header">
-        <a href="/" className="member-brand">
-          <Music2 size={24} /> music library.
-        </a>
+        <Logo href="/" />
         <span className="member-header-label">
           <ShieldCheck size={16} /> Área do aluno
         </span>

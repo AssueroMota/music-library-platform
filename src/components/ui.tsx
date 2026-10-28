@@ -1,6 +1,8 @@
-import { ArrowUpRight, AudioLines } from 'lucide-react'
+import { ArrowUpRight } from 'lucide-react'
 import { motion, useReducedMotion } from 'motion/react'
 import type { ReactNode } from 'react'
+
+export { Logo } from './BrandLogo'
 
 export function Container({
   children,
@@ -36,26 +38,6 @@ export function Button({
       {children}
       <ArrowUpRight size={17} aria-hidden="true" />
     </button>
-  )
-}
-
-export function Logo({ light = false, href = '#inicio' }: { light?: boolean; href?: string }) {
-  return (
-    <a
-      href={href}
-      className={`logo ${light ? 'logo-light' : ''}`}
-      aria-label="Music Library — início"
-    >
-      <span className="logo-symbol">
-        <AudioLines size={26} strokeWidth={1.6} />
-      </span>
-      <span>
-        music
-        <span className="logo-second">
-          library<span className="logo-dot">.</span>
-        </span>
-      </span>
-    </a>
   )
 }
 

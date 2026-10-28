@@ -98,22 +98,10 @@
   align-items: center;
   gap: 28px;
   justify-content: space-between;
-  padding: 24px 0;
+  padding: 12px 0;
   border-bottom: 1px solid #ffffff14;
   position: relative;
   z-index: 3;
-}
-.sales-nav .logo {
-  font-size: 22px;
-}
-.sales-nav .logo-dot,
-.footer .logo-dot {
-  color: #ff652e;
-}
-.sales-nav .logo-symbol {
-  color: #ff652e;
-  border-color: #ff652e;
-  background: #ff4b1810;
 }
 .sales-nav nav {
   display: flex;
@@ -1637,15 +1625,8 @@
     display: none;
   }
   .sales-nav {
-    padding-block: 18px;
+    padding-block: 8px;
     gap: 15px;
-  }
-  .sales-nav .logo {
-    font-size: 18px;
-  }
-  .sales-nav .logo-symbol {
-    width: 32px;
-    height: 37px;
   }
   .sales-nav nav {
     display: none;

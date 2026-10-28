@@ -1,4 +1,5 @@
 import { Component, type ReactNode } from 'react'
+import { Logo } from './BrandLogo'
 
 export class PageErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false }
@@ -12,9 +13,7 @@ export class PageErrorBoundary extends Component<{ children: ReactNode }, { fail
     return (
       <div className="checkout-page">
         <header className="checkout-page-header">
-          <a href="/" className="member-brand">
-            music library.
-          </a>
+          <Logo href="/" />
         </header>
         <main className="checkout-status-card">
           <h1>Vamos tentar novamente.</h1>

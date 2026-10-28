@@ -11,15 +11,7 @@
 }
 .member-page .checkout-page-header {
   min-height: 76px;
-  padding: 18px max(24px, calc((100% - 1760px) / 2));
-}
-.member-page .member-brand {
-  font-size: 19px;
-  font-weight: 700;
-  letter-spacing: -0.6px;
-}
-.member-page .member-brand > svg {
-  color: #ff792e;
+  padding: 8px max(24px, calc((100% - 1760px) / 2));
 }
 .member-page .member-header-label {
   display: inline-flex;
@@ -1127,9 +1119,6 @@
   }
   .member-page .member-header-label {
     display: none;
-  }
-  .member-page .member-brand {
-    font-size: 17px;
   }
   .member-page .checkout-page-header > button {
     margin-left: auto;

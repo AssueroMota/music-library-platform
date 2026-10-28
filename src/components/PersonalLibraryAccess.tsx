@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { LoaderCircle, Music2 } from 'lucide-react'
+import { LoaderCircle } from 'lucide-react'
+import { Logo } from './BrandLogo'
 import type { PersonalAccess } from '../lib/library-access'
 import { openPersonalLibrary } from '../lib/personal-login'
 
@@ -32,9 +33,7 @@ export function PersonalLibraryAccess({
   return (
     <div className="checkout-page">
       <header className="checkout-page-header">
-        <a href="/" className="member-brand">
-          <Music2 size={24} /> music library.
-        </a>
+        <Logo href="/" />
         <span>MINHA BIBLIOTECA</span>
       </header>
       <main className="checkout-status-card">

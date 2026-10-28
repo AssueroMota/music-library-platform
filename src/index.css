@@ -288,30 +288,15 @@ em {
 .logo {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  font-size: 20px;
-  font-weight: 800;
-  line-height: 0.95;
-  letter-spacing: -0.8px;
+  flex-shrink: 0;
+  line-height: 0;
 }
-.logo-symbol {
-  width: 36px;
-  height: 42px;
-  border: 1px solid #d9b95e;
-  border-radius: 18px 18px 5px 5px;
-  display: grid;
-  place-items: center;
-  color: var(--gold);
-}
-.logo-second {
+.logo-image {
   display: block;
-  font-weight: 500;
-}
-.logo-dot {
-  color: var(--gold);
-}
-.logo-light {
-  color: #fff;
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  border-radius: 8px;
 }
 .hero {
   background: var(--navy);
@@ -895,16 +880,9 @@ em {
     padding: 17px 22px;
     gap: 16px;
   }
-  .logo {
-    font-size: 18px;
-    gap: 7px;
-  }
-  .logo-symbol {
-    width: 31px;
-    height: 37px;
-  }
-  .logo-symbol svg {
-    width: 22px;
+  .logo-image {
+    width: 80px;
+    height: 80px;
   }
   .hero-grid {
     padding-top: 37px;
