@@ -975,6 +975,14 @@ describe('upgrade autenticado da biblioteca', () => {
   it('desconta o valor histórico realmente pago e preserva a cotação de um upgrade iniciado', async () => {
     const basic = await basicPurchase()
     await db.order.update({ where: { id: basic.id }, data: { priceCents: 120 } })
+    // Keep the simulated deadline near database time so a newly created
+    // payment attempt does not appear older than its 23-hour lifetime.
+    const originalWindow = { startsAt: violinLaunch.startsAt, endsAt: violinLaunch.endsAt }
+    const boundary = Date.now() + 60000
+    Object.assign(violinLaunch, {
+      startsAt: new Date(boundary - 86400000).toISOString(),
+      endsAt: new Date(boundary).toISOString(),
+    })
     const clock = vi.spyOn(Date, 'now')
     try {
       clock.mockReturnValue(Date.parse(violinLaunch.endsAt) - 60000)
@@ -991,6 +999,7 @@ describe('upgrade autenticado da biblioteca', () => {
       })
     } finally {
       clock.mockRestore()
+      Object.assign(violinLaunch, originalWindow)
     }
   })
   it('reutiliza a tentativa e bloqueia upgrades concorrentes em outros dispositivos', async () => {

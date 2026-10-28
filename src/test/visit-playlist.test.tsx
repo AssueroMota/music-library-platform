@@ -41,9 +41,82 @@ it('mostra um convite para ouvir quando o navegador bloqueia o início automáti
     new DOMException('Blocked', 'NotAllowedError'),
   )
   render(<VisitPlaylist />)
-  expect(await screen.findByRole('status')).toHaveTextContent('Toque no play para ouvir.')
+  expect(await screen.findByRole('status')).toHaveTextContent(
+    'Clique ou toque na página para iniciar a música.',
+  )
   fireEvent.click(screen.getByRole('button', { name: 'Reproduzir música da visita' }))
   await screen.findByRole('button', { name: 'Pausar música da visita' })
+})
+
+it('inicia no primeiro clique na página depois de o navegador bloquear o autoplay', async () => {
+  vi.mocked(HTMLMediaElement.prototype.play).mockRejectedValueOnce(
+    new DOMException('Blocked', 'NotAllowedError'),
+  )
+  const { container } = render(<VisitPlaylist />)
+  await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Clique ou toque'))
+  fireEvent.click(document.body)
+  await screen.findByRole('button', { name: 'Pausar música da visita' })
+  expect(container.querySelector('audio')!.volume).toBe(0.2)
+  const attempts = vi.mocked(HTMLMediaElement.prototype.play).mock.calls.length
+  fireEvent.click(document.body)
+  expect(HTMLMediaElement.prototype.play).toHaveBeenCalledTimes(attempts)
+  fireEvent.click(screen.getByRole('button', { name: 'Pausar música da visita' }))
+  fireEvent.click(document.body)
+  expect(HTMLMediaElement.prototype.play).toHaveBeenCalledTimes(attempts)
+})
+
+it('permite iniciar por teclado sem disparar a música durante o preenchimento de um campo', async () => {
+  vi.mocked(HTMLMediaElement.prototype.play).mockRejectedValueOnce(
+    new DOMException('Blocked', 'NotAllowedError'),
+  )
+  render(
+    <>
+      <VisitPlaylist />
+      <input aria-label="E-mail de contato" />
+    </>,
+  )
+  await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Clique ou toque'))
+  fireEvent.click(screen.getByRole('textbox', { name: 'E-mail de contato' }))
+  fireEvent.keyDown(screen.getByRole('textbox', { name: 'E-mail de contato' }), { key: 'Enter' })
+  expect(HTMLMediaElement.prototype.play).toHaveBeenCalledTimes(1)
+  fireEvent.keyDown(document.body, { key: 'Enter' })
+  await screen.findByRole('button', { name: 'Pausar música da visita' })
+})
+
+it('não retoma a trilha bloqueada quando o visitante escolhe ouvir a demonstração', async () => {
+  vi.mocked(HTMLMediaElement.prototype.play).mockRejectedValueOnce(
+    new DOMException('Blocked', 'NotAllowedError'),
+  )
+  const { container } = render(
+    <>
+      <VisitPlaylist />
+      <AudioPlayer src="/demo.mp3" label="demonstração" />
+    </>,
+  )
+  const soundtrack = container.querySelector('audio')!
+  await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Clique ou toque'))
+  await act(async () => {
+    fireEvent.click(screen.getByRole('button', { name: 'Reproduzir demonstração' }))
+  })
+  fireEvent.click(document.body)
+  expect(
+    vi
+      .mocked(HTMLMediaElement.prototype.play)
+      .mock.contexts.filter((audio) => audio === soundtrack),
+  ).toHaveLength(1)
+  expect(screen.getByRole('button', { name: 'Pausar demonstração' })).toBeInTheDocument()
+})
+
+it('não repete a tentativa no próximo clique quando o arquivo de áudio falha', async () => {
+  vi.mocked(HTMLMediaElement.prototype.play).mockRejectedValueOnce(
+    new DOMException('Blocked', 'NotAllowedError'),
+  )
+  const { container } = render(<VisitPlaylist />)
+  await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Clique ou toque'))
+  fireEvent.error(container.querySelector('audio')!)
+  fireEvent.click(document.body)
+  expect(HTMLMediaElement.prototype.play).toHaveBeenCalledTimes(1)
+  expect(screen.getByRole('status')).toHaveTextContent('Faixa indisponível')
 })
 
 it('respeita a pausa escolhida ao retornar à página na mesma sessão', () => {

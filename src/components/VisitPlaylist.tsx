@@ -39,6 +39,8 @@ function rememberPaused(paused: boolean) {
 export function VisitPlaylist() {
   const audioRef = useRef<HTMLAudioElement>(null)
   const shouldPlay = useRef(startsPlaying())
+  const waitingForGesture = useRef(false)
+  const currentVolume = useRef(0.2)
   const attempt = useRef({ version: 0 })
   const [index, setIndex] = useState(0)
   const [playing, setPlaying] = useState(false)
@@ -52,15 +54,18 @@ export function VisitPlaylist() {
     if (!audio) return
     const request = ++attempt.current.version
     shouldPlay.current = true
+    waitingForGesture.current = false
+    audio.volume = currentVolume.current
     try {
       await audio.play()
     } catch (error) {
       if (request !== attempt.current.version) return
       setPlaying(false)
       if (error instanceof DOMException && error.name === 'AbortError') return
+      waitingForGesture.current = error instanceof DOMException && error.name === 'NotAllowedError'
       setStatus(
-        error instanceof DOMException && error.name === 'NotAllowedError'
-          ? 'Toque no play para ouvir.'
+        waitingForGesture.current
+          ? 'Clique ou toque na página para iniciar a música.'
           : 'Não foi possível tocar. Tente o play ou outra faixa.',
       )
     }
@@ -68,6 +73,7 @@ export function VisitPlaylist() {
 
   function pause() {
     shouldPlay.current = false
+    waitingForGesture.current = false
     attempt.current.version++
     audioRef.current?.pause()
     setPlaying(false)
@@ -96,8 +102,33 @@ export function VisitPlaylist() {
   }, [index])
 
   useEffect(() => {
-    if (audioRef.current) audioRef.current.volume = volume / 100
+    currentVolume.current = volume / 100
+    if (audioRef.current) audioRef.current.volume = currentVolume.current
   }, [volume])
+
+  useEffect(() => {
+    function startAfterInteraction(event: Event) {
+      if (!waitingForGesture.current || !shouldPlay.current) return
+      if (event instanceof KeyboardEvent && (event.repeat || !['Enter', ' '].includes(event.key)))
+        return
+      // A media control must keep ownership of its own playback. Typing in
+      // forms and an explicit pause must not start the background soundtrack.
+      if (
+        event.target instanceof Element &&
+        event.target.closest(
+          '.visit-playlist, .audio-player, audio, video, input, textarea, select, [contenteditable="true"]',
+        )
+      )
+        return
+      void play()
+    }
+    document.addEventListener('click', startAfterInteraction)
+    document.addEventListener('keydown', startAfterInteraction)
+    return () => {
+      document.removeEventListener('click', startAfterInteraction)
+      document.removeEventListener('keydown', startAfterInteraction)
+    }
+  }, [])
 
   useEffect(() => {
     const pauseForMedia = (event: Event) => {
@@ -145,6 +176,7 @@ export function VisitPlaylist() {
         src={track.src}
         preload="metadata"
         onPlay={(event) => {
+          waitingForGesture.current = false
           setPlaying(true)
           setStatus(`Ouvindo · ${visitPlaylist[index].context}`)
           window.dispatchEvent(
@@ -154,6 +186,8 @@ export function VisitPlaylist() {
         onPause={() => setPlaying(false)}
         onEnded={() => selectTrack((index + 1) % visitPlaylist.length)}
         onError={() => {
+          waitingForGesture.current = false
+          shouldPlay.current = false
           setPlaying(false)
           setStatus('Faixa indisponível. Escolha outra música.')
         }}

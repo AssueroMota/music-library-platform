@@ -18,8 +18,9 @@ describe('preço e prazo fixos do lançamento', () => {
     expect(violinPriceCents(violinLaunch.productId, 3000, end + 86400000)).toBe(4990)
   })
   it('respeita a meia-noite no horário de Brasília sem alterar outros produtos', () => {
-    expect(isViolinLaunchActive(Date.parse('2026-10-28T02:59:59Z'))).toBe(true)
-    expect(isViolinLaunchActive(Date.parse('2026-10-28T03:00:00Z'))).toBe(false)
+    expect(isViolinLaunchActive(Date.parse('2026-11-01T02:59:59Z'))).toBe(true)
+    expect(isViolinLaunchActive(Date.parse('2026-11-01T03:00:00Z'))).toBe(false)
+    expect(isViolinLaunchActive(Date.parse('2026-10-28T12:00:00-03:00'))).toBe(true)
     expect(violinPriceCents('library-violin-scores', 1290, end)).toBe(1290)
     expect(violinPriceCents('library-complete', 2790, end)).toBe(2790)
   })

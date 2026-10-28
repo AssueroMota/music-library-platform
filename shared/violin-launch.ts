@@ -1,12 +1,12 @@
-// Fixed, owner-authorized launch condition. The deadline never resets per visitor.
+// Fixed offer, reopened by the owner on 28/10 through 31/10. Never resets per visitor.
 export const violinLaunch = {
   productId: 'library-violin-playbacks',
   startsAt: '2026-10-24T00:00:00-03:00',
-  endsAt: '2026-10-28T00:00:00-03:00',
+  endsAt: '2026-11-01T00:00:00-03:00',
   launchPriceCents: 2790,
   regularPriceCents: 4990,
-  deadlineLabel: '27/10 às 23h59',
-  regularFromLabel: '28/10',
+  deadlineLabel: '31/10 às 23h59',
+  regularFromLabel: '01/11',
 } as const
 
 export function isViolinLaunchActive(now = Date.now()) {

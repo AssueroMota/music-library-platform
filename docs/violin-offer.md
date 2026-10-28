@@ -5,7 +5,7 @@ A página pública oferece dois planos com pagamento único:
 | Produto                    | Preço                                                   | Permissão                                                                          |
 | -------------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------- |
 | `library-violin-scores`    | R$ 12,90                                                | Coleção de 100 partituras de violino, sem áudios, 10 setlists e acesso vitalício   |
-| `library-violin-playbacks` | R$ 27,90 no lançamento; R$ 49,90 a partir de 28/10/2026 | Coleção de 100 partituras de violino com playbacks, 42 setlists e acesso vitalício |
+| `library-violin-playbacks` | R$ 27,90 na promoção; R$ 49,90 a partir de 01/11/2026 | Coleção de 100 partituras de violino com playbacks, 42 setlists e acesso vitalício |
 
 A coleção está em expansão. A contagem da biblioteca reflete apenas os arquivos publicados, sem inventar materiais para completar a oferta. A migração `202610270001_violin_lifetime_collection` atualiza somente as descrições dos planos; não altera preços, disponibilidade, pedidos ou permissões.
 
@@ -15,11 +15,11 @@ O Básico mantém as 10 seleções originais. O Completo reúne essas 10 e 32 se
 
 ## Condição real de lançamento
 
-O usuário autorizou criar uma condição de lançamento com mudança de preço. Foi definida a seguinte regra para o Plano Completo:
+O usuário autorizou criar uma condição de lançamento com mudança de preço e, em 28/10/2026, confirmou reabrir a oferta até 31/10 às 23h59 por R$ 27,90. Foi definida a seguinte regra para o Plano Completo:
 
 - Início: 24/10/2026 às 00h00, horário de Brasília.
-- Pedidos iniciados até 27/10/2026 às 23h59: R$ 27,90.
-- Novos pedidos a partir de 28/10/2026 às 00h00: R$ 49,90.
+- Pedidos iniciados dentro da oferta reaberta, até 31/10/2026 às 23h59: R$ 27,90.
+- Novos pedidos a partir de 01/11/2026 às 00h00: R$ 49,90.
 - Diferença em relação ao próximo preço: R$ 22,00. Não se afirma que o preço de R$ 49,90 foi cobrado no passado.
 
 `shared/violin-launch.ts` é a fonte da regra de preço. O endpoint `/api/products` e a criação do pedido aplicam a mesma regra no servidor, mesmo se o registro do produto ainda contiver um valor-base anterior. Esta condição é deliberadamente uma regra de preço do produto; editar apenas o preço-base no banco não substitui a campanha. Para alterar a campanha, atualize a regra e publique frontend e backend juntos.
@@ -40,7 +40,7 @@ O backend aplica a permissão na listagem, visualização e download. O Básico 
 
 Publique frontend e backend da mesma revisão. `npm start` executa `npm run db:migrate` automaticamente pelo `prestart` antes de iniciar a API; uma falha de migração impede que a nova API aceite pedidos com o catálogo antigo. A migração usa somente alterações versionadas e preserva os registros de compras anteriores. Se a hospedagem executar o arquivo Node diretamente, configure `npm run db:migrate` como comando de pré-deploy. A implementação e o envio ao GitHub não executam diretamente comandos no banco de produção nem modificam arquivos `.env`.
 
-O controle `CHECKOUT_ENABLED` continua determinando a disponibilidade das compras. Como o prazo é fixo, publicar depois de 27/10/2026 exibirá diretamente o preço de R$ 49,90. O prazo não será prorrogado automaticamente. Antes de abrir as vendas, finalize o acervo e as informações de suporte e termos.
+O controle `CHECKOUT_ENABLED` continua determinando a disponibilidade das compras. Como o prazo é fixo, publicar depois de 31/10/2026 exibirá diretamente o preço de R$ 49,90. O prazo não será prorrogado automaticamente. Antes de abrir as vendas, finalize o acervo e as informações de suporte e termos.
 
 ## Conteúdo, demonstração e provas reais
 
@@ -82,4 +82,8 @@ O banner grande da seção de planos e o atalho fixo inferior foram retirados. O
 
 Os cards de setlists priorizam ocasião, título, amostra de músicas e quantidade. A descrição completa aparece ao abrir a seleção. A grade usa quatro colunas em telas largas, três ou duas em telas intermediárias e uma no celular. Os planos usam ilustrações menores e espaçamentos reduzidos, mantendo benefícios legíveis e botões com pelo menos 48 px de altura.
 
-O preço de R$ 49,90 aparece riscado sobre o valor de lançamento de R$ 27,90, acompanhado da legenda curta `preço de 28/10`, mantendo claro que é o preço futuro. O prazo real e a proteção do checkout continuam em vigor.
+O preço de R$ 49,90 aparece riscado sobre o valor promocional de R$ 27,90, acompanhado da legenda curta `preço de 01/11`, mantendo claro que é o preço após o prazo. O prazo real e a proteção do checkout continuam em vigor.
+
+## Música na página de vendas
+
+A trilha tenta iniciar a 20% do volume ao entrar. Se o navegador recusar com `NotAllowedError`, uma interação de clique/toque ou Enter/Espaço na página tenta novamente. Essa espera não é reativada depois de uma pausa voluntária, falha de arquivo ou escolha de outra mídia. Os controles de áudio/vídeo e os campos de formulário não disparam essa retomada. A pausa escolhida continua válida na mesma sessão. Navegadores podem impedir áudio com som sem interação; não se promete contornar essa restrição.
