@@ -7,7 +7,6 @@ import {
   type RenderTask,
 } from 'pdfjs-dist'
 import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
-import { LibrarySelect } from './LibrarySelect'
 
 GlobalWorkerOptions.workerSrc = workerUrl
 
@@ -22,7 +21,6 @@ export function ScorePdf({
 }) {
   const [document, setDocument] = useState<PDFDocumentProxy | null>(null)
   const [page, setPage] = useState(1)
-  const [zoom, setZoom] = useState(100)
   const [width, setWidth] = useState(0)
   const [rendering, setRendering] = useState(true)
   const viewport = useRef<HTMLDivElement>(null)
@@ -64,7 +62,7 @@ export function ScorePdf({
       .then(async (pdfPage) => {
         if (!active) return
         const original = pdfPage.getViewport({ scale: 1 })
-        const size = pdfPage.getViewport({ scale: (width / original.width) * (zoom / 100) })
+        const size = pdfPage.getViewport({ scale: width / original.width })
         const resolution = Math.min(window.devicePixelRatio || 1, 2)
         canvas.width = Math.floor(size.width * resolution)
         canvas.height = Math.floor(size.height * resolution)
@@ -91,7 +89,7 @@ export function ScorePdf({
       active = false
       renderingTask?.cancel()
     }
-  }, [document, page, zoom, width, title, onError])
+  }, [document, page, width, title, onError])
 
   return (
     <div className="repertoire-pdf-viewer">
@@ -121,18 +119,6 @@ export function ScorePdf({
             <ChevronRight size={19} />
           </button>
         </div>
-        <LibrarySelect
-          label="Zoom da partitura"
-          value={zoom}
-          onChange={(event) => {
-            setRendering(true)
-            setZoom(Number(event.target.value))
-          }}
-        >
-          <option value={100}>Ajustar à largura</option>
-          <option value={150}>150%</option>
-          <option value={200}>200%</option>
-        </LibrarySelect>
       </div>
       {rendering && (
         <p role="status" className="repertoire-loading">

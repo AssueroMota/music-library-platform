@@ -568,7 +568,6 @@ function ProtectedMedia({
   const [url, setUrl] = useState('')
   const [error, setError] = useState('')
   const [refresh, setRefresh] = useState(0)
-  const [zoom, setZoom] = useState(100)
   useEffect(() => {
     currentToken.current = token
   }, [token])
@@ -635,26 +634,9 @@ function ProtectedMedia({
           }
         />
       ) : asset.format === 'png' ? (
-        <>
-          <LibrarySelect
-            className="repertoire-zoom"
-            label="Zoom da partitura"
-            value={zoom}
-            onChange={(event) => setZoom(Number(event.target.value))}
-          >
-            <option value={100}>100%</option>
-            <option value={150}>150%</option>
-            <option value={200}>200%</option>
-          </LibrarySelect>
-          <div className="repertoire-image">
-            <img
-              src={mediaUrl}
-              alt={asset.title}
-              style={{ width: `${zoom}%` }}
-              onError={loadError}
-            />
-          </div>
-        </>
+        <div className="repertoire-image">
+          <img src={mediaUrl} alt={asset.title} onError={loadError} />
+        </div>
       ) : (
         <Suspense fallback={<p role="status">Preparando partitura…</p>}>
           <ScorePdf key={mediaUrl} url={mediaUrl} title={asset.title} onError={loadError} />

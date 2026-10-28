@@ -134,7 +134,7 @@ it('reúne áudio e partituras por música e filtra por nome, artista, instrumen
   expect(fetchMock).not.toHaveBeenCalled()
 })
 
-it('preserva o áudio, a partitura e o zoom ao renovar o token e usa a nova credencial na próxima solicitação', async () => {
+it('preserva o áudio e a partitura ao renovar o token e usa a nova credencial na próxima solicitação', async () => {
   const fetchMock = vi.fn(
     async (input: string, _init?: RequestInit) =>
       new Response(
@@ -156,13 +156,12 @@ it('preserva o áudio, a partitura e o zoom ao renovar o token e usa a nova cred
   )
   const audio = document.querySelector('audio')!
   audio.currentTime = 40
-  await user.selectOptions(screen.getByRole('combobox', { name: 'Zoom da partitura' }), '150')
   const requests = fetchMock.mock.calls.length
   mounted.rerender(<MemberRepertoire data={data} token="renewed-test-token" />)
   expect(screen.getByRole('img', { name: 'Fix You - imagem' })).toBe(image)
   expect(document.querySelector('audio')).toBe(audio)
   expect(audio.currentTime).toBe(40)
-  expect(screen.getByRole('combobox', { name: 'Zoom da partitura' })).toHaveValue('150')
+  expect(screen.queryByRole('combobox', { name: 'Zoom da partitura' })).not.toBeInTheDocument()
   expect(fetchMock).toHaveBeenCalledTimes(requests)
   await user.click(screen.getAllByRole('button', { name: 'Renovar acesso ao arquivo' })[0])
   await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(requests + 1))
@@ -197,8 +196,7 @@ it('abre áudio e PNG na plataforma, permite trocar para PDF e renova URLs auten
     expect.stringContaining('/score-png/view'),
     expect.objectContaining({ headers: { Authorization: 'Bearer test-token' } }),
   )
-  await user.selectOptions(screen.getByRole('combobox', { name: 'Zoom da partitura' }), '200')
-  expect(image).toHaveStyle({ width: '200%' })
+  expect(screen.queryByRole('combobox', { name: 'Zoom da partitura' })).not.toBeInTheDocument()
   await user.selectOptions(
     screen.getByRole('combobox', { name: 'Escolher partitura' }),
     'score-pdf',
@@ -259,12 +257,11 @@ it('amplia a área de estudo e volta à lista mantendo a partitura aberta', asyn
   const user = userEvent.setup()
   await user.click(screen.getByRole('button', { name: 'Ver partitura de Fix You' }))
   const image = await screen.findByRole('img', { name: 'Fix You - imagem' })
-  await user.selectOptions(screen.getByRole('combobox', { name: 'Zoom da partitura' }), '150')
   await user.click(screen.getByRole('button', { name: 'Ampliar área de estudo' }))
   expect(screen.getByRole('region', { name: 'Repertório disponível' })).toHaveClass('is-focus-mode')
   await user.click(screen.getByRole('button', { name: 'Mostrar lista de músicas' }))
   expect(screen.getByRole('img', { name: 'Fix You - imagem' })).toBe(image)
-  expect(screen.getByRole('combobox', { name: 'Zoom da partitura' })).toHaveValue('150')
+  expect(screen.queryByRole('combobox', { name: 'Zoom da partitura' })).not.toBeInTheDocument()
   expect(fetchMock).toHaveBeenCalledTimes(1)
 })
 

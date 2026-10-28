@@ -21,10 +21,7 @@ it('permite experimentar somente os arquivos públicos e navegar pelo catálogo 
   expect(
     screen.queryByRole('button', { name: 'Renovar acesso ao arquivo' }),
   ).not.toBeInTheDocument()
-  await user.selectOptions(screen.getByRole('combobox', { name: 'Zoom da partitura' }), '150')
-  expect(screen.getByRole('img', { name: 'A Thousand Years - Partitura' })).toHaveStyle({
-    width: '150%',
-  })
+  expect(screen.queryByRole('combobox', { name: 'Zoom da partitura' })).not.toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Fechar materiais' }))
   await user.clear(screen.getByRole('searchbox'))
   await user.type(screen.getByRole('searchbox'), 'Perfect')
