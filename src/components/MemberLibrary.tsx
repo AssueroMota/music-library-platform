@@ -23,6 +23,8 @@ import type { Session } from '@supabase/supabase-js'
 import { auth } from '../lib/auth'
 import { api, LIBRARY_REQUEST_TIMEOUT_MS } from '../lib/api'
 import type { MemberLibraryData } from '../../shared/library'
+import type { UpgradeQuote } from '../../shared/upgrade'
+import { formatBRL } from '../../shared/products'
 import { MemberRepertoire } from './MemberRepertoire'
 import { readPersonalAccess } from '../lib/library-access'
 import { PersonalLibraryAccess } from './PersonalLibraryAccess'
@@ -240,9 +242,12 @@ function MemberLibraryContent({
           </div>
           <div className="member-library-actions">
             {showUpgrade && (
-              <button className="member-upgrade-button" onClick={() => setUpgradeOpen(true)}>
-                <ArrowUpRight size={18} /> Fazer upgrade
-              </button>
+              <UpgradeButton
+                key={session!.user.id}
+                token={session!.access_token}
+                alreadyComplete={completeAccess}
+                onOpen={() => setUpgradeOpen(true)}
+              />
             )}
             {session && data?.personalLink && (
               <button
@@ -366,5 +371,49 @@ function MemberLibraryContent({
         )}
       </main>
     </div>
+  )
+}
+
+function UpgradeButton({
+  token,
+  alreadyComplete,
+  onOpen,
+}: {
+  token: string
+  alreadyComplete: boolean
+  onOpen: () => void
+}) {
+  const [quote, setQuote] = useState<UpgradeQuote | null>(null)
+  useEffect(() => {
+    if (alreadyComplete) return
+    const controller = new AbortController()
+    api<UpgradeQuote>(
+      '/library/upgrade',
+      { headers: { Authorization: `Bearer ${token}` }, signal: controller.signal },
+      LIBRARY_REQUEST_TIMEOUT_MS,
+    )
+      .then((result) => {
+        if (!controller.signal.aborted) setQuote(result)
+      })
+      .catch(() => {
+        /* The modal offers retry; never invent a price on lookup failure. */
+      })
+    return () => controller.abort()
+  }, [token, alreadyComplete])
+  const price =
+    alreadyComplete || quote?.alreadyComplete
+      ? 0
+      : quote && !quote.alreadyComplete
+        ? quote.priceCents
+        : null
+  return (
+    <button
+      className="member-upgrade-button"
+      onClick={onOpen}
+      title={price === 0 ? 'Você já possui o Completo, sem nova cobrança.' : undefined}
+    >
+      <ArrowUpRight size={18} />
+      Fazer upgrade{price !== null ? ` · ${formatBRL(price)}` : ''}
+    </button>
   )
 }

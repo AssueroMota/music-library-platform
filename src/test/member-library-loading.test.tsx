@@ -183,6 +183,7 @@ it('mostra a prévia básica para o titular completo sem alterar os materiais da
   window.history.replaceState({}, '', '/biblioteca?visualizar=basico')
   const mounted = render(<MemberLibrary />)
   await act(async () => {})
+  expect(screen.getByRole('button', { name: /Fazer upgrade · R\$\s0,00/ })).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: /Abrir áudio/ })).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: /Setlists prontos/ }))
   expect(screen.getAllByRole('button', { name: /Abrir setlist/ })).toHaveLength(10)
@@ -193,4 +194,52 @@ it('mostra a prévia básica para o titular completo sem alterar os materiais da
   expect(screen.getAllByRole('button', { name: /Abrir áudio/ })).toHaveLength(103)
   fireEvent.click(screen.getByRole('button', { name: /Setlists prontos/ }))
   expect(screen.getAllByRole('button', { name: /Abrir setlist/ })).toHaveLength(42)
+})
+
+it('exibe no botão a diferença calculada pela API para a conta autenticada', async () => {
+  const fetchMock = vi.fn(
+    async (url: string, _init?: RequestInit) =>
+      new Response(
+        JSON.stringify(
+          url.endsWith('/library/upgrade')
+            ? {
+                alreadyComplete: false,
+                priceCents: 4870,
+                creditCents: 120,
+                completePriceCents: 4990,
+                email: 'buyer@example.test',
+                available: true,
+                checkoutEnabled: true,
+                pendingCheckoutUrl: null,
+              }
+            : {
+                setlistLimit: 10,
+                products: [],
+                assets: [
+                  {
+                    id: 'one-score',
+                    title: 'Fix You',
+                    songTitle: 'Fix You',
+                    artist: 'Coldplay',
+                    style: 'Pop',
+                    instrument: 'violin',
+                    kind: 'score',
+                    format: 'pdf',
+                  },
+                ],
+              },
+        ),
+      ),
+  )
+  vi.stubGlobal('fetch', fetchMock)
+  render(<MemberLibrary />)
+  await act(async () => {})
+  expect(screen.getByRole('button', { name: /Fazer upgrade · R\$\s48,70/ })).toBeInTheDocument()
+  expect(fetchMock).toHaveBeenCalledWith(
+    expect.stringContaining('/library/upgrade'),
+    expect.objectContaining({ headers: { Authorization: 'Bearer test-session-only' } }),
+  )
+  expect(fetchMock.mock.calls.every(([, init]) => !init || !(init as RequestInit).method)).toBe(
+    true,
+  )
 })
