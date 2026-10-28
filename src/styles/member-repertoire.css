@@ -113,18 +113,66 @@
 .member-upgrade-button:hover {
   background: #c2410c;
 }
+.library-upgrade-dialog {
+  width: min(660px, calc(100% - 32px));
+}
+.library-upgrade-dialog .checkout-dialog-body {
+  padding: 46px 40px 32px;
+}
+.library-upgrade-dialog h2 {
+  margin-top: 16px;
+  font-size: clamp(28px, 3.2vw, 36px);
+  font-weight: 750;
+  line-height: 1.2;
+  letter-spacing: -0.8px;
+}
 .library-upgrade-dialog h2 span {
   color: #c2410c;
 }
 .library-upgrade-dialog .eyebrow {
   color: #b33b0b;
-  font-size: 10px;
+  font-size: 12px;
+  line-height: 1.6;
+  letter-spacing: 1px;
 }
-.library-upgrade-primary {
+.library-upgrade-dialog .checkout-details {
+  gap: 14px;
+  margin-block: 26px;
+}
+.library-upgrade-dialog .checkout-details li,
+.library-upgrade-dialog .checkout-intro,
+.library-upgrade-dialog .checkout-error,
+.library-upgrade-dialog .checkout-notice {
+  font-size: 16px;
+  line-height: 1.65;
+}
+.library-upgrade-dialog .checkout-details svg {
+  width: 20px;
+  height: 20px;
+  margin-top: 3px;
+}
+.library-upgrade-dialog .checkout-close {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+}
+.library-upgrade-dialog .library-upgrade-primary {
   width: 100%;
-  margin-top: 22px;
+  min-height: 56px;
+  padding: 15px 20px;
+  margin-top: 26px;
   background: #e85211;
   color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.member-page .library-upgrade-dialog .checkout-back {
+  font-size: 15px;
+  min-height: 44px;
 }
 .library-upgrade-primary:hover {
   background: #c2410c;
@@ -135,7 +183,7 @@
 }
 .library-upgrade-summary {
   margin-top: 24px;
-  padding: 18px;
+  padding: 20px;
   border: 1px solid #f3d7c2;
   border-radius: 10px;
   background: #fff7ef;
@@ -145,7 +193,8 @@
   justify-content: space-between;
   gap: 16px;
   padding: 7px 0;
-  font-size: 14px;
+  font-size: 16px;
+  line-height: 1.5;
 }
 .library-upgrade-summary dd {
   white-space: nowrap;
@@ -156,7 +205,7 @@
   padding-top: 16px;
   border-top: 1px solid #f3d7c2;
   color: #a6370a;
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 700;
 }
 @media (max-width: 600px) {
@@ -179,7 +228,16 @@
     flex: 1;
   }
   .library-upgrade-dialog .checkout-dialog-body {
-    padding-inline: 22px;
+    padding: 46px 22px 24px;
+  }
+  .library-upgrade-dialog .eyebrow {
+    font-size: 11px;
+  }
+  .library-upgrade-summary {
+    padding: 16px;
+  }
+  .library-upgrade-summary > div:last-child {
+    font-size: 20px;
   }
 }
 .member-access-link:hover {
