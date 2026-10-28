@@ -32,7 +32,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #386a52;
+  color: #b84a18;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.7px;
@@ -60,7 +60,7 @@
   display: inline-flex;
   align-items: start;
   gap: 7px;
-  color: #526b5f;
+  color: #855135;
   font-size: 12px;
   line-height: 1.6;
 }
@@ -78,13 +78,13 @@
 }
 .public-library-preview-locked {
   padding: 22px;
-  background: #f6f9f7;
+  background: #fff7ef;
   color: #8d4b28;
 }
 .public-library-preview-locked > p {
   font-size: 15px;
   font-weight: 600;
-  color: #243f32;
+  color: #743a1e;
   margin-top: 9px;
 }
 .public-library-preview-locked > span {
