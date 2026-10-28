@@ -296,7 +296,6 @@ em {
   width: 96px;
   height: 96px;
   object-fit: contain;
-  border-radius: 8px;
 }
 .hero {
   background: var(--navy);

@@ -7,7 +7,7 @@ export function Logo({ light = false, href = '#inicio' }: { light?: boolean; hre
     >
       <img
         className="logo-image"
-        src="/images/music-library-violinista.jpg"
+        src="/images/music-library-violinista-transparent.png"
         alt="Music Library"
         width={96}
         height={96}
