@@ -512,28 +512,6 @@
   align-items: center;
   gap: 6px;
 }
-.repertoire-audio-filter {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  cursor: pointer;
-  color: #465b6f;
-}
-.repertoire-audio-filter input {
-  width: 16px;
-  height: 16px;
-  accent-color: #147759;
-  cursor: pointer;
-}
-.repertoire-audio-filter span {
-  display: inline-flex;
-  justify-content: center;
-  min-width: 22px;
-  padding: 1px 5px;
-  border-radius: 4px;
-  background: #e5ebf0;
-  font-size: 11px;
-}
 .repertoire-clear {
   display: inline-flex;
   align-items: center;

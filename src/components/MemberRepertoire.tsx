@@ -52,7 +52,7 @@ export function MemberRepertoire({
   const [style, setStyle] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [order, setOrder] = useState('title')
-  const [audioOnly, setAudioOnly] = useState(false)
+  const [playback, setPlayback] = useState('all')
   const [focusMode, setFocusMode] = useState(false)
   const [view, setView] = useState<'songs' | 'setlists'>('songs')
   const [setlistId, setSetlistId] = useState<string | null>(null)
@@ -99,7 +99,8 @@ export function MemberRepertoire({
       (song) =>
         (!instrument || song.instrument === instrument) &&
         (!style || song.style === style) &&
-        (!audioOnly || song.assets.some((asset) => asset.kind === 'audio')) &&
+        (playback === 'all' ||
+          song.assets.some((asset) => asset.kind === 'audio') === (playback === 'with')) &&
         normalizeSearch(`${song.title} ${song.artist}`).includes(normalizeSearch(search.trim())),
     )
     .sort((a, b) =>
@@ -113,12 +114,12 @@ export function MemberRepertoire({
             : a.title.localeCompare(b.title, 'pt-BR'),
     )
   const selected = songs.find((song) => song.id === selectedId)
-  const hasFilters = Boolean(search || instrument || style || audioOnly)
+  const hasFilters = Boolean(search || instrument || style || playback !== 'all')
   function clearFilters() {
     setSearch('')
     setInstrument('')
     setStyle('')
-    setAudioOnly(false)
+    setPlayback('all')
   }
   function openSong(id: string) {
     setFocusMode(false)
@@ -249,6 +250,15 @@ export function MemberRepertoire({
               ))}
             </LibrarySelect>
             <LibrarySelect
+              label="Playback"
+              value={playback}
+              onChange={(event) => setPlayback(event.target.value)}
+            >
+              <option value="all">Todas as músicas ({collection.length})</option>
+              <option value="with">Com playback ({audioCount})</option>
+              <option value="without">Sem playback ({collection.length - audioCount})</option>
+            </LibrarySelect>
+            <LibrarySelect
               label="Ordenar por"
               value={order}
               onChange={(event) => setOrder(event.target.value)}
@@ -266,16 +276,6 @@ export function MemberRepertoire({
                 ? instrumentName(availableInstruments[0])
                 : 'Sua coleção'}
             </span>
-            {audioCount > 0 && (
-              <label className="repertoire-audio-filter">
-                <input
-                  type="checkbox"
-                  checked={audioOnly}
-                  onChange={(event) => setAudioOnly(event.target.checked)}
-                />{' '}
-                Somente com áudio <span>{audioCount}</span>
-              </label>
-            )}
             {hasFilters && (
               <button className="repertoire-clear" onClick={clearFilters}>
                 <X size={14} /> Limpar filtros
