@@ -5,6 +5,8 @@ import type { Config } from './config.js'
 import type { Providers, RemoteOrder } from './providers.js'
 import { personalLibraryLink } from './library-access.js'
 import { violinPriceCents } from '../shared/violin-launch.js'
+import { upgradeOffer } from './upgrade.js'
+import type { UpgradeQuote } from '../shared/upgrade.js'
 import {
   AppError,
   checkToken,
@@ -91,12 +93,44 @@ export class CheckoutService {
     public config: Config,
   ) {}
 
+  async upgradeQuote(user: { id: string; email: string }): Promise<UpgradeQuote> {
+    const offer = await upgradeOffer(this.db, user.id)
+    if (offer.alreadyComplete) return { alreadyComplete: true }
+    return {
+      alreadyComplete: false,
+      email: user.email,
+      completePriceCents: offer.completePriceCents,
+      creditCents: offer.creditCents,
+      priceCents: offer.priceCents,
+      pendingCheckoutUrl: offer.pending?.checkoutUrl ?? null,
+      available: offer.product.available,
+      checkoutEnabled: this.config.CHECKOUT_ENABLED,
+    }
+  }
+
+  async upgrade(
+    user: { id: string; email: string },
+    key: string,
+    token: string,
+    expectedPriceCents: number,
+  ) {
+    return this.checkout(
+      'library-violin-playbacks',
+      key,
+      token,
+      user.email,
+      expectedPriceCents,
+      user.id,
+    )
+  }
+
   async checkout(
     productId: string,
     key: string,
     token: string,
     email: string,
     expectedPriceCents?: number,
+    upgradeUserId?: string,
   ) {
     const deliveryEmail = deliveryEmailSchema.parse(email)
     if (!this.config.CHECKOUT_ENABLED)
@@ -106,12 +140,25 @@ export class CheckoutService {
         'As compras ainda não estão disponíveis. Tente novamente mais tarde.',
       )
     const order = await this.db.$transaction(async (tx) => {
+      if (upgradeUserId)
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`upgrade:${upgradeUserId}`}))`
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${key}))`
+      const offer = upgradeUserId ? await upgradeOffer(tx, upgradeUserId) : null
+      if (offer?.alreadyComplete)
+        throw new AppError(409, 'ALREADY_COMPLETE', 'Seu acesso já inclui o Plano Completo.')
+      if (offer?.pending && offer.pending.idempotencyKey !== key)
+        throw new AppError(
+          409,
+          'UPGRADE_PENDING',
+          'Você já tem um upgrade em andamento. Continue o pagamento iniciado.',
+        )
       const existing = await tx.order.findUnique({ where: { idempotencyKey: key } })
       if (existing) {
         if (
           existing.productId !== productId ||
           existing.deliveryEmail !== deliveryEmail ||
+          Boolean(existing.upgradeFromOrderId) !== Boolean(upgradeUserId) ||
+          (upgradeUserId && existing.userId !== upgradeUserId) ||
           !checkToken(token, existing.statusTokenHash)
         )
           throw new AppError(409, 'CHECKOUT_CONFLICT', 'Inicie uma nova tentativa de compra.')
@@ -126,7 +173,10 @@ export class CheckoutService {
       const product = await tx.product.findUnique({ where: { id: productId } })
       if (!product?.available || product.priceCents <= 0 || product.currency !== 'BRL')
         throw new AppError(409, 'PRODUCT_UNAVAILABLE', 'Este produto está indisponível no momento.')
-      const priceCents = violinPriceCents(product.id, product.priceCents)
+      const priceCents =
+        offer && !offer.alreadyComplete
+          ? offer.priceCents
+          : violinPriceCents(product.id, product.priceCents)
       if (expectedPriceCents !== undefined && priceCents !== expectedPriceCents)
         throw new AppError(
           409,
@@ -143,6 +193,9 @@ export class CheckoutService {
           idempotencyKey: key,
           statusTokenHash: hashToken(token),
           deliveryEmail,
+          ...(offer && !offer.alreadyComplete
+            ? { userId: upgradeUserId, upgradeFromOrderId: offer.sourceOrderId }
+            : {}),
         },
       })
     })
@@ -162,6 +215,15 @@ export class CheckoutService {
             'Esta tentativa expirou. Inicie uma nova compra.',
           )
         if (locked.checkoutUrl) return { orderId: locked.id, checkoutUrl: locked.checkoutUrl }
+        if (locked.upgradeFromOrderId) {
+          const eligible = await upgradeOffer(tx, locked.userId!)
+          if (eligible.alreadyComplete || eligible.sourceOrderId !== locked.upgradeFromOrderId)
+            throw new AppError(
+              409,
+              'UPGRADE_NOT_AVAILABLE',
+              'Seu acesso mudou. Atualize sua biblioteca antes de continuar.',
+            )
+        }
         const remote = await this.providers.createOrder({
           id: locked.id,
           productCode: locked.productCode,
@@ -245,7 +307,10 @@ export class CheckoutService {
         })
         if (revoked(next) || next === 'CANCELED' || next === 'REJECTED') {
           await tx.entitlement.updateMany({
-            where: { orderId: order.id, revokedAt: null },
+            where: {
+              OR: [{ orderId: order.id }, { order: { upgradeFromOrderId: order.id } }],
+              revokedAt: null,
+            },
             data: { revokedAt: new Date() },
           })
           await tx.order.update({ where: { id: order.id }, data: { emailLinkCiphertext: null } })
@@ -268,8 +333,26 @@ export class CheckoutService {
         if (order.status !== 'APPROVED' || order.accessGrantedAt) return
         const email = order.deliveryEmail ?? order.buyerEmail
         if (!email) throw new Error('BUYER_EMAIL_MISSING')
+        if (order.upgradeFromOrderId) {
+          await tx.$queryRaw`SELECT id FROM orders WHERE id = ${order.upgradeFromOrderId}::uuid FOR UPDATE`
+          const source = await tx.entitlement.findUnique({
+            where: { orderId: order.upgradeFromOrderId },
+            include: { order: true, product: true },
+          })
+          if (
+            !source ||
+            source.revokedAt ||
+            source.order.status !== 'APPROVED' ||
+            source.userId !== order.userId ||
+            source.product.accessType !== 'SCORES' ||
+            source.product.instrument !== 'violin'
+          )
+            throw new Error('UPGRADE_SOURCE_UNAVAILABLE')
+        }
         const login = await this.providers.createLogin(email)
         if (login.email !== email) throw new Error('AUTH_EMAIL_MISMATCH')
+        if (order.upgradeFromOrderId && login.userId !== order.userId)
+          throw new Error('UPGRADE_USER_MISMATCH')
         const user = await tx.user.upsert({
           where: { id: login.userId },
           create: { id: login.userId, email: login.email },

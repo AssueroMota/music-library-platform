@@ -60,6 +60,16 @@ O ponto de entrada carrega a biblioteca e o retorno do checkout sem baixar o có
 
 Para o titular do Completo conferir a apresentação do Básico nos próprios dispositivos, `?visualizar=basico` restringe a tela a partituras e 10 setlists. Esse parâmetro só remove materiais da visualização; não concede direitos nem altera compras. O modo é preservado na confirmação do login e ao copiar o link pessoal. Sem o parâmetro, a conta volta a mostrar os materiais do plano adquirido.
 
+## Upgrade dentro da biblioteca
+
+O botão **Fazer upgrade** fica na biblioteca Básica, ao lado de **Copiar meu acesso**. O resumo autenticado calcula no servidor o preço atual do Completo menos o valor efetivamente pago em uma compra Básica aprovada e ainda ativa. Havendo mais de uma compra Básica, considera a de maior valor; não soma compras repetidas. Se o valor já pago cobrir o Completo, não cria cobrança e orienta o atendimento.
+
+O cliente confirma a diferença antes de criar o pedido. O e-mail é o da conta autenticada e não pode ser substituído no navegador. O pedido de upgrade usa o produto Completo e registra a compra Básica que originou o crédito. Tentativas repetidas reutilizam o pedido e tentativas concorrentes são bloqueadas. Um pagamento iniciado conserva seu valor até a expiração existente; mudar o preço antes da criação exige nova confirmação.
+
+O webhook e a liberação seguem a verificação de pagamento existente. Ao aprovar, o usuário recebe o direito do Completo no mesmo usuário e link pessoal, sem rotação. O estorno do upgrade mantém o Básico. Se a compra Básica usada no desconto for estornada, o direito dependente do upgrade também é suspenso. A migration `202610280002_library_upgrade` adiciona somente a referência entre pedidos; não altera preços nem compras anteriores.
+
+Na prévia Básica do titular que já possui o Completo, o botão abre a opção **Abrir meu Completo**, sem nova cobrança. O retorno do pagamento leva ao link normal; também há **Já paguei · Atualizar meu acesso** e a atualização ao voltar à aba depois de iniciar um upgrade. Ações sem compra pendente não disparam recargas por foco.
+
 ## Validação
 
 Os testes cobrem a virada de preço no fuso de Brasília, o término do contador sem recarregar, a atualização do catálogo público, o bloqueio de totais desatualizados, o novo clique exigido no checkout e o encaminhamento dos CTAs para o plano correto. A validação visual em navegador depende de uma sessão disponível.

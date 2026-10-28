@@ -1,6 +1,16 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+} from 'react'
 import {
   ArrowLeft,
+  ArrowUpRight,
   Check,
   Copy,
   LoaderCircle,
@@ -16,10 +26,13 @@ import type { MemberLibraryData } from '../../shared/library'
 import { MemberRepertoire } from './MemberRepertoire'
 import { readPersonalAccess } from '../lib/library-access'
 import { PersonalLibraryAccess } from './PersonalLibraryAccess'
+const LibraryUpgrade = lazy(() =>
+  import('./LibraryUpgrade').then((module) => ({ default: module.LibraryUpgrade })),
+)
 
 export function MemberLibrary() {
   const [access, setAccess] = useState(() => readPersonalAccess(window.location.hash))
-  const [basicPreview] = useState(
+  const [basicPreview, setBasicPreview] = useState(
     () => new URLSearchParams(window.location.search).get('visualizar') === 'basico',
   )
   const authenticated = useCallback(() => {
@@ -33,11 +46,23 @@ export function MemberLibrary() {
   return access ? (
     <PersonalLibraryAccess access={access} onAuthenticated={authenticated} />
   ) : (
-    <MemberLibraryContent basicPreview={basicPreview} />
+    <MemberLibraryContent
+      basicPreview={basicPreview}
+      onComplete={() => {
+        window.history.replaceState({}, '', '/biblioteca')
+        setBasicPreview(false)
+      }}
+    />
   )
 }
 
-function MemberLibraryContent({ basicPreview }: { basicPreview: boolean }) {
+function MemberLibraryContent({
+  basicPreview,
+  onComplete,
+}: {
+  basicPreview: boolean
+  onComplete: () => void
+}) {
   const [session, setSession] = useState<Session | null>(null)
   const currentSession = useRef<Session | null>(null)
   const userId = session?.user.id
@@ -50,6 +75,32 @@ function MemberLibraryContent({ basicPreview }: { basicPreview: boolean }) {
   const [refresh, setRefresh] = useState(0)
   const [waitingLonger, setWaitingLonger] = useState(false)
   const [linkCopied, setLinkCopied] = useState(false)
+  const [upgradeOpen, setUpgradeOpen] = useState(false)
+  const completeAccess = Boolean(
+    data && (data.setlistLimit === 42 || data.assets.some((asset) => asset.kind === 'audio')),
+  )
+  const showUpgrade = Boolean(
+    session && data && (basicPreview || !completeAccess) && data.assets.length,
+  )
+  function refreshUpgrade() {
+    setUpgradeOpen(false)
+    onComplete()
+    setRefresh((value) => value + 1)
+  }
+  useEffect(() => {
+    if (!userId) return
+    const marker = `ml:upgrade-pending:${userId}`
+    if (completeAccess) {
+      sessionStorage.removeItem(marker)
+      return
+    }
+    function checkUpgrade() {
+      if (document.visibilityState === 'visible' && sessionStorage.getItem(marker))
+        setRefresh((value) => value + 1)
+    }
+    window.addEventListener('focus', checkUpgrade)
+    return () => window.removeEventListener('focus', checkUpgrade)
+  }, [userId, completeAccess])
   // A Complete member can inspect the Basic presentation without changing their rights.
   // This view only removes materials; authorization remains enforced by the API.
   const repertoireData = useMemo<MemberLibraryData | null>(
@@ -84,6 +135,7 @@ function MemberLibraryContent({ basicPreview }: { basicPreview: boolean }) {
         setError('')
         setNotice('')
         setLinkCopied(false)
+        setUpgradeOpen(false)
       }
     }
     auth.auth
@@ -186,29 +238,36 @@ function MemberLibraryContent({ basicPreview }: { basicPreview: boolean }) {
           <div>
             <h1>{session ? 'Minha biblioteca' : 'Seu repertório espera por você.'}</h1>
           </div>
-          {session && data?.personalLink && (
-            <button
-              className="member-access-link"
-              aria-label="Copiar meu link pessoal"
-              title="Copiar meu link pessoal"
-              onClick={async () => {
-                try {
-                  const link = new URL(data.personalLink!)
-                  if (basicPreview) link.searchParams.set('visualizar', 'basico')
-                  await navigator.clipboard.writeText(link.href)
-                  setLinkCopied(true)
-                  setNotice(
-                    'Link copiado. Guarde nos favoritos e não compartilhe seu acesso pessoal.',
-                  )
-                } catch {
-                  setNotice('Não foi possível copiar. Seu link também está no e-mail da compra.')
-                }
-              }}
-            >
-              {linkCopied ? <Check size={17} /> : <Copy size={17} />}
-              <span>{linkCopied ? 'Link copiado' : 'Copiar meu acesso'}</span>
-            </button>
-          )}
+          <div className="member-library-actions">
+            {showUpgrade && (
+              <button className="member-upgrade-button" onClick={() => setUpgradeOpen(true)}>
+                <ArrowUpRight size={18} /> Fazer upgrade
+              </button>
+            )}
+            {session && data?.personalLink && (
+              <button
+                className="member-access-link"
+                aria-label="Copiar meu link pessoal"
+                title="Copiar meu link pessoal"
+                onClick={async () => {
+                  try {
+                    const link = new URL(data.personalLink!)
+                    if (basicPreview) link.searchParams.set('visualizar', 'basico')
+                    await navigator.clipboard.writeText(link.href)
+                    setLinkCopied(true)
+                    setNotice(
+                      'Link copiado. Guarde nos favoritos e não compartilhe seu acesso pessoal.',
+                    )
+                  } catch {
+                    setNotice('Não foi possível copiar. Seu link também está no e-mail da compra.')
+                  }
+                }}
+              >
+                {linkCopied ? <Check size={17} /> : <Copy size={17} />}
+                <span>{linkCopied ? 'Link copiado' : 'Copiar meu acesso'}</span>
+              </button>
+            )}
+          </div>
         </div>
         {checking ? (
           <p role="status">
@@ -294,6 +353,17 @@ function MemberLibraryContent({ basicPreview }: { basicPreview: boolean }) {
         <a className="checkout-back" href="/#planos">
           <ArrowLeft size={15} /> Voltar ao site
         </a>
+        {upgradeOpen && session && (
+          <Suspense fallback={<p role="status">Abrindo upgrade…</p>}>
+            <LibraryUpgrade
+              token={session.access_token}
+              userId={session.user.id}
+              alreadyComplete={completeAccess}
+              onRefresh={refreshUpgrade}
+              onClose={() => setUpgradeOpen(false)}
+            />
+          </Suspense>
+        )}
       </main>
     </div>
   )

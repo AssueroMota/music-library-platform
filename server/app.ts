@@ -141,6 +141,26 @@ export function createApp(service: CheckoutService, logging = true) {
     if (!user) throw new AppError(401, 'LOGIN_REQUIRED', 'Sua sessão expirou. Entre novamente.')
     return user
   }
+  app.get('/api/library/upgrade', async (request) => {
+    const user = await authenticate(request.headers.authorization)
+    return service.upgradeQuote(user)
+  })
+  app.post(
+    '/api/library/upgrade',
+    {
+      config: { rateLimit: { max: 10, timeWindow: '1 minute' } },
+    },
+    async (request, reply) => {
+      const user = await authenticate(request.headers.authorization)
+      const { expectedPriceCents } = z
+        .object({ expectedPriceCents: z.number().int().positive() })
+        .strict()
+        .parse(request.body)
+      const key = uuidSchema.parse(request.headers['idempotency-key'])
+      const token = tokenSchema.parse(request.headers['x-checkout-token'])
+      return reply.code(201).send(await service.upgrade(user, key, token, expectedPriceCents))
+    },
+  )
   app.post(
     '/api/auth/link',
     { config: { rateLimit: { max: 3, timeWindow: '1 minute' } } },

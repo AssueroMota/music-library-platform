@@ -91,6 +91,97 @@
   font-size: 13px;
   font-weight: 600;
 }
+.member-library-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.member-upgrade-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 10px 17px;
+  border-radius: 9px;
+  background: #e85211;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.member-upgrade-button:hover {
+  background: #c2410c;
+}
+.library-upgrade-dialog h2 span {
+  color: #c2410c;
+}
+.library-upgrade-dialog .eyebrow {
+  color: #b33b0b;
+  font-size: 10px;
+}
+.library-upgrade-primary {
+  width: 100%;
+  margin-top: 22px;
+  background: #e85211;
+  color: #fff;
+}
+.library-upgrade-primary:hover {
+  background: #c2410c;
+}
+.library-upgrade-primary:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+.library-upgrade-summary {
+  margin-top: 24px;
+  padding: 18px;
+  border: 1px solid #f3d7c2;
+  border-radius: 10px;
+  background: #fff7ef;
+}
+.library-upgrade-summary > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 7px 0;
+  font-size: 14px;
+}
+.library-upgrade-summary dd {
+  white-space: nowrap;
+  font-weight: 650;
+}
+.library-upgrade-summary > div:last-child {
+  margin-top: 9px;
+  padding-top: 16px;
+  border-top: 1px solid #f3d7c2;
+  color: #a6370a;
+  font-size: 18px;
+  font-weight: 700;
+}
+@media (max-width: 600px) {
+  .member-library-actions {
+    gap: 6px;
+  }
+  .member-upgrade-button {
+    min-height: 40px;
+    padding: 9px 10px;
+    font-size: 12px;
+  }
+  .member-page .member-library-intro:has(.member-upgrade-button) {
+    align-items: start;
+    flex-direction: column;
+  }
+  .member-page .member-library-intro:has(.member-upgrade-button) .member-library-actions {
+    width: 100%;
+  }
+  .member-page .member-library-intro:has(.member-upgrade-button) .member-upgrade-button {
+    flex: 1;
+  }
+  .library-upgrade-dialog .checkout-dialog-body {
+    padding-inline: 22px;
+  }
+}
 .member-access-link:hover {
   border-color: #eeab85;
   background: #fffaf5;

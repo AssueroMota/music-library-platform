@@ -61,6 +61,9 @@ model Order {
   user                User?         @relation(fields: [userId], references: [id])
   buyerEmail          String?
   deliveryEmail       String?
+  upgradeFromOrderId  String?        @db.Uuid
+  upgradeFromOrder    Order?         @relation("LibraryUpgrade", fields: [upgradeFromOrderId], references: [id])
+  upgradeOrders       Order[]        @relation("LibraryUpgrade")
   providerOrderId     String?       @unique
   checkoutUrl         String?
   providerUpdatedAt   DateTime?     @db.Timestamptz(3)
@@ -73,6 +76,7 @@ model Order {
   payments            Payment[]
   entitlement         Entitlement?
   @@index([status, updatedAt])
+  @@index([upgradeFromOrderId])
   @@map("orders")
 }
 

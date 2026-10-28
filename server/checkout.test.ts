@@ -857,6 +857,202 @@ describe('oferta exclusiva de violino', () => {
   )
 })
 
+describe('upgrade autenticado da biblioteca', () => {
+  const headers = { authorization: 'Bearer valid-test-session' }
+  async function basicPurchase() {
+    const { order } = await checkout('library-violin-scores')
+    vi.mocked(providers.getOrder).mockResolvedValue(remote(order!))
+    await service.reconcile(order!.providerOrderId!)
+    await service.runJobs()
+    return order!
+  }
+  async function requestUpgrade(
+    price: number,
+    key = randomUUID(),
+    token = 'b'.repeat(64),
+    extra = {},
+  ) {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/library/upgrade',
+      headers: { ...headers, 'idempotency-key': key, 'x-checkout-token': token },
+      payload: { expectedPriceCents: price, ...extra },
+    })
+    return {
+      response,
+      key,
+      token,
+      order: await db.order.findUnique({ where: { idempotencyKey: key } }),
+    }
+  }
+  it('calcula a diferença no servidor e libera o Completo no mesmo link após pagamento', async () => {
+    const basic = await basicPurchase()
+    const audio = await db.libraryAsset.create({
+      data: {
+        title: 'Playback de teste',
+        songTitle: 'Fix You',
+        instrument: 'violin',
+        kind: 'audio',
+        storageKey: 'violin/upgrade-test.mp3',
+      },
+    })
+    expect(
+      (await app.inject({ url: `/api/library/assets/${audio.id}/view`, headers })).statusCode,
+    ).toBe(403)
+    const before = (await app.inject({ url: '/api/library', headers })).json()
+    const quote = await app.inject({ url: '/api/library/upgrade', headers })
+    const price = violinPriceCents('library-violin-playbacks', 2790)
+    expect(quote.json()).toMatchObject({
+      alreadyComplete: false,
+      completePriceCents: price,
+      creditCents: basic.priceCents,
+      priceCents: price - basic.priceCents,
+      email: buyerEmail,
+    })
+    const upgrade = await requestUpgrade(price - basic.priceCents)
+    expect(upgrade.response.statusCode).toBe(201)
+    expect(upgrade.order).toMatchObject({
+      userId,
+      deliveryEmail: buyerEmail,
+      upgradeFromOrderId: basic.id,
+      priceCents: price - basic.priceCents,
+      productId: 'library-violin-playbacks',
+    })
+    expect((await app.inject({ url: '/api/library', headers })).json().setlistLimit).toBe(10)
+    const pending = (await app.inject({ url: '/api/library/upgrade', headers })).json()
+    expect(pending.pendingCheckoutUrl).toBe(upgrade.order!.checkoutUrl)
+    vi.mocked(providers.getOrder).mockResolvedValue(remote(upgrade.order!))
+    await service.reconcile(upgrade.order!.providerOrderId!)
+    expect((await app.inject({ url: '/api/library/upgrade', headers })).json().code).toBe(
+      'UPGRADE_PROCESSING',
+    )
+    await service.runJobs()
+    const after = (await app.inject({ url: '/api/library', headers })).json()
+    expect(after.setlistLimit).toBe(42)
+    expect(after.assets).toContainEqual(expect.objectContaining({ id: audio.id, kind: 'audio' }))
+    expect(
+      (await app.inject({ url: `/api/library/assets/${audio.id}/view`, headers })).statusCode,
+    ).toBe(200)
+    expect(after.personalLink).toBe(before.personalLink)
+    expect(providers.sendConfirmation).toHaveBeenLastCalledWith(
+      buyerEmail,
+      expect.any(String),
+      before.personalLink,
+      expect.any(String),
+    )
+    expect((await app.inject({ url: '/api/library/upgrade', headers })).json()).toEqual({
+      alreadyComplete: true,
+    })
+    expect((await requestUpgrade(price - basic.priceCents)).response.json().code).toBe(
+      'ALREADY_COMPLETE',
+    )
+    vi.mocked(providers.getOrder).mockResolvedValue(remote(upgrade.order!, 'refunded', 'refunded'))
+    await service.reconcile(upgrade.order!.providerOrderId!)
+    const reverted = (await app.inject({ url: '/api/library', headers })).json()
+    expect(reverted.setlistLimit).toBe(10)
+    expect(
+      (await app.inject({ url: `/api/library/assets/${audio.id}/view`, headers })).statusCode,
+    ).toBe(403)
+    expect(reverted.personalLink).toBe(before.personalLink)
+    expect(
+      (await db.entitlement.findUniqueOrThrow({ where: { orderId: basic.id } })).revokedAt,
+    ).toBeNull()
+  })
+  it('não aceita crédito ou e-mail enviados pelo navegador nem valor desatualizado', async () => {
+    const basic = await basicPurchase()
+    const price = violinPriceCents('library-violin-playbacks', 2790) - basic.priceCents
+    expect((await requestUpgrade(1)).response.json().code).toBe('PRODUCT_PRICE_CHANGED')
+    expect(
+      (await requestUpgrade(price, randomUUID(), 'b'.repeat(64), { email: 'other@example.test' }))
+        .response.statusCode,
+    ).toBe(400)
+    expect(
+      (await requestUpgrade(price, randomUUID(), 'b'.repeat(64), { creditCents: 4990 })).response
+        .statusCode,
+    ).toBe(400)
+    expect(await db.order.count()).toBe(1)
+  })
+  it('desconta o valor histórico realmente pago e preserva a cotação de um upgrade iniciado', async () => {
+    const basic = await basicPurchase()
+    await db.order.update({ where: { id: basic.id }, data: { priceCents: 120 } })
+    const clock = vi.spyOn(Date, 'now')
+    try {
+      clock.mockReturnValue(Date.parse(violinLaunch.endsAt) - 60000)
+      const quote = (await app.inject({ url: '/api/library/upgrade', headers })).json()
+      expect(quote).toMatchObject({ completePriceCents: 2790, creditCents: 120, priceCents: 2670 })
+      const upgrade = await requestUpgrade(2670)
+      expect(upgrade.response.statusCode).toBe(201)
+      clock.mockReturnValue(Date.parse(violinLaunch.endsAt) + 60000)
+      const pending = (await app.inject({ url: '/api/library/upgrade', headers })).json()
+      expect(pending).toMatchObject({
+        completePriceCents: 2790,
+        creditCents: 120,
+        priceCents: 2670,
+      })
+    } finally {
+      clock.mockRestore()
+    }
+  })
+  it('reutiliza a tentativa e bloqueia upgrades concorrentes em outros dispositivos', async () => {
+    const basic = await basicPurchase()
+    const price = violinPriceCents('library-violin-playbacks', 2790) - basic.priceCents
+    const requests = await Promise.all([requestUpgrade(price), requestUpgrade(price)])
+    expect(requests.map((r) => r.response.statusCode).sort()).toEqual([201, 409])
+    const first = requests.find((r) => r.response.statusCode === 201)!
+    const replay = await requestUpgrade(price, first.key, first.token)
+    expect(replay.response.json()).toEqual(first.response.json())
+    expect(await db.order.count({ where: { upgradeFromOrderId: basic.id } })).toBe(1)
+    const normal = await app.inject({
+      method: 'POST',
+      url: '/api/checkout',
+      headers: { 'idempotency-key': first.key, 'x-checkout-token': first.token },
+      payload: { productId: 'library-violin-playbacks', email: buyerEmail },
+    })
+    expect(normal.json().code).toBe('CHECKOUT_CONFLICT')
+  })
+  it('recusa sessão ausente, conta sem Básico, de outra pessoa, ou compra estornada', async () => {
+    expect((await app.inject({ url: '/api/library/upgrade' })).statusCode).toBe(401)
+    expect((await app.inject({ url: '/api/library/upgrade', headers })).statusCode).toBe(403)
+    const basic = await basicPurchase()
+    vi.mocked(providers.authenticate).mockResolvedValueOnce({
+      id: randomUUID(),
+      email: 'other@example.test',
+    })
+    expect((await app.inject({ url: '/api/library/upgrade', headers })).statusCode).toBe(403)
+    vi.mocked(providers.getOrder).mockResolvedValue(remote(basic, 'refunded', 'refunded'))
+    await service.reconcile(basic.providerOrderId!)
+    expect((await app.inject({ url: '/api/library/upgrade', headers })).statusCode).toBe(403)
+  })
+  it('suspende o desconto e o acesso se a compra básica for estornada após o upgrade', async () => {
+    const basic = await basicPurchase()
+    const upgrade = await requestUpgrade(
+      violinPriceCents('library-violin-playbacks', 2790) - basic.priceCents,
+    )
+    vi.mocked(providers.getOrder).mockResolvedValue(remote(upgrade.order!))
+    await service.reconcile(upgrade.order!.providerOrderId!)
+    await service.runJobs()
+    vi.mocked(providers.getOrder).mockResolvedValue(remote(basic, 'refunded', 'refunded'))
+    await service.reconcile(basic.providerOrderId!)
+    expect(
+      (await db.entitlement.findUniqueOrThrow({ where: { orderId: upgrade.order!.id } })).revokedAt,
+    ).not.toBeNull()
+    expect((await app.inject({ url: '/api/library', headers })).json().assets).toEqual([])
+    expect((await app.inject({ url: '/api/library', headers })).json().products).toEqual([])
+  })
+  it('não libera upgrade se o Básico perder validade antes da liberação', async () => {
+    const basic = await basicPurchase()
+    const upgrade = await requestUpgrade(
+      violinPriceCents('library-violin-playbacks', 2790) - basic.priceCents,
+    )
+    vi.mocked(providers.getOrder).mockResolvedValue(remote(upgrade.order!))
+    await service.reconcile(upgrade.order!.providerOrderId!)
+    vi.mocked(providers.getOrder).mockResolvedValue(remote(basic, 'refunded', 'refunded'))
+    await service.reconcile(basic.providerOrderId!)
+    await service.runJobs()
+    expect(await db.entitlement.findUnique({ where: { orderId: upgrade.order!.id } })).toBeNull()
+  })
+})
+
 it('aplica a virada de preço no catálogo público mesmo com o valor antigo salvo no banco', async () => {
   const clock = vi.spyOn(Date, 'now')
   try {
