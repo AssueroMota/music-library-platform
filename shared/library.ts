@@ -10,6 +10,7 @@ export interface MemberAsset {
 }
 
 export interface MemberLibraryData {
+  setlistLimit?: 10 | 42
   products: { id: string; name: string }[]
   assets: MemberAsset[]
   previewAccess?: { instrument: string; expiresAt: string }[]

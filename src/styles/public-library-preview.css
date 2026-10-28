@@ -3,6 +3,28 @@
   border-top: 1px solid #dfe6ec;
   border-radius: 0 0 9px 9px;
 }
+.public-library-plan-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 22px;
+}
+.public-library-plan-switch button {
+  flex: 1 1 240px;
+  min-height: 46px;
+  padding: 10px 16px;
+  border: 1px solid #f0d3be;
+  border-radius: 9px;
+  background: #fff;
+  color: #82421d;
+  font-size: 13px;
+  font-weight: 600;
+}
+.public-library-plan-switch button[aria-pressed='true'] {
+  border-color: #e85813;
+  background: #fff0e5;
+  color: #a23b0d;
+}
 .public-library-preview-heading {
   text-align: left;
 }
@@ -57,7 +79,7 @@
 .public-library-preview-locked {
   padding: 22px;
   background: #f6f9f7;
-  color: #406450;
+  color: #8d4b28;
 }
 .public-library-preview-locked > p {
   font-size: 15px;

@@ -1,4 +1,5 @@
 import { normalizeSearch } from './library'
+import { additionalViolinSetlists } from './setlists-complete'
 
 export const violinSetlists = [
   {
@@ -169,8 +170,16 @@ export const violinSetlists = [
 export function resolveViolinSetlists<
   T extends { title: string; instrument: string; artist?: string },
 >(songs: T[]) {
+  return resolveSetlists(songs, 10)
+}
+
+export function resolveSetlists<T extends { title: string; instrument: string; artist?: string }>(
+  songs: T[],
+  limit: 10 | 42,
+) {
   const available = songs.filter((song) => song.instrument === 'violin')
-  return violinSetlists
+  return [...violinSetlists, ...additionalViolinSetlists]
+    .slice(0, limit)
     .map((setlist) => ({
       ...setlist,
       songs: setlist.titles.flatMap((title) => {

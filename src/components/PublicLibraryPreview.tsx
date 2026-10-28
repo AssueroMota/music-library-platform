@@ -1,4 +1,5 @@
 import { BookOpen, Headphones, ShieldCheck } from 'lucide-react'
+import { useState } from 'react'
 import type { MemberLibraryData } from '../../shared/library'
 import { publicRepertoire } from '../data/public-repertoire'
 import { violinDemonstration } from '../data/demonstration'
@@ -6,6 +7,7 @@ import { MemberRepertoire } from './MemberRepertoire'
 import '../styles/public-library-preview.css'
 
 const data: MemberLibraryData = {
+  setlistLimit: 42,
   products: [],
   assets: publicRepertoire.flatMap(([songTitle, artist, style, audio], index) => {
     const base = { songTitle, artist, style, instrument: 'violin' }
@@ -41,6 +43,10 @@ const previewMedia: Readonly<Record<string, string>> = {
 }
 
 export function PublicLibraryPreview() {
+  const [basic, setBasic] = useState(false)
+  const visibleData: MemberLibraryData = basic
+    ? { ...data, setlistLimit: 10, assets: data.assets.filter((asset) => asset.kind === 'score') }
+    : data
   return (
     <section
       className="public-library-preview member-page"
@@ -54,14 +60,34 @@ export function PublicLibraryPreview() {
         <p>Navegue pela seleção de músicas e pelos setlists no mesmo layout da área do aluno.</p>
         <div className="public-library-preview-notes">
           <span>
-            <Headphones size={16} /> Teste a partitura e o playback de A Thousand Years.
+            {basic ? <BookOpen size={16} /> : <Headphones size={16} />}
+            {basic
+              ? 'Teste a partitura de A Thousand Years.'
+              : 'Teste a partitura e o playback de A Thousand Years.'}
           </span>
           <span>
             <ShieldCheck size={16} /> Os demais arquivos são liberados conforme o plano adquirido.
           </span>
         </div>
       </header>
-      <MemberRepertoire data={data} token="" previewMedia={previewMedia} />
+      <div
+        className="public-library-plan-switch"
+        role="group"
+        aria-label="Comparar versões da biblioteca"
+      >
+        <button aria-pressed={basic} onClick={() => setBasic(true)}>
+          Básico · Partituras e 10 setlists
+        </button>
+        <button aria-pressed={!basic} onClick={() => setBasic(false)}>
+          Completo · Playbacks e 42 setlists
+        </button>
+      </div>
+      <MemberRepertoire
+        key={basic ? 'basic' : 'complete'}
+        data={visibleData}
+        token=""
+        previewMedia={previewMedia}
+      />
       <p className="public-library-preview-caption">
         Prévia do catálogo. As quantidades acima representam esta demonstração; a área do aluno
         mostra os arquivos e versões liberados para sua conta.

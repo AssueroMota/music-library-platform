@@ -253,6 +253,8 @@ export function createApp(service: CheckoutService, logging = true) {
           })
         : []
     return {
+      setlistLimit:
+        rights.some(({ product }) => product.accessType !== 'SCORES') || previews.length ? 42 : 10,
       products: [
         ...new Map(
           rights.map((r) => [r.productId, { id: r.productId, name: r.product.name }]),

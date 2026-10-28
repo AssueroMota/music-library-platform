@@ -21,7 +21,7 @@ import { allInstruments as instruments } from '../data/content'
 import { normalizeSearch } from '../data/library'
 import { LibrarySelect } from './LibrarySelect'
 import { LibrarySetlists } from './LibrarySetlists'
-import { resolveViolinSetlists } from '../data/setlists'
+import { resolveSetlists } from '../data/setlists'
 
 const ScorePdf = lazy(() => import('./ScorePdf').then((module) => ({ default: module.ScorePdf })))
 
@@ -51,15 +51,16 @@ export function MemberRepertoire({
   const [instrument, setInstrument] = useState('')
   const [style, setStyle] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [order, setOrder] = useState('title')
-  const [playback, setPlayback] = useState('all')
   const [focusMode, setFocusMode] = useState(false)
   const [view, setView] = useState<'songs' | 'setlists'>('songs')
   const [setlistId, setSetlistId] = useState<string | null>(null)
   const setlistHeading = useRef<HTMLHeadingElement>(null)
+  const setlistLimit =
+    data.setlistLimit ?? (data.assets.some((asset) => asset.kind === 'audio') ? 42 : 10)
   const songs = useMemo(() => {
     const grouped = new Map<string, Song>()
     for (const asset of data.assets) {
+      if (setlistLimit === 10 && asset.kind === 'audio') continue
       const title = asset.songTitle || asset.title
       const id = JSON.stringify([
         asset.instrument,
@@ -79,8 +80,8 @@ export function MemberRepertoire({
       grouped.set(id, song)
     }
     return [...grouped.values()].sort((a, b) => a.title.localeCompare(b.title, 'pt-BR'))
-  }, [data.assets])
-  const setlists = useMemo(() => resolveViolinSetlists(songs), [songs])
+  }, [data.assets, setlistLimit])
+  const setlists = useMemo(() => resolveSetlists(songs, setlistLimit), [songs, setlistLimit])
   const activeSetlist =
     view === 'setlists' ? setlists.find((item) => item.id === setlistId) : undefined
   useEffect(() => {
@@ -90,36 +91,25 @@ export function MemberRepertoire({
   const styles = [...new Set(songs.map((song) => song.style).filter(Boolean))].sort()
   const collectionStyles = [...new Set(collection.map((song) => song.style).filter(Boolean))].sort()
   const availableInstruments = [...new Set(songs.map((song) => song.instrument))]
-  const audioCount = collection.filter((song) =>
-    song.assets.some((asset) => asset.kind === 'audio'),
-  ).length
   const scoreCount = data.assets.filter((asset) => asset.kind === 'score').length
   const filtered = collection
     .filter(
       (song) =>
         (!instrument || song.instrument === instrument) &&
         (!style || song.style === style) &&
-        (playback === 'all' ||
-          song.assets.some((asset) => asset.kind === 'audio') === (playback === 'with')) &&
         normalizeSearch(`${song.title} ${song.artist}`).includes(normalizeSearch(search.trim())),
     )
     .sort((a, b) =>
-      order === 'setlist' && activeSetlist
+      activeSetlist
         ? collection.indexOf(a) - collection.indexOf(b)
-        : order === 'artist'
-          ? (a.artist || a.title).localeCompare(b.artist || b.title, 'pt-BR') ||
-            a.title.localeCompare(b.title, 'pt-BR')
-          : order === 'title-desc'
-            ? b.title.localeCompare(a.title, 'pt-BR')
-            : a.title.localeCompare(b.title, 'pt-BR'),
+        : a.title.localeCompare(b.title, 'pt-BR'),
     )
   const selected = songs.find((song) => song.id === selectedId)
-  const hasFilters = Boolean(search || instrument || style || playback !== 'all')
+  const hasFilters = Boolean(search || instrument || style)
   function clearFilters() {
     setSearch('')
     setInstrument('')
     setStyle('')
-    setPlayback('all')
   }
   function openSong(id: string) {
     setFocusMode(false)
@@ -131,14 +121,12 @@ export function MemberRepertoire({
     setSelectedId(null)
     setFocusMode(false)
     clearFilters()
-    setOrder('title')
   }
   function openSetlist(id: string) {
     setSetlistId(id)
     setSelectedId(null)
     setFocusMode(false)
     clearFilters()
-    setOrder('setlist')
   }
   const selectedPosition = activeSetlist?.songs.findIndex((song) => song.id === selectedId) ?? -1
 
@@ -249,34 +237,6 @@ export function MemberRepertoire({
                 </option>
               ))}
             </LibrarySelect>
-            <LibrarySelect
-              label="Ordenar por"
-              value={order}
-              onChange={(event) => setOrder(event.target.value)}
-            >
-              {activeSetlist && <option value="setlist">Ordem do setlist</option>}
-              <option value="title">Nome: A–Z</option>
-              <option value="title-desc">Nome: Z–A</option>
-              <option value="artist">Artista: A–Z</option>
-            </LibrarySelect>
-            <LibrarySelect
-              label="Playback"
-              className="repertoire-playback-filter"
-              value={playback}
-              onChange={(event) => setPlayback(event.target.value)}
-            >
-              <option value="all">Todas as músicas ({collection.length})</option>
-              <option value="with">Com playback ({audioCount})</option>
-              <option value="without">Sem playback ({collection.length - audioCount})</option>
-            </LibrarySelect>
-          </div>
-          <div className="repertoire-filter-summary">
-            <span>
-              <Music2 size={15} />{' '}
-              {availableInstruments.length === 1
-                ? instrumentName(availableInstruments[0])
-                : 'Sua coleção'}
-            </span>
             {hasFilters && (
               <button className="repertoire-clear" onClick={clearFilters}>
                 <X size={14} /> Limpar filtros
@@ -341,7 +301,12 @@ export function MemberRepertoire({
                                 <span className="repertoire-song-details">
                                   <strong>{song.title}</strong>
                                   <small>
-                                    {[song.artist, instrumentName(song.instrument)]
+                                    {[
+                                      song.artist,
+                                      availableInstruments.length > 1
+                                        ? instrumentName(song.instrument)
+                                        : '',
+                                    ]
                                       .filter(Boolean)
                                       .join(' · ')}
                                   </small>

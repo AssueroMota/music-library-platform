@@ -2,16 +2,16 @@
 
 A página pública oferece dois planos com pagamento único:
 
-| Produto                    | Preço                                                   | Permissão                                              |
-| -------------------------- | ------------------------------------------------------- | ------------------------------------------------------ |
-| `library-violin-scores`    | R$ 12,90                                                | Coleção de 100 partituras de violino, sem áudios, 10 setlists e acesso vitalício |
-| `library-violin-playbacks` | R$ 27,90 no lançamento; R$ 49,90 a partir de 28/10/2026 | Coleção de 100 partituras de violino com playbacks, 10 setlists e acesso vitalício |
+| Produto                    | Preço                                                   | Permissão                                                                          |
+| -------------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `library-violin-scores`    | R$ 12,90                                                | Coleção de 100 partituras de violino, sem áudios, 10 setlists e acesso vitalício   |
+| `library-violin-playbacks` | R$ 27,90 no lançamento; R$ 49,90 a partir de 28/10/2026 | Coleção de 100 partituras de violino com playbacks, 42 setlists e acesso vitalício |
 
 A coleção está em expansão. A contagem da biblioteca reflete apenas os arquivos publicados, sem inventar materiais para completar a oferta. A migração `202610270001_violin_lifetime_collection` atualiza somente as descrições dos planos; não altera preços, disponibilidade, pedidos ou permissões.
 
-## Próxima versão: 42 setlists
+## Setlists por plano
 
-O proprietário definiu em 27/10/2026 a meta de 42 setlists prontos para a próxima versão, prevista para 28/10/2026. Antes de anunciar essa quantidade, montar e conferir as 42 sequências com os materiais do acervo e atualizar a biblioteca, os benefícios, o FAQ e as descrições do catálogo. A versão publicada atualmente oferece 10 setlists. Esta previsão não agenda publicação nem altera automaticamente a quantidade anunciada.
+O Básico mantém as 10 seleções originais. O Completo reúne essas 10 e 32 sequências adicionais, totalizando 42 setlists conferidos com o acervo. A biblioteca, os benefícios, o FAQ e a descrição do catálogo refletem essa diferença.
 
 ## Condição real de lançamento
 
@@ -51,6 +51,10 @@ A página usa preto, laranja e âmbar, com imagens de apresentações em celebra
 A demonstração principal utiliza a partitura e o MP3 de A Thousand Years fornecidos pelo usuário. O MP3 contém somente acompanhamento, conforme confirmado por ele. Há um player e a imagem integral com opção de ampliar. A prévia de navegação foi atualizada para `PublicLibraryPreview`, reutilizando o layout de `MemberRepertoire` com busca, filtros, setlists e área de estudo. O catálogo público de `src/data/public-repertoire.ts` contém somente metadados (título, artista, estilo e existência de áudio), sem IDs privados, caminhos de storage ou URLs assinadas. É um retrato atualizado manualmente do catálogo publicado.
 
 Na prévia, apenas A Thousand Years usa os arquivos públicos já existentes na página. Os demais materiais mostram uma mensagem de acesso pela área do aluno. `previewMedia` limita a demonstração a uma lista explícita de arquivos públicos e impede consultas ao endpoint privado; não altera a autenticação ou as permissões de compra da biblioteca. O componente é carregado ao abrir o exemplo, preservando o carregamento inicial da página de vendas.
+
+A biblioteca diferencia o Básico (somente partituras e 10 setlists) do Completo (partituras, playbacks e 42 setlists). `/api/library` informa `setlistLimit` a partir dos direitos ativos; a listagem e os endpoints de arquivo continuam bloqueando áudio no Básico. A interface também suprime os controles de áudio desse plano. As 32 seleções adicionais de `setlists-complete.ts` usam músicas existentes, organizadas por ocasião; cada setlist resolve apenas materiais disponíveis na conta e preserva a identificação do artista em títulos ambíguos.
+
+A prévia pública permite comparar os dois planos. A busca e o estilo são os únicos filtros; o repertório usa ordem alfabética e cada setlist mantém sua sequência sugerida. A interface segue o laranja da página de vendas, usa uma tabela mais legível e amplia a área útil até 1760 px no desktop. Foram removidos o nome do produto repetido, o selo de instrumento acima do repertório, os textos de introdução redundantes e os controles de ordenação e playback.
 
 ## Validação
 

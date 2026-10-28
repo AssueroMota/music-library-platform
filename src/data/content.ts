@@ -114,7 +114,7 @@ export const plans: Plan[] = [
     featured: true,
     benefits: [
       '100 partituras exclusivamente para violino',
-      '10 setlists prontos para diferentes ocasiões',
+      '42 setlists prontos para diferentes ocasiões',
       'Acesso vitalício, sem mensalidade',
       'Playbacks para acompanhar sua interpretação',
       'Partitura e acompanhamento na mesma biblioteca',

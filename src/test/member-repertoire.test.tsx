@@ -3,7 +3,8 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, expect, it, vi } from 'vitest'
 import { MemberRepertoire } from '../components/MemberRepertoire'
 import type { MemberLibraryData } from '../../shared/library'
-import { resolveViolinSetlists, violinSetlists } from '../data/setlists'
+import { resolveSetlists, resolveViolinSetlists, violinSetlists } from '../data/setlists'
+import { publicRepertoire } from '../data/public-repertoire'
 
 vi.mock('../components/ScorePdf', () => ({
   ScorePdf: ({ url, title }: { url: string; title: string }) => (
@@ -88,6 +89,27 @@ const data: MemberLibraryData = {
     },
   ],
 }
+it('resolve 10 seleções no básico e 42 sequências distintas de oito músicas no completo', () => {
+  const songs = publicRepertoire.map(([title, artist]) => ({ title, artist, instrument: 'violin' }))
+  expect(resolveSetlists(songs, 10)).toHaveLength(10)
+  const complete = resolveSetlists(songs, 42)
+  expect(complete).toHaveLength(42)
+  expect(new Set(complete.map((setlist) => setlist.id)).size).toBe(42)
+  expect(
+    new Set(
+      complete.map((setlist) =>
+        setlist.songs.map((song) => `${song.title}:${song.artist}`).join('|'),
+      ),
+    ).size,
+  ).toBe(42)
+  for (const setlist of complete) {
+    expect(setlist.songs.length).toBe(setlist.titles.length)
+    expect(setlist.songs.length).toBeGreaterThanOrEqual(8)
+    expect(new Set(setlist.songs.map((song) => `${song.title}:${song.artist}`)).size).toBe(
+      setlist.songs.length,
+    )
+  }
+})
 afterEach(() => vi.unstubAllGlobals())
 
 it('reúne áudio e partituras por música e filtra por nome, artista, instrumento e estilo', async () => {
@@ -210,27 +232,20 @@ it('mostra recusa de acesso e permite repetir sem deixar arquivo aberto', async 
   expect(screen.getByRole('button', { name: 'Tentar novamente' })).toBeInTheDocument()
 })
 
-it('ordena a coleção e filtra músicas com e sem playback sem novas consultas', async () => {
+it('mantém apenas busca e estilo e oculta todo áudio no plano básico', async () => {
   const fetchMock = vi.fn()
   vi.stubGlobal('fetch', fetchMock)
-  render(<MemberRepertoire data={data} token="test-token" />)
+  render(<MemberRepertoire data={{ ...data, setlistLimit: 10 }} token="test-token" />)
   const user = userEvent.setup()
-  await user.selectOptions(screen.getByRole('combobox', { name: 'Ordenar por' }), 'title-desc')
-  expect(screen.getAllByRole('row')[1]).toHaveTextContent('Fix You')
-  const playback = screen.getByRole('combobox', { name: 'Playback' })
-  expect(within(playback).getByRole('option', { name: 'Com playback (1)' })).toBeInTheDocument()
-  expect(within(playback).getByRole('option', { name: 'Sem playback (1)' })).toBeInTheDocument()
-  await user.selectOptions(playback, 'with')
-  expect(screen.getAllByRole('row')).toHaveLength(2)
-  expect(screen.queryByRole('row', { name: /Canção de estudo/ })).not.toBeInTheDocument()
-  await user.selectOptions(playback, 'without')
-  expect(screen.getAllByRole('row')).toHaveLength(2)
-  expect(screen.getByRole('row', { name: /Canção de estudo/ })).toBeInTheDocument()
-  expect(screen.queryByRole('row', { name: /Fix You/ })).not.toBeInTheDocument()
+  expect(screen.queryByRole('combobox', { name: 'Ordenar por' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('combobox', { name: 'Playback' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /Abrir áudio/ })).not.toBeInTheDocument()
   await user.selectOptions(screen.getByRole('combobox', { name: 'Estilo' }), 'Pop internacional')
+  expect(screen.getAllByRole('row')).toHaveLength(2)
+  expect(screen.getByRole('row', { name: /Fix You/ })).toBeInTheDocument()
+  await user.type(screen.getByRole('searchbox'), 'inexistente')
   expect(screen.getByText('Nenhuma música encontrada.')).toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Limpar filtros' }))
-  expect(playback).toHaveValue('all')
   expect(screen.getAllByRole('row')).toHaveLength(3)
   expect(fetchMock).not.toHaveBeenCalled()
 })
@@ -273,7 +288,7 @@ it('abre um setlist, mantém sua ordem e navega entre as partituras autorizadas'
   await user.click(screen.getByRole('button', { name: /Setlists prontos/ }))
   await user.click(screen.getByRole('button', { name: 'Abrir setlist Cerimônia romântica' }))
   expect(screen.getByRole('heading', { name: 'Cerimônia romântica' })).toHaveFocus()
-  expect(screen.getByRole('combobox', { name: 'Ordenar por' })).toHaveValue('setlist')
+  expect(screen.queryByRole('combobox', { name: 'Ordenar por' })).not.toBeInTheDocument()
   expect(
     screen
       .getAllByRole('row')

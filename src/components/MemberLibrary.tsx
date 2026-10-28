@@ -14,7 +14,6 @@ import { auth } from '../lib/auth'
 import { api, LIBRARY_REQUEST_TIMEOUT_MS } from '../lib/api'
 import type { MemberLibraryData } from '../../shared/library'
 import { MemberRepertoire } from './MemberRepertoire'
-import { allInstruments as instruments } from '../data/content'
 import { readPersonalAccess } from '../lib/library-access'
 import { PersonalLibraryAccess } from './PersonalLibraryAccess'
 
@@ -157,9 +156,7 @@ function MemberLibraryContent() {
       <main className={`checkout-status-card ${session ? 'member-library' : ''}`}>
         <div className="member-library-intro">
           <div>
-            <span className="eyebrow">SEU ESPAÇO PARA TOCAR</span>
             <h1>{session ? 'Minha biblioteca' : 'Seu repertório espera por você.'}</h1>
-            {session && <p>Escolha uma música e comece a tocar.</p>}
           </div>
           {session && data?.personalLink && (
             <button
@@ -230,17 +227,6 @@ function MemberLibraryContent() {
           <>
             {data && (
               <>
-                <div className="member-products">
-                  {data.products.map((p) => (
-                    <span key={p.id}>{p.name}</span>
-                  ))}
-                  {data.previewAccess?.map((preview) => (
-                    <span key={`preview-${preview.instrument}`}>
-                      Acesso de teste ·{' '}
-                      {instruments.find((item) => item.id === preview.instrument)?.name}
-                    </span>
-                  ))}
-                </div>
                 {Boolean(data.previewAccess?.length) && (
                   <p className="checkout-notice">
                     O acesso de teste está ativo. Você pode ouvir e visualizar os materiais

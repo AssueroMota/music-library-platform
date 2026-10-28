@@ -813,6 +813,7 @@ describe('oferta exclusiva de violino', () => {
       const headers = { authorization: 'Bearer valid-test-session' }
       const library = await app.inject({ url: '/api/library', headers })
       const ids = library.json().assets.map((asset: { id: string }) => asset.id)
+      expect(library.json().setlistLimit).toBe(offer.accessType === 'SCORES' ? 10 : 42)
       expect(ids).toContain(score.id)
       expect(ids).not.toContain(other.id)
       expect(ids.includes(audio.id)).toBe(offer.accessType === 'INSTRUMENT')

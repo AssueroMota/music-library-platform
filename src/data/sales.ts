@@ -5,7 +5,7 @@
   ],
   [
     'Qual é a diferença entre os dois planos?',
-    'Os dois planos oferecem a coleção de 100 partituras para violino, em expansão, 10 setlists prontos e acesso vitalício. O Básico inclui somente partituras; o Completo também inclui playbacks. Consulte os materiais já publicados. A compra é única, sem assinatura.',
+    'Os dois planos oferecem a coleção de 100 partituras para violino, em expansão, e acesso vitalício. O Básico inclui somente partituras e 10 setlists; o Completo inclui playbacks e 42 setlists. Consulte os materiais já publicados. A compra é única, sem assinatura.',
   ],
   [
     'O acesso é vitalício nos dois planos?',
@@ -13,7 +13,7 @@
   ],
   [
     'Como funcionam os setlists?',
-    'São 10 sequências de músicas organizadas por ocasião, como casamentos, jantares, eventos e louvor. Na biblioteca, abra Setlists prontos, escolha a seleção e avance pelas partituras na ordem sugerida. Uma música pode fazer parte de mais de um setlist. Os áudios disponíveis dependem do plano adquirido.',
+    'São 10 sequências no Básico e 42 no Completo, organizadas por ocasião, como casamentos, jantares, eventos e louvor. Na biblioteca, abra Setlists prontos, escolha a seleção e avance pelas partituras na ordem sugerida. Uma música pode fazer parte de mais de um setlist. Os playbacks estão incluídos somente no Completo.',
   ],
   [
     'Quais músicas estão incluídas?',

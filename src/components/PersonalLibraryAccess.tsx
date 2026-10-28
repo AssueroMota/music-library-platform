@@ -31,7 +31,6 @@ export function PersonalLibraryAccess({ access }: { access: Exclude<PersonalAcce
         <span>MINHA BIBLIOTECA</span>
       </header>
       <main className="checkout-status-card">
-        <span className="eyebrow">SEU ESPAÇO PARA TOCAR</span>
         <h1>Abrindo sua biblioteca.</h1>
         {error ? (
           <>

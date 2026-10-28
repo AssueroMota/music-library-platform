@@ -83,8 +83,8 @@ export function ConfidenceSection() {
               <h3>O plano é claro.</h3>
               <p>
                 {formatBRL(prices[0])} pela coleção de 100 partituras. {formatBRL(prices[1])} com
-                playbacks. Os dois planos incluem 10 setlists e acesso vitalício. Coleção em
-                expansão, com compra única e valor confirmado antes do pagamento.
+                playbacks. São 10 setlists no Básico e 42 no Completo, com acesso vitalício. Coleção
+                em expansão, com compra única e valor confirmado antes do pagamento.
               </p>
               <a href="#planos">
                 Comparar os dois planos <span aria-hidden="true">↗</span>
