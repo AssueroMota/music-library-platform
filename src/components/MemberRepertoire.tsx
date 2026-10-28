@@ -38,7 +38,15 @@ function instrumentName(id: string) {
   return instruments.find((instrument) => instrument.id === id)?.name ?? id
 }
 
-export function MemberRepertoire({ data, token }: { data: MemberLibraryData; token: string }) {
+export function MemberRepertoire({
+  data,
+  token,
+  previewMedia,
+}: {
+  data: MemberLibraryData
+  token: string
+  previewMedia?: Readonly<Record<string, string>>
+}) {
   const [search, setSearch] = useState('')
   const [instrument, setInstrument] = useState('')
   const [style, setStyle] = useState('')
@@ -404,6 +412,7 @@ export function MemberRepertoire({ data, token }: { data: MemberLibraryData; tok
                 key={selected.id}
                 song={selected}
                 token={token}
+                previewMedia={previewMedia}
                 onClose={() => {
                   setSelectedId(null)
                   setFocusMode(false)
@@ -442,9 +451,11 @@ function SongWorkspace({
   expanded,
   onToggleExpanded,
   sequence,
+  previewMedia,
 }: {
   song: Song
   token: string
+  previewMedia?: Readonly<Record<string, string>>
   onClose: () => void
   expanded: boolean
   onToggleExpanded: () => void
@@ -542,6 +553,7 @@ function SongWorkspace({
             key={audioId}
             asset={audios.find((asset) => asset.id === audioId)!}
             token={token}
+            previewMedia={previewMedia}
           />
         </div>
       )}
@@ -569,6 +581,7 @@ function SongWorkspace({
             key={scoreId}
             asset={scores.find((asset) => asset.id === scoreId)!}
             token={token}
+            previewMedia={previewMedia}
           />
         </div>
       )}
@@ -576,7 +589,15 @@ function SongWorkspace({
   )
 }
 
-function ProtectedMedia({ asset, token }: { asset: MemberAsset; token: string }) {
+function ProtectedMedia({
+  asset,
+  token,
+  previewMedia,
+}: {
+  asset: MemberAsset
+  token: string
+  previewMedia?: Readonly<Record<string, string>>
+}) {
   const currentToken = useRef(token)
   const [url, setUrl] = useState('')
   const [error, setError] = useState('')
@@ -586,6 +607,7 @@ function ProtectedMedia({ asset, token }: { asset: MemberAsset; token: string })
     currentToken.current = token
   }, [token])
   useEffect(() => {
+    if (previewMedia) return
     const controller = new AbortController()
     api<{ url: string }>(
       `/library/assets/${asset.id}/view`,
@@ -603,23 +625,49 @@ function ProtectedMedia({ asset, token }: { asset: MemberAsset; token: string })
           setError(reason instanceof Error ? reason.message : 'Não foi possível abrir o arquivo.')
       })
     return () => controller.abort()
-  }, [asset.id, refresh])
+  }, [asset.id, refresh, previewMedia])
   const loadError = useCallback(
     () => setError('Não foi possível carregar o arquivo. Renove o acesso e tente novamente.'),
     [],
   )
+  const mediaUrl = previewMedia ? previewMedia[asset.id] : url
+  if (previewMedia && !mediaUrl)
+    return (
+      <div className="public-library-preview-locked">
+        <BookOpen size={22} />
+        <p>Este {asset.kind === 'audio' ? 'áudio' : 'material'} está na área do aluno.</p>
+        <span>
+          {asset.kind === 'audio'
+            ? 'Os áudios fazem parte do Plano Completo.'
+            : 'As partituras estão incluídas nos dois planos.'}{' '}
+          Para experimentar agora, abra A Thousand Years nesta demonstração.
+        </span>
+        <a href="#planos">Conhecer os planos ↗</a>
+      </div>
+    )
   return (
     <div className="repertoire-media">
       {error ? (
         <p role="alert" className="checkout-error">
           {error}
         </p>
-      ) : !url ? (
+      ) : !mediaUrl ? (
         <p className="repertoire-loading" role="status">
           <LoaderCircle className="checkout-spinner" size={18} /> Abrindo arquivo…
         </p>
       ) : asset.kind === 'audio' ? (
-        <audio controls preload="metadata" src={url} aria-label={asset.title} onError={loadError} />
+        <audio
+          controls
+          preload="metadata"
+          src={mediaUrl}
+          aria-label={asset.title}
+          onError={loadError}
+          onPlay={(event) =>
+            window.dispatchEvent(
+              new CustomEvent('music-library-play', { detail: event.currentTarget }),
+            )
+          }
+        />
       ) : asset.format === 'png' ? (
         <>
           <LibrarySelect
@@ -633,30 +681,37 @@ function ProtectedMedia({ asset, token }: { asset: MemberAsset; token: string })
             <option value={200}>200%</option>
           </LibrarySelect>
           <div className="repertoire-image">
-            <img src={url} alt={asset.title} style={{ width: `${zoom}%` }} onError={loadError} />
+            <img
+              src={mediaUrl}
+              alt={asset.title}
+              style={{ width: `${zoom}%` }}
+              onError={loadError}
+            />
           </div>
         </>
       ) : (
         <Suspense fallback={<p role="status">Preparando partitura…</p>}>
-          <ScorePdf key={url} url={url} title={asset.title} onError={loadError} />
+          <ScorePdf key={mediaUrl} url={mediaUrl} title={asset.title} onError={loadError} />
         </Suspense>
       )}
-      <div className="repertoire-media-footer">
-        <button
-          onClick={() => {
-            setUrl('')
-            setError('')
-            setRefresh((value) => value + 1)
-          }}
-        >
-          <RefreshCw size={14} /> {error ? 'Tentar novamente' : 'Renovar acesso ao arquivo'}
-        </button>
-        {url && !error && asset.kind === 'score' && (
-          <a href={url} target="_blank" rel="noreferrer">
-            Abrir partitura em nova aba ↗
-          </a>
-        )}
-      </div>
+      {!previewMedia && (
+        <div className="repertoire-media-footer">
+          <button
+            onClick={() => {
+              setUrl('')
+              setError('')
+              setRefresh((value) => value + 1)
+            }}
+          >
+            <RefreshCw size={14} /> {error ? 'Tentar novamente' : 'Renovar acesso ao arquivo'}
+          </button>
+          {url && !error && asset.kind === 'score' && (
+            <a href={url} target="_blank" rel="noreferrer">
+              Abrir partitura em nova aba ↗
+            </a>
+          )}
+        </div>
+      )}
     </div>
   )
 }

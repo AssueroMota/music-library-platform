@@ -48,7 +48,9 @@ A página usa preto, laranja e âmbar, com imagens de apresentações em celebra
 
 `src/data/violin-sales.ts` configura o vídeo e os relatos autorizados. A lista vazia de depoimentos não exibe prova social fictícia. O usuário confirmou 25 anos de experiência musical; o bloco de autoridade foi posteriormente retirado da página a pedido dele, mantendo o dado arquivado.
 
-A demonstração principal utiliza a partitura e o MP3 de A Thousand Years fornecidos pelo usuário. O MP3 contém somente acompanhamento, conforme confirmado por ele. Há um player e a imagem integral com opção de ampliar. A prévia de navegação da biblioteca mantém os estudos originais de exemplo.
+A demonstração principal utiliza a partitura e o MP3 de A Thousand Years fornecidos pelo usuário. O MP3 contém somente acompanhamento, conforme confirmado por ele. Há um player e a imagem integral com opção de ampliar. A prévia de navegação foi atualizada para `PublicLibraryPreview`, reutilizando o layout de `MemberRepertoire` com busca, filtros, setlists e área de estudo. O catálogo público de `src/data/public-repertoire.ts` contém somente metadados (título, artista, estilo e existência de áudio), sem IDs privados, caminhos de storage ou URLs assinadas. É um retrato atualizado manualmente do catálogo publicado.
+
+Na prévia, apenas A Thousand Years usa os arquivos públicos já existentes na página. Os demais materiais mostram uma mensagem de acesso pela área do aluno. `previewMedia` limita a demonstração a uma lista explícita de arquivos públicos e impede consultas ao endpoint privado; não altera a autenticação ou as permissões de compra da biblioteca. O componente é carregado ao abrir o exemplo, preservando o carregamento inicial da página de vendas.
 
 ## Validação
 

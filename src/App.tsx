@@ -1,6 +1,5 @@
 import { lazy, Suspense, useState } from 'react'
 import { MotionConfig } from 'motion/react'
-import type { InstrumentId } from './types'
 import { HeroSection } from './components/HeroSection'
 import { AudioComparison } from './components/AudioComparison'
 import { MaterialsSection } from './components/MaterialsSection'
@@ -30,7 +29,6 @@ const MemberLibrary = lazy(() =>
 )
 
 export default function App() {
-  const [instrument, setInstrument] = useState<InstrumentId | null>(null)
   const [info, setInfo] = useState<{ title: string; text: string } | null>(null)
   const [checkout, setCheckout] = useState<string | null>(null)
   const [contactOpen, setContactOpen] = useState(false)
@@ -59,7 +57,7 @@ export default function App() {
         <StoriesSection />
         <VideoSection />
         <PreparationSection />
-        <MaterialsSection instrument={instrument} onInstrumentChange={setInstrument} />
+        <MaterialsSection />
         <AudioComparison />
         <ConfidenceSection />
         <PricingSection onCheckout={setCheckout} />

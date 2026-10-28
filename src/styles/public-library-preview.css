@@ -1,0 +1,105 @@
+.public-library-preview.member-page {
+  padding: 26px;
+  border-top: 1px solid #dfe6ec;
+  border-radius: 0 0 9px 9px;
+}
+.public-library-preview-heading {
+  text-align: left;
+}
+.public-library-preview-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #386a52;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.7px;
+}
+.violin-sales .public-library-preview-heading h3 {
+  color: #182b40;
+  font-size: clamp(21px, 2vw, 27px);
+  line-height: 1.4;
+  letter-spacing: -0.5px;
+  margin-top: 11px;
+}
+.public-library-preview-heading > p {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #637387;
+  margin-top: 8px;
+}
+.public-library-preview-notes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  padding: 16px 0 0;
+}
+.public-library-preview-notes > span {
+  display: inline-flex;
+  align-items: start;
+  gap: 7px;
+  color: #526b5f;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.public-library-preview-notes svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.public-library-preview-caption {
+  max-width: 750px;
+  margin: 22px auto 0;
+  font-size: 12px;
+  line-height: 1.7;
+  color: #637387;
+  text-align: center;
+}
+.public-library-preview-locked {
+  padding: 22px;
+  background: #f6f9f7;
+  color: #406450;
+}
+.public-library-preview-locked > p {
+  font-size: 15px;
+  font-weight: 600;
+  color: #243f32;
+  margin-top: 9px;
+}
+.public-library-preview-locked > span {
+  display: block;
+  font-size: 13px;
+  line-height: 1.7;
+  margin-top: 7px;
+}
+.public-library-preview-locked > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.public-library-preview-loading {
+  padding: 24px;
+}
+@media (min-width: 1100px) {
+  .public-library-preview .repertoire.has-selection:not(.is-focus-mode) .repertoire-content {
+    grid-template-columns: minmax(315px, 0.85fr) minmax(0, 1.15fr);
+  }
+  .public-library-preview .repertoire.has-selection .repertoire-table-wrap {
+    max-height: 560px;
+  }
+  .public-library-preview .library-setlist-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .public-library-preview.member-page {
+    padding: 20px 12px;
+  }
+  .public-library-preview-notes {
+    flex-direction: column;
+  }
+}

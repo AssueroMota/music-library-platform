@@ -33,7 +33,16 @@ it('monta a página e permite abrir a organização dos materiais', async () => 
   }
   expect(screen.queryByRole('button', { name: 'Abrir pasta Violino' })).not.toBeInTheDocument()
   await user.click(screen.getByText('Ver como os materiais ficam organizados'))
-  expect(await screen.findByRole('button', { name: 'Abrir pasta Violino' })).toBeInTheDocument()
+  expect(
+    await screen.findByRole(
+      'region',
+      { name: 'Demonstração da biblioteca atual' },
+      { timeout: 5000 },
+    ),
+  ).toBeInTheDocument()
+  expect(screen.getByRole('searchbox', { name: 'Buscar música ou artista' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: /Setlists prontos/ })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Abrir pasta Violino' })).not.toBeInTheDocument()
 })
 
 it('seleciona instrumento e combina busca, estilo e tonalidade', async () => {

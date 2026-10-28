@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { ChevronDown, FileMusic, FolderOpen, Headphones } from 'lucide-react'
-import type { InstrumentId } from '../types'
-import { LibraryPreview } from './LibraryPreview'
 import { Container, Reveal, SectionHeading } from './ui'
 import { violinDemonstration as demo } from '../data/demonstration'
+
+const PublicLibraryPreview = lazy(() =>
+  import('./PublicLibraryPreview').then((module) => ({ default: module.PublicLibraryPreview })),
+)
 
 const materials = [
   {
@@ -23,13 +25,7 @@ const materials = [
   },
 ]
 
-export function MaterialsSection({
-  instrument,
-  onInstrumentChange,
-}: {
-  instrument: InstrumentId | null
-  onInstrumentChange: (id: InstrumentId | null) => void
-}) {
+export function MaterialsSection() {
   const [showPreview, setShowPreview] = useState(false)
   return (
     <section id="material" className="delivery-section section-space">
@@ -109,7 +105,7 @@ export function MaterialsSection({
         <details
           className="delivery-preview"
           id="biblioteca"
-          onToggle={(event) => event.currentTarget.open && setShowPreview(true)}
+          onToggle={(event) => setShowPreview(event.currentTarget.open)}
         >
           <summary>
             <FolderOpen size={19} />
@@ -117,11 +113,15 @@ export function MaterialsSection({
             <ChevronDown size={18} />
           </summary>
           {showPreview && (
-            <LibraryPreview
-              instrument={instrument}
-              onInstrumentChange={onInstrumentChange}
-              embedded
-            />
+            <Suspense
+              fallback={
+                <p className="public-library-preview-loading" role="status">
+                  Preparando a demonstração da biblioteca…
+                </p>
+              }
+            >
+              <PublicLibraryPreview />
+            </Suspense>
           )}
         </details>
       </Container>
