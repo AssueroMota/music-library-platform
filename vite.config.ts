@@ -1,10 +1,23 @@
 import react from '@vitejs/plugin-react'
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig, loadEnv, type HtmlTagDescriptor } from 'vite'
 import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
-  const configuredUrl = loadEnv(mode, process.cwd(), 'VITE_').VITE_PUBLIC_SITE_URL
+  const publicSettings = loadEnv(mode, process.cwd(), 'VITE_')
+  const configuredUrl = publicSettings.VITE_PUBLIC_SITE_URL
+  const connectionOrigins = [
+    ...new Set(
+      [publicSettings.VITE_API_URL, publicSettings.VITE_SUPABASE_URL].flatMap((value) => {
+        try {
+          const url = new URL(value?.trim() ?? '')
+          return ['https:', 'http:'].includes(url.protocol) ? [url.origin] : []
+        } catch {
+          return []
+        }
+      }),
+    ),
+  ]
   let siteUrl: string | undefined
   if (configuredUrl) {
     const parsed = new URL(configuredUrl)
@@ -20,20 +33,28 @@ export default defineConfig(({ mode }) => {
       {
         name: 'music-library-seo',
         transformIndexHtml(html) {
-          if (!siteUrl) return html
-          return {
-            html: html.replace(
-              'content="/images/violin-cover.jpg"',
-              `content="${siteUrl}/images/violin-cover.jpg"`,
-            ),
-            tags: [
+          const tags: HtmlTagDescriptor[] = connectionOrigins.map((origin) => ({
+            tag: 'link',
+            attrs: { rel: 'preconnect', href: origin, crossorigin: '' },
+            injectTo: 'head',
+          }))
+          if (siteUrl)
+            tags.push(
               { tag: 'link', attrs: { rel: 'canonical', href: `${siteUrl}/` }, injectTo: 'head' },
               {
                 tag: 'meta',
                 attrs: { property: 'og:url', content: `${siteUrl}/` },
                 injectTo: 'head',
               },
-            ],
+            )
+          return {
+            html: siteUrl
+              ? html.replace(
+                  'content="/images/violin-cover.jpg"',
+                  `content="${siteUrl}/images/violin-cover.jpg"`,
+                )
+              : html,
+            tags,
           }
         },
       },

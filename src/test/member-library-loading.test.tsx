@@ -64,6 +64,29 @@ function delayedLibrary() {
   }
 }
 
+it('apresenta a entrada durante a verificação da sessão sem exibir o formulário antes da hora', () => {
+  getSession.mockReturnValue(new Promise(() => {}))
+  render(<MemberLibrary />)
+  expect(screen.getByRole('region', { name: 'Preparando sua biblioteca' })).toBeInTheDocument()
+  expect(screen.getByRole('status')).toHaveTextContent('Preparando seu acesso pessoal')
+  expect(screen.queryByLabelText('Seu e-mail')).not.toBeInTheDocument()
+})
+
+it('remove a animação assim que os materiais chegam sem aguardar uma duração mínima', async () => {
+  const request = delayedLibrary()
+  render(<MemberLibrary />)
+  await act(async () => {})
+  expect(screen.getByRole('region', { name: 'Preparando sua biblioteca' })).toBeInTheDocument()
+  expect(screen.getByRole('status')).toHaveTextContent('Carregando seus materiais')
+  await act(async () => {
+    request.finish()
+  })
+  expect(
+    screen.queryByRole('region', { name: 'Preparando sua biblioteca' }),
+  ).not.toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'Seu repertório' })).toBeInTheDocument()
+})
+
 it('aguarda a inicialização por mais de 15 segundos e carrega sem pedir novo login', async () => {
   const request = delayedLibrary()
   render(<MemberLibrary />)
@@ -91,6 +114,9 @@ it('encerra a espera com opção de tentar novamente e preserva a sessão', asyn
     await vi.advanceTimersByTimeAsync(90001)
   })
   expect(screen.getByRole('alert')).toHaveTextContent('O serviço demorou para responder')
+  expect(
+    screen.queryByRole('region', { name: 'Preparando sua biblioteca' }),
+  ).not.toBeInTheDocument()
   await act(async () => {
     fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }))
   })

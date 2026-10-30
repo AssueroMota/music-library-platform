@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { LoaderCircle } from 'lucide-react'
 import { Logo } from './BrandLogo'
+import { LibraryLoadingPage } from './LibraryLoading'
 import type { PersonalAccess } from '../lib/library-access'
 import { openPersonalLibrary } from '../lib/personal-login'
 
@@ -30,6 +30,7 @@ export function PersonalLibraryAccess({
       active = false
     }
   }, [access, attempt, onAuthenticated])
+  if (!error) return <LibraryLoadingPage />
   return (
     <div className="checkout-page">
       <header className="checkout-page-header">
@@ -38,31 +39,23 @@ export function PersonalLibraryAccess({
       </header>
       <main className="checkout-status-card">
         <h1>Abrindo sua biblioteca.</h1>
-        {error ? (
-          <>
-            <p role="alert" className="checkout-error">
-              {error}
-            </p>
-            {access !== 'invalid' && (
-              <button
-                className="button button-primary"
-                onClick={() => {
-                  setError('')
-                  setAttempt((value) => value + 1)
-                }}
-              >
-                Tentar novamente
-              </button>
-            )}
-            <a href="/biblioteca" className="checkout-back">
-              Solicitar meu link por e-mail
-            </a>
-          </>
-        ) : (
-          <p role="status">
-            <LoaderCircle className="checkout-spinner" size={18} /> Preparando seu acesso pessoal…
-          </p>
+        <p role="alert" className="checkout-error">
+          {error}
+        </p>
+        {access !== 'invalid' && (
+          <button
+            className="button button-primary"
+            onClick={() => {
+              setError('')
+              setAttempt((value) => value + 1)
+            }}
+          >
+            Tentar novamente
+          </button>
         )}
+        <a href="/biblioteca" className="checkout-back">
+          Solicitar meu link por e-mail
+        </a>
       </main>
     </div>
   )

@@ -28,6 +28,7 @@ import { MemberRepertoire } from './MemberRepertoire'
 import { readPersonalAccess } from '../lib/library-access'
 import { PersonalLibraryAccess } from './PersonalLibraryAccess'
 import { Logo } from './BrandLogo'
+import { LibraryLoading } from './LibraryLoading'
 const LibraryUpgrade = lazy(() =>
   import('./LibraryUpgrade').then((module) => ({ default: module.LibraryUpgrade })),
 )
@@ -233,10 +234,10 @@ function MemberLibraryContent({
           </button>
         )}
       </header>
-      <main className={`checkout-status-card ${session ? 'member-library' : ''}`}>
+      <main className={`checkout-status-card ${session || checking ? 'member-library' : ''}`}>
         <div className="member-library-intro">
           <div>
-            <h1>{session ? 'Minha biblioteca' : 'Seu repertório espera por você.'}</h1>
+            <h1>{session || checking ? 'Minha biblioteca' : 'Seu repertório espera por você.'}</h1>
           </div>
           <div className="member-library-actions">
             {showUpgrade && (
@@ -273,9 +274,7 @@ function MemberLibraryContent({
           </div>
         </div>
         {checking ? (
-          <p role="status">
-            <LoaderCircle className="checkout-spinner" /> Verificando seu acesso…
-          </p>
+          <LibraryLoading phase="access" />
         ) : !session ? (
           <>
             <p>
@@ -328,14 +327,7 @@ function MemberLibraryContent({
                 <MemberRepertoire data={repertoireData!} token={session.access_token} />
               </>
             )}
-            {!data && !error && (
-              <p role="status">
-                <LoaderCircle className="checkout-spinner" size={18} />{' '}
-                {waitingLonger
-                  ? 'Estamos preparando seus materiais. Isso pode levar cerca de um minuto. Mantenha esta página aberta.'
-                  : 'Carregando seus materiais…'}
-              </p>
-            )}
+            {!data && !error && <LibraryLoading waitingLonger={waitingLonger} />}
             {error && (
               <button className="button button-outline" onClick={() => setRefresh((v) => v + 1)}>
                 Tentar novamente
