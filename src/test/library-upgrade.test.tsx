@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { LibraryUpgrade } from '../components/LibraryUpgrade'
+import { fakePaymentTab } from './payment-tab-fixture'
 
 const quote = {
   alreadyComplete: false,
@@ -14,7 +15,10 @@ const quote = {
   checkoutEnabled: true,
 }
 const response = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status })
-beforeEach(() => sessionStorage.clear())
+beforeEach(() => {
+  sessionStorage.clear()
+  vi.spyOn(window, 'open').mockReturnValue(null)
+})
 afterEach(() => {
   vi.unstubAllGlobals()
   vi.restoreAllMocks()
@@ -35,6 +39,8 @@ function mount(alreadyComplete = false) {
 }
 
 it('mostra o desconto e exige clique antes de criar pagamento, usando a identidade autenticada', async () => {
+  const { tab, handle } = fakePaymentTab()
+  vi.mocked(window.open).mockReturnValue(handle)
   const fetchMock = vi
     .fn()
     .mockResolvedValueOnce(response(quote))
@@ -48,11 +54,48 @@ it('mostra o desconto e exige clique antes de criar pagamento, usando a identida
   expect(fetchMock).toHaveBeenCalledTimes(1)
   await userEvent.click(screen.getByRole('button', { name: /Fazer upgrade por/ }))
   expect(await screen.findByRole('alert')).toHaveTextContent('Teste sem cobrança real')
+  expect(tab.close).toHaveBeenCalledOnce()
   const [url, init] = fetchMock.mock.calls[1]
   expect(url).toMatch(/\/api\/library\/upgrade$/)
   expect(init.headers.Authorization).toBe('Bearer session-test')
   expect(JSON.parse(init.body)).toEqual({ expectedPriceCents: 3700 })
   expect(sessionStorage.getItem('ml:upgrade-pending:user-test')).toBe('1')
+})
+
+it('abre o upgrade em outra aba com o token de retorno e mantém a biblioteca aberta', async () => {
+  const { tab, handle, storage } = fakePaymentTab()
+  vi.mocked(window.open).mockReturnValue(handle)
+  const orderId = crypto.randomUUID()
+  const checkoutUrl = 'https://www.mercadopago.com.br/checkout/v1/redirect?order_id=upgrade'
+  const fetchMock = vi
+    .fn()
+    .mockResolvedValueOnce(response(quote))
+    .mockResolvedValueOnce(response({ orderId, checkoutUrl }))
+  vi.stubGlobal('fetch', fetchMock)
+  mount()
+  await userEvent.click(await screen.findByRole('button', { name: /Fazer upgrade por/ }))
+  expect(
+    await screen.findByRole('link', { name: 'Abrir pagamento em outra aba' }),
+  ).toBeInTheDocument()
+  expect(tab.location.replace).toHaveBeenCalledWith(checkoutUrl)
+  expect(storage.get(`ml:order:${orderId}`)).toBe(
+    fetchMock.mock.calls[1][1].headers['X-Checkout-Token'],
+  )
+  expect(screen.getByRole('button', { name: 'Fechar upgrade' })).toBeEnabled()
+})
+
+it('continua upgrade pendente em outra aba sem criar outro pedido', async () => {
+  const { tab, handle } = fakePaymentTab()
+  vi.mocked(window.open).mockReturnValue(handle)
+  const checkoutUrl = 'https://www.mercadopago.com.br/checkout/v1/redirect?order_id=existing'
+  const fetchMock = vi
+    .fn()
+    .mockResolvedValueOnce(response({ ...quote, pendingCheckoutUrl: checkoutUrl }))
+  vi.stubGlobal('fetch', fetchMock)
+  mount()
+  await userEvent.click(await screen.findByRole('button', { name: 'Continuar pagamento iniciado' }))
+  expect(tab.location.replace).toHaveBeenCalledWith(checkoutUrl)
+  expect(fetchMock).toHaveBeenCalledTimes(1)
 })
 
 it('atualiza valor alterado e exige outro clique sem repetir cobrança', async () => {

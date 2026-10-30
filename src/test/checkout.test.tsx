@@ -5,6 +5,7 @@ import { CheckoutDialog } from '../components/CheckoutDialog'
 import { CheckoutReturn } from '../components/CheckoutReturn'
 import { violinOffers } from '../../shared/products'
 import { productCatalog } from '../lib/product-catalog'
+import { fakePaymentTab } from './payment-tab-fixture'
 
 const products = violinOffers.map((p) => ({
   ...p,
@@ -15,6 +16,7 @@ const response = (body: unknown, status = 200) =>
     new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } }),
   )
 beforeEach(() => {
+  vi.spyOn(window, 'open').mockReturnValue(null)
   productCatalog.invalidate()
   sessionStorage.clear()
   window.history.replaceState({}, '', '/')
@@ -152,6 +154,8 @@ it('bloqueia o envio quando as vendas estão fechadas', async () => {
 })
 
 it('envia produto e e-mail de entrega, impede cliques repetidos e apresenta falha recuperável', async () => {
+  const { tab, handle } = fakePaymentTab()
+  vi.mocked(window.open).mockReturnValue(handle)
   let fail: (value: Response) => void = () => {}
   const fetchMock = vi
     .fn()
@@ -186,7 +190,72 @@ it('envia produto e e-mail de entrega, impede cliques repetidos e apresenta falh
     ),
   )
   expect(await screen.findByRole('alert')).toHaveTextContent('Mercado Pago indisponível.')
+  expect(tab.close).toHaveBeenCalledOnce()
   expect(screen.getByRole('button', { name: 'Continuar para o pagamento' })).toBeEnabled()
+})
+
+it('abre o pagamento em outra aba e permite reabrir o mesmo pedido sem criar nova cobrança', async () => {
+  const firstTab = fakePaymentTab()
+  vi.mocked(window.open).mockReturnValue(firstTab.handle)
+  let finish!: (value: Response) => void
+  const fetchMock = vi
+    .fn()
+    .mockImplementationOnce(() => response({ checkoutEnabled: true, products }))
+    .mockImplementationOnce(() => new Promise<Response>((resolve) => (finish = resolve)))
+  vi.stubGlobal('fetch', fetchMock)
+  render(<CheckoutDialog plan="basic" onClose={() => {}} />)
+  const user = userEvent.setup()
+  await user.type(screen.getByLabelText('E-mail para receber seu acesso'), 'buyer@gmail.com')
+  await user.click(await screen.findByRole('button', { name: 'Continuar para o pagamento' }))
+  expect(window.open).toHaveBeenCalledTimes(1)
+  expect(firstTab.tab.location.replace).not.toHaveBeenCalled()
+  const orderId = crypto.randomUUID()
+  const checkoutUrl = 'https://www.mercadopago.com.br/checkout/v1/redirect?order_id=test'
+  await act(async () => {
+    finish(new Response(JSON.stringify({ orderId, checkoutUrl })))
+  })
+  expect(screen.getByRole('status')).toHaveTextContent('O pagamento foi aberto em outra aba')
+  expect(firstTab.tab.location.replace).toHaveBeenCalledWith(checkoutUrl)
+  expect(firstTab.storage.get(`ml:order:${orderId}`)).toBe(
+    fetchMock.mock.calls[1][1].headers['X-Checkout-Token'],
+  )
+  expect(window.location.pathname).toBe('/')
+  const secondTab = fakePaymentTab()
+  vi.mocked(window.open).mockReturnValue(secondTab.handle)
+  await user.click(screen.getByRole('link', { name: 'Abrir pagamento em outra aba' }))
+  expect(secondTab.tab.location.replace).toHaveBeenCalledWith(checkoutUrl)
+  expect(fetchMock).toHaveBeenCalledTimes(2)
+})
+
+it('mantém um link para o mesmo pedido se o navegador bloquear a nova aba', async () => {
+  const orderId = crypto.randomUUID()
+  const fetchMock = vi
+    .fn()
+    .mockImplementationOnce(() => response({ checkoutEnabled: true, products }))
+    .mockImplementationOnce(() =>
+      response({
+        orderId,
+        checkoutUrl: 'https://www.mercadopago.com.br/checkout/v1/redirect?order_id=test',
+      }),
+    )
+  vi.stubGlobal('fetch', fetchMock)
+  render(<CheckoutDialog plan="basic" onClose={() => {}} />)
+  const user = userEvent.setup()
+  await user.type(screen.getByLabelText('E-mail para receber seu acesso'), 'buyer@gmail.com')
+  await user.click(await screen.findByRole('button', { name: 'Continuar para o pagamento' }))
+  const link = await screen.findByRole('link', { name: 'Abrir pagamento em outra aba' })
+  expect(link).toHaveAttribute('target', '_blank')
+  expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+  const destination = new URL(link.getAttribute('href')!)
+  expect(destination.searchParams.get('order')).toBe(orderId)
+  expect(new URLSearchParams(destination.hash.slice(1)).get('token')).toBe(
+    sessionStorage.getItem(`ml:order:${orderId}`),
+  )
+  expect(screen.getByRole('status')).toHaveTextContent('Seu pagamento está pronto')
+  expect(
+    screen.queryByRole('button', { name: 'Continuar para o pagamento' }),
+  ).not.toBeInTheDocument()
+  expect(fetchMock).toHaveBeenCalledTimes(2)
 })
 
 it('não aprova pela URL de sucesso e aguarda confirmação do servidor', async () => {

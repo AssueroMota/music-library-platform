@@ -17,6 +17,8 @@ import {
 } from '../lib/api'
 import { formatBRL, violinOffers } from '../../shared/products'
 import { productCatalog } from '../lib/product-catalog'
+import { continuePaymentInTab, reservePaymentTab } from '../lib/payment-tab'
+import { PaymentContinuation, type ReadyPayment } from './PaymentContinuation'
 
 export function CheckoutDialog({ plan, onClose }: { plan: string | null; onClose: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null)
@@ -29,6 +31,7 @@ export function CheckoutDialog({ plan, onClose }: { plan: string | null; onClose
   const [slowLookup, setSlowLookup] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [retry, setRetry] = useState(0)
+  const [payment, setPayment] = useState<ReadyPayment | null>(null)
   const busy = useRef(false)
   const offer = violinOffers[plan === 'complete' ? 1 : 0]
   const productId = offer.id
@@ -41,6 +44,7 @@ export function CheckoutDialog({ plan, onClose }: { plan: string | null; onClose
     }
     dialog.current?.showModal()
     setError('')
+    setPayment(null)
     const cached = productCatalog.peek()
     setData(cached)
     setLoading(!cached)
@@ -70,10 +74,12 @@ export function CheckoutDialog({ plan, onClose }: { plan: string | null; onClose
   }, [plan, retry])
 
   async function purchase() {
-    if (!product?.available || !data?.checkoutEnabled || !emailValid || busy.current) return
+    if (!product?.available || !data?.checkoutEnabled || !emailValid || busy.current || payment)
+      return
     busy.current = true
     setSubmitting(true)
     setError('')
+    const paymentTab = reservePaymentTab()
     try {
       const attempt = checkoutAttempt(`${product.id}:${deliveryEmail}:${product.priceCents}`)
       const result = await api<{ orderId: string; checkoutUrl: string }>('/checkout', {
@@ -90,9 +96,10 @@ export function CheckoutDialog({ plan, onClose }: { plan: string | null; onClose
         }),
       })
       const url = trustedCheckoutUrl(result.checkoutUrl)
-      sessionStorage.setItem(`ml:order:${result.orderId}`, attempt.token)
-      window.location.assign(url)
+      const destination = { checkoutUrl: url, orderId: result.orderId, token: attempt.token }
+      setPayment({ destination, opened: continuePaymentInTab(paymentTab, destination) })
     } catch (e) {
+      paymentTab?.close()
       if (
         e instanceof ApiError &&
         ['ORDER_FINISHED', 'ORDER_EXPIRED', 'CHECKOUT_CONFLICT'].includes(e.code)
@@ -110,6 +117,7 @@ export function CheckoutDialog({ plan, onClose }: { plan: string | null; onClose
       setError(
         e instanceof Error ? e.message : 'Não foi possível iniciar o pagamento. Tente novamente.',
       )
+    } finally {
       busy.current = false
       setSubmitting(false)
     }
@@ -163,7 +171,7 @@ export function CheckoutDialog({ plan, onClose }: { plan: string | null; onClose
             maxLength={254}
             required
             value={email}
-            disabled={submitting}
+            disabled={submitting || !!payment}
             onChange={(event) => setEmail(event.target.value)}
           />
           <p className="checkout-intro">
@@ -226,25 +234,30 @@ export function CheckoutDialog({ plan, onClose }: { plan: string | null; onClose
             plano; você ainda não foi cobrado.
           </p>
         )}
-        <button
-          className="button button-primary checkout-submit"
-          type="submit"
-          disabled={
-            loading || submitting || !product?.available || !data?.checkoutEnabled || !emailValid
-          }
-        >
-          {loading || submitting ? (
-            <LoaderCircle size={18} className="checkout-spinner" />
-          ) : (
-            <LockKeyhole size={17} />
-          )}
-          {submitting
-            ? 'Abrindo pagamento…'
-            : loading
-              ? 'Consultando disponibilidade…'
-              : 'Continuar para o pagamento'}
-          {!loading && !submitting && <ArrowRight size={17} />}
-        </button>
+        {payment ? (
+          <PaymentContinuation payment={payment} />
+        ) : (
+          <button
+            className="button button-primary checkout-submit"
+            type="submit"
+            disabled={
+              loading || submitting || !product?.available || !data?.checkoutEnabled || !emailValid
+            }
+          >
+            {loading || submitting ? (
+              <LoaderCircle size={18} className="checkout-spinner" />
+            ) : (
+              <LockKeyhole size={17} />
+            )}
+            {submitting
+              ? 'Abrindo pagamento…'
+              : loading
+                ? 'Consultando disponibilidade…'
+                : 'Continuar para o pagamento'}
+            {!loading && !submitting && <ArrowRight size={17} />}
+          </button>
+        )}
+        {!payment && <p className="checkout-provider">O pagamento abrirá em outra aba.</p>}
         <button type="button" className="checkout-back" onClick={onClose} disabled={submitting}>
           <ChevronLeft size={15} /> Voltar aos planos
         </button>

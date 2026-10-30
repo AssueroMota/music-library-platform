@@ -34,6 +34,8 @@ A consulta de catálogo aguarda até 60 segundos. Após cinco segundos com o che
 
 ## Apresentação e compra
 
+O botão de pagamento reserva outra aba no clique, antes de aguardar a criação do pedido. Ao receber a URL oficial do Mercado Pago, o cliente grava o token de consulta nas sessões da aba original e da nova aba, remove o vínculo `opener` e navega somente a aba de pagamento. A página de vendas ou biblioteca permanece aberta e permite reabrir o mesmo pagamento sem criar outro pedido. Se a abertura for bloqueada ou a aba for fechada durante a espera, um link permite continuar; para novos pedidos, esse link abre a revisão privada já existente, com o token no fragmento. Falhas de criação fecham a aba reservada. O comportamento também se aplica ao upgrade da biblioteca. Os testes usam respostas simuladas e não criam cobranças reais.
+
 O Plano Completo recebe destaque visual com capa digital, partitura de exemplo, imagem de violinista, representação de playback e selo editorial de indicação. O plano não é apresentado como mais vendido ou acompanhado de avaliações inventadas. A comparação mostra somente os benefícios efetivamente incluídos. O CTA adicional e o atalho móvel levam ao Completo.
 
 O backend aplica a permissão na listagem, visualização e download. O Básico não libera os playbacks. Os produtos antigos e seus acessos permanecem preservados, enquanto a migração `202610240005_violin_offers` retira as ofertas antigas da venda.

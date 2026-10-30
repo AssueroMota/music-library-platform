@@ -9,6 +9,8 @@ import {
 } from '../lib/api'
 import { formatBRL } from '../../shared/products'
 import type { UpgradeQuote } from '../../shared/upgrade'
+import { continuePaymentInTab, reservePaymentTab } from '../lib/payment-tab'
+import { PaymentContinuation, type ReadyPayment } from './PaymentContinuation'
 
 export function LibraryUpgrade({
   token,
@@ -31,6 +33,7 @@ export function LibraryUpgrade({
   const [error, setError] = useState('')
   const [retry, setRetry] = useState(0)
   const [submitting, setSubmitting] = useState(false)
+  const [payment, setPayment] = useState<ReadyPayment | null>(null)
   const busy = useRef(false)
   useEffect(() => {
     dialog.current?.showModal()
@@ -65,16 +68,19 @@ export function LibraryUpgrade({
       quote.alreadyComplete ||
       !quote.available ||
       !quote.checkoutEnabled ||
-      busy.current
+      busy.current ||
+      payment
     )
       return
     busy.current = true
     setSubmitting(true)
     setError('')
+    const paymentTab = reservePaymentTab()
     try {
       sessionStorage.setItem(`ml:upgrade-pending:${userId}`, '1')
       if (quote.pendingCheckoutUrl) {
-        window.location.assign(trustedCheckoutUrl(quote.pendingCheckoutUrl))
+        const destination = { checkoutUrl: trustedCheckoutUrl(quote.pendingCheckoutUrl) }
+        setPayment({ destination, opened: continuePaymentInTab(paymentTab, destination) })
         return
       }
       const attempt = checkoutAttempt(`upgrade:${userId}:${quote.priceCents}`)
@@ -92,9 +98,14 @@ export function LibraryUpgrade({
         },
         LIBRARY_REQUEST_TIMEOUT_MS,
       )
-      sessionStorage.setItem(`ml:order:${result.orderId}`, attempt.token)
-      window.location.assign(trustedCheckoutUrl(result.checkoutUrl))
+      const destination = {
+        checkoutUrl: trustedCheckoutUrl(result.checkoutUrl),
+        orderId: result.orderId,
+        token: attempt.token,
+      }
+      setPayment({ destination, opened: continuePaymentInTab(paymentTab, destination) })
     } catch (reason) {
+      paymentTab?.close()
       if (
         reason instanceof ApiError &&
         ['ORDER_FINISHED', 'ORDER_EXPIRED', 'CHECKOUT_CONFLICT'].includes(reason.code)
@@ -108,6 +119,7 @@ export function LibraryUpgrade({
         setRetry((value) => value + 1)
       }
       setError(reason instanceof Error ? reason.message : 'Não foi possível iniciar o upgrade.')
+    } finally {
       busy.current = false
       setSubmitting(false)
     }
@@ -189,24 +201,29 @@ export function LibraryUpgrade({
               {(!quote.available || !quote.checkoutEnabled) && (
                 <p className="checkout-notice">O upgrade está temporariamente indisponível.</p>
               )}
-              <button
-                className="button library-upgrade-primary"
-                disabled={loading || submitting || !quote.available || !quote.checkoutEnabled}
-                onClick={() => void purchase()}
-              >
-                {submitting ? (
-                  <>
-                    <LoaderCircle className="checkout-spinner" size={18} /> Abrindo pagamento…
-                  </>
-                ) : (
-                  <>
-                    {quote.pendingCheckoutUrl
-                      ? 'Continuar pagamento iniciado'
-                      : `Fazer upgrade por ${formatBRL(quote.priceCents)}`}{' '}
-                    <ArrowUpRight size={18} />
-                  </>
-                )}
-              </button>
+              {payment ? (
+                <PaymentContinuation payment={payment} className="button library-upgrade-primary" />
+              ) : (
+                <button
+                  className="button library-upgrade-primary"
+                  disabled={loading || submitting || !quote.available || !quote.checkoutEnabled}
+                  onClick={() => void purchase()}
+                >
+                  {submitting ? (
+                    <>
+                      <LoaderCircle className="checkout-spinner" size={18} /> Abrindo pagamento…
+                    </>
+                  ) : (
+                    <>
+                      {quote.pendingCheckoutUrl
+                        ? 'Continuar pagamento iniciado'
+                        : `Fazer upgrade por ${formatBRL(quote.priceCents)}`}{' '}
+                      <ArrowUpRight size={18} />
+                    </>
+                  )}
+                </button>
+              )}
+              {!payment && <p className="checkout-provider">O pagamento abrirá em outra aba.</p>}
             </>
           )
         )}
