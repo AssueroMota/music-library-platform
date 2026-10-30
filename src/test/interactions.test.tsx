@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { expect, it, vi } from 'vitest'
+import { afterEach, expect, it, vi } from 'vitest'
 import { LibraryPreview } from '../components/LibraryPreview'
 import { PricingSection } from '../components/PricingSection'
 import { AudioPlayer } from '../components/AudioPlayer'
@@ -9,6 +9,12 @@ import type { InstrumentId } from '../types'
 import App from '../App'
 import { violinOffers } from '../../shared/products'
 import { violinPriceCents } from '../../shared/violin-launch'
+import { productCatalog } from '../lib/product-catalog'
+
+afterEach(() => {
+  productCatalog.invalidate()
+  vi.restoreAllMocks()
+})
 
 function LibraryDemo({ initialInstrument = null }: { initialInstrument?: InstrumentId | null }) {
   const [instrument, setInstrument] = useState<InstrumentId | null>(initialInstrument)
@@ -20,8 +26,15 @@ function LibraryDemo({ initialInstrument = null }: { initialInstrument?: Instrum
 }
 
 it('monta a página e permite abrir a organização dos materiais', async () => {
+  const fetchMock = vi
+    .spyOn(globalThis, 'fetch')
+    .mockResolvedValue(new Response(JSON.stringify({ checkoutEnabled: true, products: [] })))
   const user = userEvent.setup()
   const { container } = render(<App />)
+  expect(fetchMock).toHaveBeenCalledWith(
+    expect.stringContaining('/api/products'),
+    expect.objectContaining({ signal: expect.any(AbortSignal) }),
+  )
   expect(screen.getByRole('main')).toBeInTheDocument()
   expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Seu violino/)
   expect(screen.queryByText('Saxofone')).not.toBeInTheDocument()

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { MotionConfig } from 'motion/react'
 import { HeroSection } from './components/HeroSection'
 import { AudioComparison } from './components/AudioComparison'
@@ -12,6 +12,7 @@ import { LaunchOfferHeader } from './components/LaunchOfferCountdown'
 import { ConfidenceSection } from './components/ConversionSections'
 import { VisitPlaylist } from './components/VisitPlaylist'
 import { ContactBubble } from './components/ContactBubble'
+import { productCatalog } from './lib/product-catalog'
 import {
   VideoSection,
   StoriesSection,
@@ -32,6 +33,14 @@ export default function App() {
   const [info, setInfo] = useState<{ title: string; text: string } | null>(null)
   const [checkout, setCheckout] = useState<string | null>(null)
   const [contactOpen, setContactOpen] = useState(false)
+  useEffect(() => {
+    if (
+      window.location.pathname === '/biblioteca' ||
+      window.location.pathname.startsWith('/checkout/')
+    )
+      return
+    productCatalog.prefetch()
+  }, [])
   const showInfo = (title: string, text: string) => setInfo({ title, text })
   if (/^\/checkout\/(success|pending|failure)\/?$/.test(window.location.pathname))
     return (

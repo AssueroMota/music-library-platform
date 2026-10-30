@@ -4,6 +4,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { CheckoutDialog } from '../components/CheckoutDialog'
 import { CheckoutReturn } from '../components/CheckoutReturn'
 import { violinOffers } from '../../shared/products'
+import { productCatalog } from '../lib/product-catalog'
 
 const products = violinOffers.map((p) => ({
   ...p,
@@ -14,10 +15,12 @@ const response = (body: unknown, status = 200) =>
     new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } }),
   )
 beforeEach(() => {
+  productCatalog.invalidate()
   sessionStorage.clear()
   window.history.replaceState({}, '', '/')
 })
 afterEach(() => {
+  productCatalog.invalidate()
   vi.useRealTimers()
   vi.restoreAllMocks()
   vi.unstubAllGlobals()
@@ -83,16 +86,37 @@ it('limita a consulta a um minuto e permite tentar novamente sem reenviar pagame
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
 })
 
-it('cancela a consulta e o aviso quando o checkout é fechado durante a espera', async () => {
+it('remove o aviso ao fechar e reaproveita a consulta em andamento ao reabrir', async () => {
   const catalog = delayedCatalog()
   const { rerender } = render(<CheckoutDialog plan="basic" onClose={() => {}} />)
   rerender(<CheckoutDialog plan={null} onClose={() => {}} />)
   await act(async () => {
-    vi.advanceTimersByTime(60000)
+    vi.advanceTimersByTime(6000)
   })
-  expect(catalog.aborted()).toBe(true)
+  expect(catalog.aborted()).toBe(false)
+  expect(screen.queryByRole('status')).not.toBeInTheDocument()
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  rerender(<CheckoutDialog plan="complete" onClose={() => {}} />)
+  await act(async () => {
+    catalog.finish({ checkoutEnabled: true, products })
+  })
+  expect(screen.getByText('R$ 27,90')).toBeInTheDocument()
   expect(catalog.fetchMock).toHaveBeenCalledTimes(1)
+})
+
+it('abre com o catálogo antecipado e troca de plano sem outra consulta', async () => {
+  const fetchMock = vi.fn(() => response({ checkoutEnabled: true, products }))
+  vi.stubGlobal('fetch', fetchMock)
+  await productCatalog.load()
+  const { rerender } = render(<CheckoutDialog plan="basic" onClose={() => {}} />)
+  expect(screen.getByText('R$ 12,90')).toBeInTheDocument()
+  expect(
+    screen.queryByRole('button', { name: /Consultando disponibilidade/ }),
+  ).not.toBeInTheDocument()
+  rerender(<CheckoutDialog plan="complete" onClose={() => {}} />)
+  expect(screen.getByText('R$ 27,90')).toBeInTheDocument()
+  await act(async () => {})
+  expect(fetchMock).toHaveBeenCalledTimes(1)
 })
 
 it('seleciona o plano de partituras para violino e usa o preço consultado no servidor', async () => {

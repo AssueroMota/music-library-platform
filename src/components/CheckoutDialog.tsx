@@ -16,10 +16,7 @@ import {
   type ProductResponse,
 } from '../lib/api'
 import { formatBRL, violinOffers } from '../../shared/products'
-
-// The hosted API may need time to start after inactivity. Only the read-only
-// catalog lookup gets this grace period; payment creation is never auto-retried.
-const catalogTimeoutMs = 60000
+import { productCatalog } from '../lib/product-catalog'
 
 export function CheckoutDialog({ plan, onClose }: { plan: string | null; onClose: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null)
@@ -44,25 +41,30 @@ export function CheckoutDialog({ plan, onClose }: { plan: string | null; onClose
     }
     dialog.current?.showModal()
     setError('')
-    setData(null)
-    setLoading(true)
+    const cached = productCatalog.peek()
+    setData(cached)
+    setLoading(!cached)
     setSlowLookup(false)
-    const controller = new AbortController()
-    const slowTimer = window.setTimeout(() => setSlowLookup(true), 5000)
-    api<ProductResponse>('/products', { signal: controller.signal }, catalogTimeoutMs)
-      .then(setData)
+    let active = true
+    const slowTimer = cached ? undefined : window.setTimeout(() => setSlowLookup(true), 5000)
+    productCatalog
+      .load()
+      .then((result) => {
+        if (active) setData(result)
+      })
       .catch((e: Error) => {
-        if (!controller.signal.aborted) setError(e.message)
+        if (active) setError(e.message)
       })
       .finally(() => {
         window.clearTimeout(slowTimer)
-        if (!controller.signal.aborted) setLoading(false)
+        if (active) setLoading(false)
       })
     const previous = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
       window.clearTimeout(slowTimer)
-      controller.abort()
+      // The lookup also serves prefetch and reopened dialogs; detach this view only.
+      active = false
       document.body.style.overflow = previous
     }
   }, [plan, retry])
@@ -100,7 +102,7 @@ export function CheckoutDialog({ plan, onClose }: { plan: string | null; onClose
         )
       if (e instanceof ApiError && e.code === 'PRODUCT_PRICE_CHANGED') {
         try {
-          setData(await api<ProductResponse>('/products', undefined, catalogTimeoutMs))
+          setData(await productCatalog.load({ refresh: true }))
         } catch {
           setData(null)
         }
