@@ -1,0 +1,41 @@
+{
+  "tool": "Built-in image_gen",
+  "updatedAt": "2026-11-01",
+  "source": "src/data/public-repertoire.ts",
+  "countingRules": {
+    "gospel": ["Gospel"],
+    "mpb": ["MPB"],
+    "international": ["Pop internacional"],
+    "classics": ["Clássico", "Trilha sonora"]
+  },
+  "edits": [
+    {
+      "key": "gospel",
+      "count": 18,
+      "title": "GOSPEL",
+      "prompt": "Use case: text-localization. Asset type: finished transparent 3D music collection book mockup on a website.\nEdit target: the provided book image. Make ONE focused design change: update the front-cover title block so the exact quantity of sheet music is large and prominent INSIDE THE PRINTED COVER, as a sales-book design. Preserve the identical book perspective, realistic navy leather texture, metallic gold border, violin photograph, orange/white Music Library logo, left spine, cream sheets leaning on lower right, warm lighting, dimensions/framing and transparent background. Do not add a floating UI badge. Remove the existing standalone word \"COLEÇÃO\" from the front. In its place and the existing title space, create a balanced premium serif title hierarchy: a VERY LARGE metallic-gold quantity numeral (the main attention grabber), white \"PARTITURAS\" directly below it, gold collection name below, and smaller white \"PARA VIOLINO\". The quantity must be unmistakable even at thumbnail size. Keep all words fully within the gold border with comfortable margins. Adjust only title-block text sizes/line breaks as needed so all text is readable and harmonious. Preserve the existing small tagline and bottom footer \"PARTITURAS & PLAYBACKS\". Keep every other design element unchanged. Spell Portuguese accurately. No new content, no price, no watermarks. Preserve true alpha transparency.\nFront title text, VERBATIM, in this order: \"18\", \"PARTITURAS\", \"GOSPEL\", \"PARA VIOLINO\". The number must be exactly 18.",
+      "asset": "public/images/collections/violin-gospel-18.webp"
+    },
+    {
+      "key": "mpb",
+      "count": 13,
+      "title": "MPB",
+      "prompt": "Use case: text-localization. Asset type: finished transparent 3D music collection book mockup on a website.\nEdit target: the provided book image. Make ONE focused design change: update the front-cover title block so the exact quantity of sheet music is large and prominent INSIDE THE PRINTED COVER, as a sales-book design. Preserve the identical book perspective, realistic navy leather texture, metallic gold border, violin photograph, orange/white Music Library logo, left spine, cream sheets leaning on lower right, warm lighting, dimensions/framing and transparent background. Do not add a floating UI badge. Remove the existing standalone word \"COLEÇÃO\" from the front. In its place and the existing title space, create a balanced premium serif title hierarchy: a VERY LARGE metallic-gold quantity numeral (the main attention grabber), white \"PARTITURAS\" directly below it, gold collection name below, and smaller white \"PARA VIOLINO\". The quantity must be unmistakable even at thumbnail size. Keep all words fully within the gold border with comfortable margins. Adjust only title-block text sizes/line breaks as needed so all text is readable and harmonious. Preserve the existing small tagline and bottom footer \"PARTITURAS & PLAYBACKS\". Keep every other design element unchanged. Spell Portuguese accurately. No new content, no price, no watermarks. Preserve true alpha transparency.\nFront title text, VERBATIM, in this order: \"13\", \"PARTITURAS\", \"MPB\", \"PARA VIOLINO\". The number must be exactly 13.",
+      "asset": "public/images/collections/violin-mpb-13.webp"
+    },
+    {
+      "key": "international",
+      "count": 56,
+      "title": "POP INTERNACIONAL",
+      "prompt": "Use case: text-localization. Asset type: finished transparent 3D music collection book mockup on a website.\nEdit target: the provided book image. Make ONE focused design change: update the front-cover title block so the exact quantity of sheet music is large and prominent INSIDE THE PRINTED COVER, as a sales-book design. Preserve the identical book perspective, realistic navy leather texture, metallic gold border, violin photograph, orange/white Music Library logo, left spine, cream sheets leaning on lower right, warm lighting, dimensions/framing and transparent background. Do not add a floating UI badge. Remove the existing standalone word \"COLEÇÃO\" from the front. In its place and the existing title space, create a balanced premium serif title hierarchy: a VERY LARGE metallic-gold quantity numeral (the main attention grabber), white \"PARTITURAS\" directly below it, gold collection name below, and smaller white \"PARA VIOLINO\". The quantity must be unmistakable even at thumbnail size. Keep all words fully within the gold border with comfortable margins. Adjust only title-block text sizes/line breaks as needed so all text is readable and harmonious. Preserve the existing small tagline and bottom footer \"PARTITURAS & PLAYBACKS\". Keep every other design element unchanged. Spell Portuguese accurately. No new content, no price, no watermarks. Preserve true alpha transparency.\nFront title text, VERBATIM, in this order: \"56\", \"PARTITURAS\", \"POP INTERNACIONAL\", \"PARA VIOLINO\". The number must be exactly 56.",
+      "asset": "public/images/collections/violin-international-56.webp"
+    },
+    {
+      "key": "classics",
+      "count": 10,
+      "title": "CLÁSSICOS & TRILHAS",
+      "prompt": "Use case: text-localization. Asset type: finished transparent 3D music collection book mockup on a website.\nEdit target: the provided book image. Make ONE focused design change: update the front-cover title block so the exact quantity of sheet music is large and prominent INSIDE THE PRINTED COVER, as a sales-book design. Preserve the identical book perspective, realistic navy leather texture, metallic gold border, violin photograph, orange/white Music Library logo, left spine, cream sheets leaning on lower right, warm lighting, dimensions/framing and transparent background. Do not add a floating UI badge. Remove the existing standalone word \"COLEÇÃO\" from the front. In its place and the existing title space, create a balanced premium serif title hierarchy: a VERY LARGE metallic-gold quantity numeral (the main attention grabber), white \"PARTITURAS\" directly below it, gold collection name below, and smaller white \"PARA VIOLINO\". The quantity must be unmistakable even at thumbnail size. Keep all words fully within the gold border with comfortable margins. Adjust only title-block text sizes/line breaks as needed so all text is readable and harmonious. Preserve the existing small tagline and bottom footer \"PARTITURAS & PLAYBACKS\". Keep every other design element unchanged. Spell Portuguese accurately. No new content, no price, no watermarks. Preserve true alpha transparency.\nFront title text, VERBATIM, in this order: \"10\", \"PARTITURAS\", \"CLÁSSICOS & TRILHAS\", \"PARA VIOLINO\". The number must be exactly 10.",
+      "asset": "public/images/collections/violin-classics-10.webp"
+    }
+  ]
+}

@@ -177,6 +177,18 @@
   overflow-wrap: anywhere;
   text-decoration: underline;
 }
+.support-instagram {
+  margin-top: 14px;
+}
+.support-instagram a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+}
+.support-instagram a:hover {
+  color: #d13e0e;
+}
 @media (max-width: 600px) {
   .support-contact {
     left: 12px;

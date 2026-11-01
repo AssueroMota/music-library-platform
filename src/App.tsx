@@ -4,6 +4,7 @@ import { HeroSection } from './components/HeroSection'
 import { AudioComparison } from './components/AudioComparison'
 import { MaterialsSection } from './components/MaterialsSection'
 import { PricingSection } from './components/PricingSection'
+import { OfferContents } from './components/OfferContents'
 import { FAQSection, Footer } from './components/ClosingSections'
 import { InfoDialog } from './components/InfoDialog'
 import { ScrollProgress } from './components/ScrollProgress'
@@ -69,6 +70,7 @@ export default function App() {
         <MaterialsSection />
         <AudioComparison />
         <ConfidenceSection />
+        <OfferContents />
         <PricingSection onCheckout={setCheckout} />
         <FAQSection />
         <FinalInvitation />

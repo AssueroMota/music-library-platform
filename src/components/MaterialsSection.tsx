@@ -43,16 +43,15 @@ export function MaterialsSection() {
         />
         <div className="materials-overview">
           <Reveal className="material-showcase">
-            <div className="material-book">
-              <FileMusic size={28} />
-              <span>MUSIC LIBRARY</span>
-              <strong>VIOLINO</strong>
-              <small>
-                PARTITURAS
-                <br />+ PLAYBACKS
-              </small>
-              <span className="book-edition">SUA MÚSICA COMEÇA AQUI</span>
-            </div>
+            <img
+              className="material-book"
+              src="/images/collections/violin-main.webp"
+              alt="Livro Music Library: acervo com 100 partituras para violino"
+              width="1086"
+              height="1448"
+              loading="lazy"
+              decoding="async"
+            />
             <div className="material-sheet">
               <img
                 src={demo.score}

@@ -6,6 +6,8 @@ import { visitPlaylist } from '../data/visit-playlist'
 
 beforeEach(() => {
   sessionStorage.clear()
+  localStorage.clear()
+  vi.spyOn(Math, 'random').mockReturnValue(0.999)
   vi.spyOn(HTMLMediaElement.prototype, 'play').mockImplementation(async function (
     this: HTMLMediaElement,
   ) {
@@ -18,6 +20,62 @@ beforeEach(() => {
   })
 })
 afterEach(() => vi.restoreAllMocks())
+
+it('sorteia a ordem da visita, mantém todas as músicas e toca cada faixa antes de repetir', () => {
+  vi.mocked(Math.random).mockReturnValue(0.35)
+  const { container } = render(<VisitPlaylist />)
+  const audio = container.querySelector('audio')!
+  const titles = screen.getAllByRole('option').map((option) => option.textContent)
+  expect(titles).not.toEqual(visitPlaylist.map((track) => track.title))
+  expect([...titles].sort()).toEqual(visitPlaylist.map((track) => track.title).sort())
+  const opening = audio.getAttribute('src')
+  const played = []
+  for (const title of titles) {
+    const src = audio.getAttribute('src')
+    expect(visitPlaylist.find((track) => track.src === src)?.title).toBe(title)
+    played.push(src)
+    fireEvent.ended(audio)
+  }
+  expect(new Set(played).size).toBe(visitPlaylist.length)
+  expect(audio.getAttribute('src')).toBe(opening)
+
+  vi.mocked(Math.random).mockReturnValue(0)
+  fireEvent.change(screen.getByRole('slider', { name: 'Volume da música da visita' }), {
+    target: { value: '10' },
+  })
+  expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual(titles)
+  expect(audio.getAttribute('src')).toBe(opening)
+})
+
+it('evita repetir a música de abertura ao voltar em uma nova visita', () => {
+  const firstVisit = render(<VisitPlaylist />)
+  const opening = firstVisit.container.querySelector('audio')!.getAttribute('src')
+  expect(localStorage.getItem('ml:visit-music-last-opening')).toBe(opening)
+  firstVisit.unmount()
+  sessionStorage.clear()
+
+  const nextVisit = render(<VisitPlaylist />)
+  const nextOpening = nextVisit.container.querySelector('audio')!.getAttribute('src')
+  expect(nextOpening).not.toBe(opening)
+  expect(visitPlaylist.some((track) => track.src === nextOpening)).toBe(true)
+  expect(localStorage.getItem('ml:visit-music-last-opening')).toBe(nextOpening)
+  expect(screen.getAllByRole('option')).toHaveLength(visitPlaylist.length)
+})
+
+it('continua sorteando e tocando quando o armazenamento do navegador está indisponível', async () => {
+  vi.mocked(Math.random).mockReturnValue(0.35)
+  vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+    throw new Error('Storage unavailable')
+  })
+  vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+    throw new Error('Storage unavailable')
+  })
+  const { container } = render(<VisitPlaylist />)
+  await screen.findByRole('button', { name: 'Pausar música da visita' })
+  expect(container.querySelector('audio')!.getAttribute('src')).not.toBe(visitPlaylist[0].src)
+  fireEvent.click(screen.getByRole('button', { name: 'Próxima música' }))
+  await screen.findByRole('button', { name: 'Pausar música da visita' })
+})
 
 it('tenta iniciar em volume baixo e permite pausar, retomar e ajustar o volume', async () => {
   const { container } = render(<VisitPlaylist />)

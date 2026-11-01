@@ -1,76 +1,14 @@
-﻿import { Check, FileMusic, Headphones, LockKeyhole, Mail, Music2, Sparkles, X } from 'lucide-react'
+import { Check, FileMusic, LockKeyhole, Mail, Sparkles, X } from 'lucide-react'
 import { plans } from '../data/content'
-import { violinDemonstration } from '../data/demonstration'
 import type { Plan } from '../types'
-import { Button, Container, Reveal, SectionHeading } from './ui'
+import { Button, Container, SectionHeading } from './ui'
+import { ProductArtwork } from './ProductArtwork'
 import { useOfferPricing } from '../lib/use-offer-pricing'
 import { formatBRL } from '../../shared/products'
 import { violinLaunch } from '../../shared/violin-launch'
 import '../styles/pricing-offer.css'
-
-function ProductArtwork({ complete }: { complete: boolean }) {
-  return (
-    <div className="offer-art-frame" aria-hidden="true">
-      <div className={`offer-art ${complete ? 'offer-art-complete' : ''}`}>
-        <div className="offer-art-orbit" />
-        {complete && (
-          <img
-            className="offer-art-musician"
-            src="/images/violin-concert-front.jpg"
-            alt=""
-            width="1200"
-            height="800"
-            loading="lazy"
-          />
-        )}
-        <img
-          className="offer-art-score"
-          src={violinDemonstration.score}
-          alt=""
-          width="658"
-          height="897"
-          loading="lazy"
-        />
-        <div className="offer-book">
-          <span className="offer-book-spine" />
-          <Music2 size={23} strokeWidth={1.4} />
-          <span>MUSIC LIBRARY</span>
-          <strong>VIOLINO</strong>
-          <div className="offer-book-rule" />
-          <small>
-            PARTITURAS
-            {complete && (
-              <>
-                <br />+ PLAYBACKS
-              </>
-            )}
-          </small>
-          <span className="offer-book-edition">SEU REPERTÓRIO. SUA INTERPRETAÇÃO.</span>
-        </div>
-        {complete ? (
-          <div className="offer-audio-tile">
-            <Headphones size={24} strokeWidth={1.4} />
-            <div>
-              <span>ACOMPANHE. INTERPRETE.</span>
-              <strong>Seu violino faz a melodia.</strong>
-              <div className="offer-audio-bars">
-                {[8, 18, 12, 25, 34, 17, 28, 12, 32, 22, 15, 29, 19, 10, 22, 14].map(
-                  (height, index) => (
-                    <i key={index} style={{ height }} />
-                  ),
-                )}
-              </div>
-            </div>
-          </div>
-        ) : (
-          <span className="offer-file-stamp">
-            <FileMusic size={16} /> PARTITURAS DIGITAIS
-          </span>
-        )}
-      </div>
-    </div>
-  )
-}
+import '../styles/offer-contents.css'
+import '../styles/pricing-comparison.css'
 
 function PricingCard({
   plan,
@@ -85,31 +23,25 @@ function PricingCard({
     <article
       id={`plano-${plan.id}`}
       className={`pricing-card ${plan.featured ? 'pricing-featured' : ''}`}
+      aria-label={plan.name}
       tabIndex={-1}
     >
       {plan.featured && (
-        <div className="offer-recommendation">
-          <Sparkles size={13} /> RECOMENDADO
+        <div className="comparison-recommendation">
+          <Sparkles size={13} aria-hidden="true" /> RECOMENDADO
         </div>
       )}
       <header className="pricing-card-heading">
-        <h3>
-          {plan.featured ? (
-            <>
-              100 partituras <span>+ Playbacks</span>
-            </>
-          ) : (
-            <>100 partituras</>
-          )}
-        </h3>
+        <h3>100 partituras{plan.featured && <span>+ Playbacks</span>}</h3>
       </header>
-      <ProductArtwork complete={Boolean(plan.featured)} />
+      <ProductArtwork kind={plan.featured ? 'complete' : 'basic'} />
       <ul className="pricing-benefits">
         {(plan.featured
           ? [
               'Partituras para violino',
               'Playbacks para tocar junto',
               '42 setlists prontos',
+              '4 coleções bônus por estilo',
               'Acesso vitalício',
               'Link pessoal por e-mail',
             ]
@@ -123,38 +55,34 @@ function PricingCard({
         ).map((benefit) => (
           <li key={benefit}>
             {benefit.startsWith('Sem ') ? (
-              <X size={16} className="plan-excluded" />
+              <X size={17} className="plan-excluded" aria-hidden="true" />
             ) : (
-              <Check size={16} />
+              <Check size={17} aria-hidden="true" />
             )}
             <span>{benefit}</span>
           </li>
         ))}
       </ul>
-      <div className="offer-purchase">
+      <div className="comparison-purchase">
         {plan.featured && launchActive && (
-          <div className="offer-launch-price-anchor">
-            <span>
-              <s>{formatBRL(violinLaunch.regularPriceCents)}</s>
-              <small>preço de {violinLaunch.regularFromLabel}</small>
-            </span>
+          <div className="comparison-price-anchor">
+            <s>{formatBRL(violinLaunch.regularPriceCents)}</s>
+            <span>preço de {violinLaunch.regularFromLabel}</span>
           </div>
         )}
         <div className="pricing-price">
-          <div>
-            <span className="offer-price-kicker">
-              {plan.featured && launchActive ? 'NO LANÇAMENTO, POR' : 'POR APENAS'}
-            </span>
-            <strong className="pricing-value">
-              <span>R$</span>
-              {plan.price?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-            </strong>
-          </div>
+          <span className="comparison-price-kicker">
+            {plan.featured && launchActive ? 'NO LANÇAMENTO, POR' : 'POR APENAS'}
+          </span>
+          <strong className="pricing-value">
+            <span>R$</span>
+            {plan.price?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+          </strong>
         </div>
         <Button onClick={() => onCheckout(plan.id)}>
           {plan.featured ? 'Quero partituras + playbacks' : 'Quero somente as partituras'}
         </Button>
-        <span className="offer-checkout-note">Acesso vitalício · pagamento único</span>
+        <span className="comparison-payment">Acesso vitalício · pagamento único</span>
       </div>
     </article>
   )
@@ -164,7 +92,7 @@ export function PricingSection({ onCheckout }: { onCheckout: (plan: string) => v
   const { launchActive, prices } = useOfferPricing()
   const currentPlans = plans.map((plan, index) => ({ ...plan, price: prices[index] / 100 }))
   return (
-    <section id="planos" className="pricing-section pricing-showcase pricing-compact section-space">
+    <section id="planos" className="pricing-section pricing-comparison section-space">
       <Container>
         <SectionHeading
           center
@@ -177,21 +105,24 @@ export function PricingSection({ onCheckout }: { onCheckout: (plan: string) => v
           }
         />
         <div className="pricing-grid">
-          {currentPlans.map((plan, index) => (
-            <Reveal key={plan.id} delay={index * 0.1}>
-              <PricingCard plan={plan} onCheckout={onCheckout} launchActive={launchActive} />
-            </Reveal>
+          {currentPlans.map((plan) => (
+            <PricingCard
+              key={plan.id}
+              plan={plan}
+              onCheckout={onCheckout}
+              launchActive={launchActive}
+            />
           ))}
         </div>
         <div className="pricing-trust">
           <span>
-            <LockKeyhole size={16} /> Compra única
+            <LockKeyhole size={16} aria-hidden="true" /> Compra única
           </span>
           <span>
-            <Mail size={16} /> Acesso enviado por e-mail
+            <Mail size={16} aria-hidden="true" /> Acesso enviado por e-mail
           </span>
           <span>
-            <FileMusic size={16} /> Material 100% digital
+            <FileMusic size={16} aria-hidden="true" /> Material 100% digital
           </span>
         </div>
         <p className="pricing-disclaimer">

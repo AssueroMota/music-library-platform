@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react'
-import { Mail, MessageCircle, Send, X } from 'lucide-react'
-import { supportEmail, supportMailto } from '../data/contact'
+import { ArrowUpRight, Mail, MessageCircle, Send, X } from 'lucide-react'
+import { supportEmail, supportInstagram, supportMailto } from '../data/contact'
 import '../styles/contact-bubble.css'
 
 export function ContactBubble({
@@ -96,6 +96,31 @@ export function ContactBubble({
             <div className="support-address">
               <span>Ou escreva diretamente para</span>
               <a href={supportMailto()}>{supportEmail}</a>
+              <div className="support-instagram">
+                <span>Também estamos no Instagram</span>
+                <a
+                  href={supportInstagram.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Instagram ${supportInstagram.handle} (abre em nova aba)`}
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    aria-hidden="true"
+                  >
+                    <rect x="3" y="3" width="18" height="18" rx="5" />
+                    <circle cx="12" cy="12" r="4" />
+                    <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+                  </svg>
+                  {supportInstagram.handle}
+                  <ArrowUpRight size={15} aria-hidden="true" />
+                </a>
+              </div>
             </div>
           </div>
         </section>

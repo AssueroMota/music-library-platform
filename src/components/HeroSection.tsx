@@ -1,13 +1,4 @@
-﻿import {
-  ArrowDown,
-  Check,
-  FileMusic,
-  Headphones,
-  Play,
-  UtensilsCrossed,
-  Heart,
-  Mic2,
-} from 'lucide-react'
+﻿import { ArrowDown, Check, Headphones, Play, UtensilsCrossed, Heart, Mic2 } from 'lucide-react'
 import { plans } from '../data/content'
 import { Button, Container, Logo, Reveal } from './ui'
 
@@ -83,18 +74,14 @@ export function HeroSection() {
               />
             </figure>
             <div className="hero-kit">
-              <div className="kit-cover">
-                <FileMusic size={23} />
-                <span>MUSIC LIBRARY</span>
-                <strong>VIOLINO</strong>
-                <small>
-                  PARTITURAS
-                  <br />+ PLAYBACKS
-                </small>
-                <div className="kit-score" aria-hidden="true">
-                  𝄞 &nbsp; ♪ &nbsp; ♫ &nbsp; ♪
-                </div>
-              </div>
+              <img
+                className="kit-cover"
+                src="/images/collections/violin-main.webp"
+                alt="Livro Music Library: acervo com 100 partituras para violino"
+                width="1086"
+                height="1448"
+                decoding="async"
+              />
               <div className="kit-description">
                 <span>SUA PREPARAÇÃO COMEÇA AQUI</span>
                 <strong>

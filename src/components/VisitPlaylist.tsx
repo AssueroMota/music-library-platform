@@ -14,6 +14,27 @@ import '../styles/visit-playlist.css'
 
 const preferenceKey = 'ml:visit-music-paused'
 const minimizedKey = 'ml:visit-music-minimized'
+const lastOpeningKey = 'ml:visit-music-last-opening'
+
+function shuffledPlaylist() {
+  const playlist = [...visitPlaylist]
+  for (let index = playlist.length - 1; index > 0; index--) {
+    const next = Math.floor(Math.random() * (index + 1))
+    ;[playlist[index], playlist[next]] = [playlist[next], playlist[index]]
+  }
+
+  try {
+    const previousOpening = localStorage.getItem(lastOpeningKey)
+    if (playlist.length > 1 && playlist[0].src === previousOpening) {
+      const next = 1 + Math.floor(Math.random() * (playlist.length - 1))
+      ;[playlist[0], playlist[next]] = [playlist[next], playlist[0]]
+    }
+  } catch {
+    // Shuffle still works when the browser cannot remember the previous visit.
+  }
+  return playlist
+}
+
 function startsMinimized() {
   try {
     return sessionStorage.getItem(minimizedKey) === 'true'
@@ -42,12 +63,21 @@ export function VisitPlaylist() {
   const waitingForGesture = useRef(false)
   const currentVolume = useRef(0.2)
   const attempt = useRef({ version: 0 })
+  const [playlist] = useState(shuffledPlaylist)
   const [index, setIndex] = useState(0)
   const [playing, setPlaying] = useState(false)
   const [minimized, setMinimized] = useState(startsMinimized)
   const [volume, setVolume] = useState(20)
   const [status, setStatus] = useState('Sua visita tem trilha sonora.')
-  const track = visitPlaylist[index]
+  const track = playlist[index]
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(lastOpeningKey, playlist[0].src)
+    } catch {
+      // Remembering the opening track is optional; playback is not.
+    }
+  }, [playlist])
 
   async function play() {
     const audio = audioRef.current
@@ -178,13 +208,13 @@ export function VisitPlaylist() {
         onPlay={(event) => {
           waitingForGesture.current = false
           setPlaying(true)
-          setStatus(`Ouvindo · ${visitPlaylist[index].context}`)
+          setStatus(`Ouvindo · ${track.context}`)
           window.dispatchEvent(
             new CustomEvent('music-library-play', { detail: event.currentTarget }),
           )
         }}
         onPause={() => setPlaying(false)}
-        onEnded={() => selectTrack((index + 1) % visitPlaylist.length)}
+        onEnded={() => selectTrack((index + 1) % playlist.length)}
         onError={() => {
           waitingForGesture.current = false
           shouldPlay.current = false
@@ -198,7 +228,7 @@ export function VisitPlaylist() {
           <>
             <span>UMA TRILHA PARA SUA VISITA</span>
             <span className="visit-playlist-position">
-              {index + 1}/{visitPlaylist.length}
+              {index + 1}/{playlist.length}
             </span>
           </>
         )}
@@ -233,7 +263,7 @@ export function VisitPlaylist() {
             value={index}
             onChange={(event) => selectTrack(Number(event.target.value))}
           >
-            {visitPlaylist.map((item, position) => (
+            {playlist.map((item, position) => (
               <option value={position} key={item.src}>
                 {item.title}
               </option>
@@ -243,7 +273,7 @@ export function VisitPlaylist() {
             <button
               type="button"
               aria-label="Música anterior"
-              onClick={() => selectTrack((index - 1 + visitPlaylist.length) % visitPlaylist.length)}
+              onClick={() => selectTrack((index - 1 + playlist.length) % playlist.length)}
             >
               <SkipBack size={17} />
             </button>
@@ -251,7 +281,7 @@ export function VisitPlaylist() {
             <button
               type="button"
               aria-label="Próxima música"
-              onClick={() => selectTrack((index + 1) % visitPlaylist.length)}
+              onClick={() => selectTrack((index + 1) % playlist.length)}
             >
               <SkipForward size={17} />
             </button>
