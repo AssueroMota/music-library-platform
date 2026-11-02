@@ -73,7 +73,7 @@ it('separa vídeos das partituras e dos setlists, busca sem acentos e abre somen
       headers: expect.objectContaining({ Authorization: 'Bearer member-token' }),
     }),
   )
-  await user.click(screen.getByRole('button', { name: /^Partituras \d/ }))
+  await user.click(screen.getByRole('button', { name: /^Partituras \+ Playbacks \d/ }))
   expect(container.querySelector('video')).not.toBeInTheDocument()
 })
 

@@ -139,7 +139,8 @@ export function MemberRepertoire({
       {(songs.length > 0 || videos.length > 0) && (
         <nav className="library-collection-nav" aria-label="Explorar biblioteca">
           <button aria-pressed={view === 'songs'} onClick={() => changeView('songs')}>
-            <FileMusic size={18} /> Partituras <span>{songs.length}</span>
+            <FileMusic size={18} /> {setlistLimit === 42 ? 'Partituras + Playbacks' : 'Partituras'}{' '}
+            <span>{songs.length}</span>
           </button>
           <button aria-pressed={view === 'setlists'} onClick={() => changeView('setlists')}>
             <ListMusic size={18} /> Setlists prontos <span>{setlists.length}</span>
