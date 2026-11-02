@@ -4,34 +4,47 @@ import type { MemberLibraryData } from '../../shared/library'
 import { publicRepertoire } from '../data/public-repertoire'
 import { violinDemonstration } from '../data/demonstration'
 import { MemberRepertoire } from './MemberRepertoire'
+import { guidedScores } from '../../shared/guided-scores'
 import '../styles/public-library-preview.css'
 
 const data: MemberLibraryData = {
   setlistLimit: 42,
   products: [],
-  assets: publicRepertoire.flatMap(([songTitle, artist, style, audio], index) => {
-    const base = { songTitle, artist, style, instrument: 'violin' }
-    return [
-      {
-        ...base,
-        id: `demo-score-${index}`,
-        title: `${songTitle} - Partitura`,
-        kind: 'score',
-        format: 'png',
-      },
-      ...(audio
-        ? [
-            {
-              ...base,
-              id: `demo-audio-${index}`,
-              title: `${songTitle} - Áudio`,
-              kind: 'audio',
-              format: 'mp3',
-            },
-          ]
-        : []),
-    ]
-  }),
+  assets: [
+    ...publicRepertoire.flatMap(([songTitle, artist, style, audio], index) => {
+      const base = { songTitle, artist, style, instrument: 'violin' }
+      return [
+        {
+          ...base,
+          id: `demo-score-${index}`,
+          title: `${songTitle} - Partitura`,
+          kind: 'score',
+          format: 'png',
+        },
+        ...(audio
+          ? [
+              {
+                ...base,
+                id: `demo-audio-${index}`,
+                title: `${songTitle} - Áudio`,
+                kind: 'audio',
+                format: 'mp3',
+              },
+            ]
+          : []),
+      ]
+    }),
+    ...guidedScores.map(([songTitle, artist, style], index) => ({
+      id: `demo-video-${index}`,
+      title: `${songTitle} - Partitura guiada`,
+      songTitle,
+      artist,
+      style,
+      instrument: 'violin',
+      kind: 'video',
+      format: 'mp4',
+    })),
+  ],
 }
 
 const sample = publicRepertoire.findIndex(
@@ -45,7 +58,7 @@ const previewMedia: Readonly<Record<string, string>> = {
 export function PublicLibraryPreview() {
   const [basic, setBasic] = useState(false)
   const visibleData: MemberLibraryData = basic
-    ? { ...data, setlistLimit: 10, assets: data.assets.filter((asset) => asset.kind === 'score') }
+    ? { ...data, setlistLimit: 10, assets: data.assets.filter((asset) => asset.kind !== 'audio') }
     : data
   return (
     <section
@@ -57,7 +70,7 @@ export function PublicLibraryPreview() {
           <BookOpen size={16} /> EXPLORE A BIBLIOTECA
         </span>
         <h3>Encontre a música. Abra a partitura. Prepare seu repertório.</h3>
-        <p>Navegue pela seleção de músicas e pelos setlists no mesmo layout da área do aluno.</p>
+        <p>Explore Partituras, Setlists e Partituras guiadas no mesmo layout da área do aluno.</p>
         <div className="public-library-preview-notes">
           <span>
             {basic ? <BookOpen size={16} /> : <Headphones size={16} />}

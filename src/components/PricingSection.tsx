@@ -6,6 +6,7 @@ import { ProductArtwork } from './ProductArtwork'
 import { useOfferPricing } from '../lib/use-offer-pricing'
 import { formatBRL } from '../../shared/products'
 import { violinLaunch } from '../../shared/violin-launch'
+import { guidedScoreCount } from '../../shared/guided-scores'
 import '../styles/pricing-offer.css'
 import '../styles/offer-contents.css'
 import '../styles/pricing-comparison.css'
@@ -41,6 +42,7 @@ function PricingCard({
               'Partituras para violino',
               'Playbacks para tocar junto',
               '42 setlists prontos',
+              `Bônus: ${guidedScoreCount} partituras guiadas em vídeo`,
               '4 coleções bônus por estilo',
               'Acesso vitalício',
               'Link pessoal por e-mail',
@@ -48,6 +50,7 @@ function PricingCard({
           : [
               'Partituras para violino',
               '10 setlists prontos',
+              `Bônus: ${guidedScoreCount} partituras guiadas em vídeo`,
               'Acesso vitalício',
               'Link pessoal por e-mail',
               'Sem playbacks',

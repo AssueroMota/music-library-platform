@@ -19,5 +19,5 @@ export interface MemberLibraryData {
 
 export function libraryFileFormat(key: string) {
   const extension = key.split('.').pop()?.toLowerCase()
-  return extension && ['pdf', 'png', 'mp3', 'wav'].includes(extension) ? extension : null
+  return extension && ['pdf', 'png', 'mp3', 'wav', 'mp4'].includes(extension) ? extension : null
 }

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   ArrowLeft,
   ArrowRight,
@@ -6,24 +6,23 @@ import {
   Check,
   FileMusic,
   Headphones,
-  LoaderCircle,
   ListMusic,
+  Video,
   Maximize2,
   Music2,
-  RefreshCw,
   Search,
   SlidersHorizontal,
   X,
 } from 'lucide-react'
 import type { MemberAsset, MemberLibraryData } from '../../shared/library'
-import { api, LIBRARY_REQUEST_TIMEOUT_MS } from '../lib/api'
 import { allInstruments as instruments } from '../data/content'
 import { normalizeSearch } from '../data/library'
 import { LibrarySelect } from './LibrarySelect'
 import { LibrarySetlists } from './LibrarySetlists'
 import { resolveSetlists } from '../data/setlists'
 
-const ScorePdf = lazy(() => import('./ScorePdf').then((module) => ({ default: module.ScorePdf })))
+import { ProtectedMedia } from './ProtectedMedia'
+import { LibraryGuidedScores } from './LibraryGuidedScores'
 
 interface Song {
   id: string
@@ -52,7 +51,7 @@ export function MemberRepertoire({
   const [style, setStyle] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [focusMode, setFocusMode] = useState(false)
-  const [view, setView] = useState<'songs' | 'setlists'>('songs')
+  const [view, setView] = useState<'songs' | 'setlists' | 'guided'>('songs')
   const [setlistId, setSetlistId] = useState<string | null>(null)
   const setlistHeading = useRef<HTMLHeadingElement>(null)
   const setlistLimit =
@@ -60,6 +59,7 @@ export function MemberRepertoire({
   const songs = useMemo(() => {
     const grouped = new Map<string, Song>()
     for (const asset of data.assets) {
+      if (asset.kind === 'video') continue
       if (setlistLimit === 10 && asset.kind === 'audio') continue
       const title = asset.songTitle || asset.title
       const id = JSON.stringify([
@@ -91,6 +91,7 @@ export function MemberRepertoire({
   const styles = [...new Set(songs.map((song) => song.style).filter(Boolean))].sort()
   const collectionStyles = [...new Set(collection.map((song) => song.style).filter(Boolean))].sort()
   const availableInstruments = [...new Set(songs.map((song) => song.instrument))]
+  const videos = useMemo(() => data.assets.filter((asset) => asset.kind === 'video'), [data.assets])
   const scoreCount = data.assets.filter((asset) => asset.kind === 'score').length
   const filtered = collection
     .filter(
@@ -115,7 +116,7 @@ export function MemberRepertoire({
     setFocusMode(false)
     setSelectedId(id)
   }
-  function changeView(next: 'songs' | 'setlists') {
+  function changeView(next: 'songs' | 'setlists' | 'guided') {
     setView(next)
     setSetlistId(null)
     setSelectedId(null)
@@ -164,17 +165,22 @@ export function MemberRepertoire({
           </span>
         </div>
       </div>
-      {setlists.length > 0 && (
+      {(songs.length > 0 || videos.length > 0) && (
         <nav className="library-collection-nav" aria-label="Explorar biblioteca">
           <button aria-pressed={view === 'songs'} onClick={() => changeView('songs')}>
-            <Music2 size={18} /> Todas as músicas <span>{songs.length}</span>
+            <FileMusic size={18} /> Partituras <span>{songs.length}</span>
           </button>
           <button aria-pressed={view === 'setlists'} onClick={() => changeView('setlists')}>
             <ListMusic size={18} /> Setlists prontos <span>{setlists.length}</span>
           </button>
+          <button aria-pressed={view === 'guided'} onClick={() => changeView('guided')}>
+            <Video size={18} /> Partituras guiadas <span>{videos.length}</span>
+          </button>
         </nav>
       )}
-      {view === 'setlists' && !activeSetlist ? (
+      {view === 'guided' ? (
+        <LibraryGuidedScores videos={videos} token={token} previewMedia={previewMedia} />
+      ) : view === 'setlists' && !activeSetlist ? (
         <LibrarySetlists setlists={setlists} onOpen={openSetlist} />
       ) : (
         <>
@@ -552,114 +558,5 @@ function SongWorkspace({
         </div>
       )}
     </section>
-  )
-}
-
-function ProtectedMedia({
-  asset,
-  token,
-  previewMedia,
-}: {
-  asset: MemberAsset
-  token: string
-  previewMedia?: Readonly<Record<string, string>>
-}) {
-  const currentToken = useRef(token)
-  const [url, setUrl] = useState('')
-  const [error, setError] = useState('')
-  const [refresh, setRefresh] = useState(0)
-  useEffect(() => {
-    currentToken.current = token
-  }, [token])
-  useEffect(() => {
-    if (previewMedia) return
-    const controller = new AbortController()
-    api<{ url: string }>(
-      `/library/assets/${asset.id}/view`,
-      {
-        headers: { Authorization: `Bearer ${currentToken.current}` },
-        signal: controller.signal,
-      },
-      LIBRARY_REQUEST_TIMEOUT_MS,
-    )
-      .then((result) => {
-        if (!controller.signal.aborted) setUrl(result.url)
-      })
-      .catch((reason: unknown) => {
-        if (!controller.signal.aborted)
-          setError(reason instanceof Error ? reason.message : 'Não foi possível abrir o arquivo.')
-      })
-    return () => controller.abort()
-  }, [asset.id, refresh, previewMedia])
-  const loadError = useCallback(
-    () => setError('Não foi possível carregar o arquivo. Renove o acesso e tente novamente.'),
-    [],
-  )
-  const mediaUrl = previewMedia ? previewMedia[asset.id] : url
-  if (previewMedia && !mediaUrl)
-    return (
-      <div className="public-library-preview-locked">
-        <BookOpen size={22} />
-        <p>Este {asset.kind === 'audio' ? 'áudio' : 'material'} está na área do aluno.</p>
-        <span>
-          {asset.kind === 'audio'
-            ? 'Os áudios fazem parte do Plano Completo.'
-            : 'As partituras estão incluídas nos dois planos.'}{' '}
-          Para experimentar agora, abra A Thousand Years nesta demonstração.
-        </span>
-        <a href="#planos">Conhecer os planos ↗</a>
-      </div>
-    )
-  return (
-    <div className="repertoire-media">
-      {error ? (
-        <p role="alert" className="checkout-error">
-          {error}
-        </p>
-      ) : !mediaUrl ? (
-        <p className="repertoire-loading" role="status">
-          <LoaderCircle className="checkout-spinner" size={18} /> Abrindo arquivo…
-        </p>
-      ) : asset.kind === 'audio' ? (
-        <audio
-          controls
-          preload="metadata"
-          src={mediaUrl}
-          aria-label={asset.title}
-          onError={loadError}
-          onPlay={(event) =>
-            window.dispatchEvent(
-              new CustomEvent('music-library-play', { detail: event.currentTarget }),
-            )
-          }
-        />
-      ) : asset.format === 'png' ? (
-        <div className="repertoire-image">
-          <img src={mediaUrl} alt={asset.title} onError={loadError} />
-        </div>
-      ) : (
-        <Suspense fallback={<p role="status">Preparando partitura…</p>}>
-          <ScorePdf key={mediaUrl} url={mediaUrl} title={asset.title} onError={loadError} />
-        </Suspense>
-      )}
-      {!previewMedia && (
-        <div className="repertoire-media-footer">
-          <button
-            onClick={() => {
-              setUrl('')
-              setError('')
-              setRefresh((value) => value + 1)
-            }}
-          >
-            <RefreshCw size={14} /> {error ? 'Tentar novamente' : 'Renovar acesso ao arquivo'}
-          </button>
-          {url && !error && asset.kind === 'score' && (
-            <a href={url} target="_blank" rel="noreferrer">
-              Abrir partitura em nova aba ↗
-            </a>
-          )}
-        </div>
-      )}
-    </div>
   )
 }

@@ -1,0 +1,32 @@
+// Guided score video bonus supplied by the library owner.
+export const guidedScores = [
+  ['All of Me', 'John Legend', 'Pop internacional'],
+  ['Autumn Leaves', 'Joseph Kosma', 'Jazz'],
+  ['Bésame Mucho', 'Consuelo Velázquez', 'Bolero'],
+  ['Bondade de Deus', '', 'Gospel'],
+  ['Bênçãos Que Não Têm Fim', 'Isadora Pompeo', 'Gospel'],
+  ['Con te partirò', 'Andrea Bocelli', 'Clássicos & Trilhas'],
+  ['Endless Love', 'Diana Ross e Lionel Richie', 'Pop internacional'],
+  ['Every Breath You Take', 'The Police', 'Pop internacional'],
+  ['Historia de un Amor', 'Carlos Eleta Almarán', 'Bolero'],
+  ['How Deep Is Your Love', 'Bee Gees', 'Pop internacional'],
+  ["I Don't Want to Miss a Thing", 'Aerosmith', 'Pop internacional'],
+  [
+    "Medley: From This Moment On / You're Still the One / How Do I Live",
+    'Shania Twain e LeAnn Rimes',
+    'Pop internacional',
+  ],
+  ['My Way', 'Frank Sinatra', 'Pop internacional'],
+  ['Ninguém Explica Deus', 'Gabriela Rocha', 'Gospel'],
+  ["Nothing's Gonna Change My Love for You", 'George Benson', 'Pop internacional'],
+  ['Over the Rainbow', 'Harold Arlen', 'Clássicos & Trilhas'],
+  ['You Raise Me Up', 'Josh Groban', 'Pop internacional'],
+  ['Stand by Me', 'Ben E. King', 'Pop internacional'],
+  ['Garota de Ipanema', 'Tom Jobim', 'MPB'],
+  ['The Swan', 'Camille Saint-Saëns', 'Clássicos & Trilhas'],
+  ['The Sound of Silence', 'Simon & Garfunkel', 'Pop internacional'],
+  ['Heaven', 'Bryan Adams', 'Pop internacional'],
+  ['Love of My Life', 'Queen', 'Pop internacional'],
+] as const
+
+export const guidedScoreCount = guidedScores.length

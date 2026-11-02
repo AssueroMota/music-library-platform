@@ -1,6 +1,7 @@
 import 'dotenv/config'
 import { readFile } from 'node:fs/promises'
 import { dirname, extname, resolve } from 'node:path'
+import { createHash } from 'node:crypto'
 import { PrismaClient } from '@prisma/client'
 import { createClient } from '@supabase/supabase-js'
 import { z } from 'zod'
@@ -24,7 +25,7 @@ const manifest = z
       artist: z.string().trim().max(200).default(''),
       style: z.string().trim().max(100).default(''),
       instrument: z.enum(['violin', 'saxophone', 'flute', 'guitar', 'viola', 'cello']),
-      kind: z.enum(['score', 'audio']),
+      kind: z.enum(['score', 'audio', 'video']),
       file: z.string().min(1),
       storageKey: z
         .string()
@@ -52,9 +53,11 @@ try {
         '.png': 'image/png',
         '.mp3': 'audio/mpeg',
         '.wav': 'audio/wav',
+        '.mp4': 'video/mp4',
       } as Record<string, string>
     )[extension]
-    if (!mime || (item.kind === 'score') !== ['.pdf', '.png'].includes(extension))
+    const extensions = { score: ['.pdf', '.png'], audio: ['.mp3', '.wav'], video: ['.mp4'] }
+    if (!mime || !extensions[item.kind].includes(extension))
       throw new Error('Tipo de arquivo incompatível com o material.')
     const bytes = await readFile(resolve(dirname(manifestPath), item.file))
     const existing = await db.libraryAsset.findUnique({ where: { storageKey: item.storageKey } })
@@ -62,8 +65,22 @@ try {
       const { error } = await supabase.storage
         .from(env.SUPABASE_STORAGE_BUCKET)
         .upload(item.storageKey, bytes, { contentType: mime, upsert: false })
-      if (error)
-        throw new Error(`Falha ao importar ${item.storageKey}. Confira o storage antes de repetir.`)
+      if (error) {
+        // An interrupted import may have uploaded the object before registering its DB row.
+        // Reuse it only after checking the complete content, never overwrite another object.
+        if (String(error.statusCode) !== '409')
+          throw new Error(`Falha ao importar ${item.storageKey}. Confira o storage antes de repetir.`)
+        const { data: stored, error: downloadError } = await supabase.storage
+          .from(env.SUPABASE_STORAGE_BUCKET)
+          .download(item.storageKey)
+        if (
+          downloadError ||
+          !stored ||
+          createHash('sha256').update(Buffer.from(await stored.arrayBuffer())).digest('hex') !==
+            createHash('sha256').update(bytes).digest('hex')
+        )
+          throw new Error(`O arquivo existente difere do manifesto: ${item.storageKey}.`)
+      }
     }
     await db.libraryAsset.upsert({
       where: { storageKey: item.storageKey },

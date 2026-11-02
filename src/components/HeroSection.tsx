@@ -1,6 +1,7 @@
 ﻿import { ArrowDown, Check, Headphones, Play, UtensilsCrossed, Heart, Mic2 } from 'lucide-react'
 import { plans } from '../data/content'
 import { Button, Container, Logo, Reveal } from './ui'
+import { guidedScoreCount } from '../../shared/guided-scores'
 
 export function HeroSection() {
   return (
@@ -49,6 +50,10 @@ export function HeroSection() {
               <span className="hero-payment-note">
                 Acesso vitalício. Compra única, sem mensalidade.
               </span>
+              <a className="hero-guided-bonus" href="#partituras-guiadas">
+                <Play size={15} /> Bônus nos dois planos: {guidedScoreCount} partituras guiadas em
+                vídeo ↗
+              </a>
             </div>
             <div className="hero-assurances">
               <span>

@@ -1,5 +1,6 @@
 import type { Instrument, Plan, Track } from '../types'
 import { violinOffers } from '../../shared/products'
+import { guidedScoreCount } from '../../shared/guided-scores'
 
 export const allInstruments: Instrument[] = [
   {
@@ -99,6 +100,7 @@ export const plans: Plan[] = [
     benefits: [
       'Coleção de 100 partituras exclusivamente para violino',
       '10 setlists prontos para diferentes ocasiões',
+      `Bônus: ${guidedScoreCount} partituras guiadas em vídeo`,
       'Acesso vitalício, sem mensalidade',
       'Arquivos digitais organizados por música',
       'Acesso pelo computador, tablet ou celular',
@@ -115,6 +117,7 @@ export const plans: Plan[] = [
     benefits: [
       '100 partituras exclusivamente para violino',
       '42 setlists prontos para diferentes ocasiões',
+      `Bônus: ${guidedScoreCount} partituras guiadas em vídeo`,
       'Acesso vitalício, sem mensalidade',
       'Playbacks para acompanhar sua interpretação',
       'Partitura e acompanhamento na mesma biblioteca',

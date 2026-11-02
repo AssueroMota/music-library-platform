@@ -1,12 +1,12 @@
-// Fixed offer renewed on 01/11 through the end of the day in Brasília. Never resets per visitor.
+// Fixed offer extended by three days on 02/11. Never resets per visitor.
 export const violinLaunch = {
   productId: 'library-violin-playbacks',
   startsAt: '2026-10-24T00:00:00-03:00',
-  endsAt: '2026-11-02T00:00:00-03:00',
+  endsAt: '2026-11-05T00:00:00-03:00',
   launchPriceCents: 2790,
   regularPriceCents: 4990,
-  deadlineLabel: '01/11 às 23h59',
-  regularFromLabel: '02/11',
+  deadlineLabel: '04/11 às 23h59',
+  regularFromLabel: '05/11',
 } as const
 
 export function isViolinLaunchActive(now = Date.now()) {

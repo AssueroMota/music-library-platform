@@ -310,6 +310,6 @@ it('abre um setlist, mantém sua ordem e navega entre as partituras autorizadas'
   expect(screen.getByRole('button', { name: 'Próxima música do setlist' })).toBeDisabled()
   await user.click(screen.getByRole('button', { name: 'Voltar aos setlists' }))
   expect(screen.queryByRole('img', { name: 'Perfect' })).not.toBeInTheDocument()
-  await user.click(screen.getByRole('button', { name: /Todas as músicas/ }))
+  await user.click(screen.getByRole('button', { name: /^Partituras \d/ }))
   expect(screen.getByRole('heading', { name: 'Seu repertório' })).toBeInTheDocument()
 })

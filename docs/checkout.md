@@ -72,7 +72,7 @@ As migrações criam `users`, `products`, `orders`, `payments`, `entitlements`, 
 
 RLS é habilitada sem políticas públicas nessas tabelas. A conexão do backend deve usar o proprietário das tabelas ou um papel de servidor com acesso. O frontend consulta exclusivamente a API, sem permissão direta para alterar pedidos ou acessos.
 
-O seed cria os dois planos de violino e mantém os produtos antigos arquivados. A oferta atual é a coleção de 100 partituras, em expansão, sem playbacks por R$ 12,90 ou com playbacks por R$ 27,90 no lançamento. O Básico inclui 10 setlists; o Completo, 42. Ambos têm acesso vitalício. A migração `202610270001_violin_lifetime_collection` atualiza as descrições da oferta original sem mudar valores ou disponibilidade. A regra compartilhada em `shared/violin-launch.ts` mantém o Completo na oferta reaberta por R$ 27,90 até 01/11/2026 às 23h59 e altera para R$ 49,90 a partir de 02/11/2026, no horário de Brasília. A chave global `CHECKOUT_ENABLED` continua controlando a abertura das compras. Reexecutar o seed não altera produtos existentes. Para impedir uma venda específica, use `products.available=false`. `npm start` aplica as migrações pendentes antes de iniciar a API.
+O seed cria os dois planos de violino e mantém os produtos antigos arquivados. A oferta atual é a coleção de 100 partituras, em expansão, sem playbacks por R$ 12,90 ou com playbacks por R$ 27,90 no lançamento. O Básico inclui 10 setlists; o Completo, 42. Ambos têm acesso vitalício. A migração `202610270001_violin_lifetime_collection` atualiza as descrições da oferta original sem mudar valores ou disponibilidade. A regra compartilhada em `shared/violin-launch.ts` mantém o Completo na oferta reaberta por R$ 27,90 até 04/11/2026 às 23h59 e altera para R$ 49,90 a partir de 05/11/2026, no horário de Brasília. A chave global `CHECKOUT_ENABLED` continua controlando a abertura das compras. Reexecutar o seed não altera produtos existentes. Para impedir uma venda específica, use `products.available=false`. `npm start` aplica as migrações pendentes antes de iniciar a API.
 
 ## Mercado Pago Developers
 
@@ -250,3 +250,8 @@ Há rate limiting por processo e CORS restrito. Com múltiplas instâncias/proxy
 Configure fallback de `/checkout/*` e `/biblioteca` para `index.html`, preserve `/api/*` no proxy e não cacheie a API. A página define referrer `no-referrer`. Configure logs de proxy sem Authorization, tokens ou corpos sensíveis. Banco, chaves e `.env` não são públicos.
 
 Uma URL de download emitida pode funcionar por até 60 segundos após revogação; para reprodução/visualização, até 10 minutos. Novas URLs serão negadas. Arquivos já carregados no dispositivo não podem ser recolhidos. A biblioteca mostra estado vazio se os materiais não foram importados, sem prometer arquivos inexistentes.
+
+
+### Partituras guiadas (02/11/2026)
+
+Os dois planos incluem 23 partituras guiadas em vídeo, em uma aba própria ao lado de Partituras e Setlists. O catálogo não mistura vídeos com os PDFs ou com os áudios. Os MP4 ficam no bucket privado; listagem, visualização e download verificam o acesso ativo, inclusive no Básico. A demonstração pública exibe os títulos, mas não libera os vídeos. `shared/guided-scores.ts` mantém o catálogo público e a quantidade do bônus. O karaokê de Making Love Out of Nothing at All foi excluído por não mostrar partitura.

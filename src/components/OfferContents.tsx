@@ -1,7 +1,8 @@
-import { ArrowDown, CircleCheck, Gift } from 'lucide-react'
+import { ArrowDown, CircleCheck, Gift, Play, Video } from 'lucide-react'
 import { Container } from './ui'
 import { ProductArtwork, type ArtworkKind } from './ProductArtwork'
 import '../styles/offer-contents.css'
+import { guidedScoreCount } from '../../shared/guided-scores'
 
 const bonusCollections: { kind: ArtworkKind; title: string; text: string }[] = [
   {
@@ -68,6 +69,7 @@ export function OfferContents() {
                 'Coleção em expansão para 100 partituras de violino',
                 'Playbacks para acompanhar sua interpretação',
                 '42 setlists organizados para diferentes ocasiões',
+                `Bônus: ${guidedScoreCount} partituras guiadas em vídeo`,
                 'Coleções bônus: Gospel, MPB, Internacional e Clássicos & Trilhas',
                 'Partituras e acompanhamentos na mesma biblioteca',
                 'Acesso vitalício, com pagamento único',
@@ -85,6 +87,29 @@ export function OfferContents() {
             </a>
           </div>
         </div>
+        <article className="contents-guided-bonus" id="partituras-guiadas">
+          <div className="contents-guided-visual" aria-hidden="true">
+            <Video size={42} strokeWidth={1.4} />
+            <strong>{guidedScoreCount}</strong>
+            <span>PARTITURAS GUIADAS</span>
+            <div>𝄞 ── ♪ ── ♫ ── ♪</div>
+            <Play size={24} />
+          </div>
+          <div>
+            <span className="contents-badge">
+              <Gift size={15} /> NOVO BÔNUS NOS DOIS PLANOS
+            </span>
+            <h2>{guidedScoreCount} vídeos para acompanhar a partitura e tocar junto.</h2>
+            <p>
+              Veja a partitura passando na tela enquanto a música toca. Pause nos trechos que
+              precisam de atenção, volte quantas vezes quiser e estude no seu ritmo.
+            </p>
+            <p>Uma aba só para suas partituras guiadas, ao lado de Partituras e Setlists.</p>
+            <a href="#planos">
+              Quero esse bônus na minha biblioteca <ArrowDown size={16} />
+            </a>
+          </div>
+        </article>
         <div className="contents-highlights" id="bonus">
           <header className="contents-heading">
             <span className="contents-badge">

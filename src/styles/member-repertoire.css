@@ -296,6 +296,115 @@
   color: #9a3412;
   font-size: 12px;
 }
+.guided-search {
+  max-width: 620px;
+}
+.guided-results {
+  margin: 16px 0;
+  color: #637387;
+  font-size: 13px;
+}
+.guided-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.guided-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 22px;
+  border: 1px solid #dfe6ec;
+  border-radius: 12px;
+  background: #fff;
+  text-align: left;
+}
+.guided-card:hover,
+.guided-card[aria-pressed='true'] {
+  border-color: #e85211;
+  background: #fff9f4;
+}
+.guided-card-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #fff0e3;
+  color: #c2410c;
+}
+.guided-card-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+.guided-card-copy strong {
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+.guided-card-copy small {
+  color: #637387;
+  font-size: 13px;
+}
+.guided-card-copy > span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #a34212;
+  font-size: 12px;
+}
+.guided-player {
+  padding: 24px;
+  margin-bottom: 24px;
+  background: #fff;
+  border: 1px solid #dfe6ec;
+  border-radius: 14px;
+}
+.guided-player > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.guided-player > header > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.guided-player h3 {
+  margin-top: 8px;
+  font-size: clamp(20px, 2.3vw, 28px);
+  scroll-margin-top: 24px;
+}
+.guided-player header p {
+  color: #637387;
+}
+.repertoire-media video {
+  display: block;
+  width: 100%;
+  max-height: 75vh;
+  aspect-ratio: 16 / 9;
+  background: #101b29;
+  border-radius: 8px;
+}
+@media (max-width: 1100px) {
+  .guided-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .guided-grid {
+    grid-template-columns: 1fr;
+  }
+  .guided-card {
+    padding: 17px;
+  }
+  .guided-player {
+    padding: 14px;
+  }
+}
 .library-setlists-heading {
   display: flex;
   align-items: start;
@@ -453,17 +562,20 @@
 }
 @media (max-width: 600px) {
   .library-collection-nav {
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     gap: 6px;
   }
   .library-collection-nav button {
-    flex: 1;
+    flex: 1 1 calc(50% - 6px);
     padding: 10px 8px;
     gap: 6px;
     font-size: 12px;
   }
   .library-collection-nav button > svg {
     display: none;
+  }
+  .library-collection-nav button:last-child {
+    flex-basis: 100%;
   }
   .library-setlists-heading {
     flex-direction: column;

@@ -824,6 +824,14 @@ describe('oferta exclusiva de violino', () => {
           storageKey: 'violin/piece.mp3',
         },
       })
+      const video = await db.libraryAsset.create({
+        data: {
+          title: 'Partitura guiada violino',
+          instrument: 'violin',
+          kind: 'video',
+          storageKey: 'violin/guided-scores/piece.mp4',
+        },
+      })
       const other = await db.libraryAsset.create({
         data: {
           title: 'Partitura cello',
@@ -837,9 +845,17 @@ describe('oferta exclusiva de violino', () => {
       const ids = library.json().assets.map((asset: { id: string }) => asset.id)
       expect(library.json().setlistLimit).toBe(offer.accessType === 'SCORES' ? 10 : 42)
       expect(ids).toContain(score.id)
+      expect(ids).toContain(video.id)
+      expect(
+        library.json().assets.find((asset: { id: string }) => asset.id === video.id).format,
+      ).toBe('mp4')
       expect(ids).not.toContain(other.id)
       expect(ids.includes(audio.id)).toBe(offer.accessType === 'INSTRUMENT')
       for (const action of ['view', 'download']) {
+        expect(
+          (await app.inject({ url: `/api/library/assets/${video.id}/${action}`, headers }))
+            .statusCode,
+        ).toBe(200)
         expect(
           (await app.inject({ url: `/api/library/assets/${score.id}/${action}`, headers }))
             .statusCode,

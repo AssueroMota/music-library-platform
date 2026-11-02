@@ -256,7 +256,7 @@ export function createApp(service: CheckoutService, logging = true) {
         if (product.accessType === 'INSTRUMENT' && product.instrument)
           return [{ instrument: product.instrument }]
         if (product.accessType === 'SCORES' && product.instrument)
-          return [{ instrument: product.instrument, kind: 'score' }]
+          return [{ instrument: product.instrument, kind: { in: ['score', 'video'] } }]
         return []
       }),
       ...previews.map(({ instrument }) => ({ instrument })),
@@ -317,7 +317,7 @@ export function createApp(service: CheckoutService, logging = true) {
             OR: [
               { accessType: 'COMPLETE' },
               { accessType: 'INSTRUMENT', instrument: asset.instrument },
-              ...(asset.kind === 'score'
+              ...(['score', 'video'].includes(asset.kind)
                 ? [{ accessType: 'SCORES', instrument: asset.instrument }]
                 : []),
             ],

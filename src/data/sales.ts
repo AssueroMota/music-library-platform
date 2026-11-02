@@ -1,11 +1,18 @@
-﻿export const salesFaqs = [
+import { violinLaunch } from '../../shared/violin-launch'
+import { guidedScoreCount } from '../../shared/guided-scores'
+
+export const salesFaqs = [
   [
     'O material é só para violino?',
     'Sim. Esta coleção é dedicada ao violino. A oferta atual não inclui bibliotecas de outros instrumentos.',
   ],
   [
     'Qual é a diferença entre os dois planos?',
-    'Os dois planos oferecem a coleção de 100 partituras para violino, em expansão, e acesso vitalício. O Básico inclui somente partituras e 10 setlists; o Completo inclui playbacks e 42 setlists. Consulte os materiais já publicados. A compra é única, sem assinatura.',
+    `Os dois planos oferecem a coleção de 100 partituras para violino, em expansão, ${guidedScoreCount} partituras guiadas em vídeo e acesso vitalício. O Básico inclui 10 setlists; o Completo inclui também playbacks em áudio e 42 setlists. Consulte os materiais já publicados. A compra é única, sem assinatura.`,
+  ],
+  [
+    'O que são as partituras guiadas?',
+    `São ${guidedScoreCount} vídeos em que você acompanha a partitura passando na tela enquanto a música toca. Eles estão incluídos como bônus nos dois planos, em uma aba própria da biblioteca. Você pode pausar, voltar e ajustar a velocidade no player para estudar no seu ritmo. Os playbacks em áudio separados continuam exclusivos do Completo.`,
   ],
   [
     'O acesso é vitalício nos dois planos?',
@@ -21,7 +28,7 @@
   ],
   [
     'Como funciona o valor de lançamento?',
-    'O Plano Completo tem valor de lançamento de R$ 27,90 para pedidos iniciados até 27/10/2026 às 23h59, no horário de Brasília. A partir de 28/10/2026, novos pedidos custam R$ 49,90. O contador acompanha esse prazo fixo e não reinicia ao atualizar a página. Um pedido já iniciado mantém o total registrado e segue o prazo de pagamento do checkout.',
+    `O Plano Completo tem valor de lançamento de R$ 27,90 para pedidos iniciados até ${violinLaunch.deadlineLabel}, no horário de Brasília. A partir de ${violinLaunch.regularFromLabel}, novos pedidos custam R$ 49,90. O contador acompanha esse prazo fixo e não reinicia ao atualizar a página. Um pedido já iniciado mantém o total registrado e segue o prazo de pagamento do checkout.`,
   ],
   [
     'O que é um playback?',
