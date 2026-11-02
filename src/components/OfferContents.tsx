@@ -1,4 +1,4 @@
-import { ArrowDown, CircleCheck, Gift, Play, Video } from 'lucide-react'
+import { ArrowDown, CircleCheck, Gift } from 'lucide-react'
 import { Container } from './ui'
 import { ProductArtwork, type ArtworkKind } from './ProductArtwork'
 import '../styles/offer-contents.css'
@@ -47,8 +47,8 @@ export function OfferContents() {
           <div className="contents-package">
             <img
               className="contents-bundle"
-              src="/images/collections/violin-complete-bundle.webp"
-              alt="Apresentação do pacote digital Music Library: acervo de violino, quatro coleções bônus, partituras e playbacks"
+              src="/images/collections/violin-complete-bundle-guided.webp"
+              alt="Pacote digital Music Library: acervo de 100 partituras para violino, quatro coleções por estilo, 23 partituras guiadas em vídeo e playbacks"
               width="1536"
               height="1024"
               loading="lazy"
@@ -89,11 +89,7 @@ export function OfferContents() {
         </div>
         <article className="contents-guided-bonus" id="partituras-guiadas">
           <div className="contents-guided-visual" aria-hidden="true">
-            <Video size={42} strokeWidth={1.4} />
-            <strong>{guidedScoreCount}</strong>
-            <span>PARTITURAS GUIADAS</span>
-            <div>𝄞 ── ♪ ── ♫ ── ♪</div>
-            <Play size={24} />
+            <ProductArtwork kind="guided" />
           </div>
           <div>
             <span className="contents-badge">

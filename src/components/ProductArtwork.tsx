@@ -1,6 +1,7 @@
 import { Headphones } from 'lucide-react'
 
-export type ArtworkKind = 'basic' | 'complete' | 'gospel' | 'mpb' | 'international' | 'classics'
+export type ArtworkKind =
+  'basic' | 'complete' | 'gospel' | 'mpb' | 'international' | 'classics' | 'guided'
 
 const covers: Record<ArtworkKind, string> = {
   basic: 'main',
@@ -9,6 +10,7 @@ const covers: Record<ArtworkKind, string> = {
   mpb: 'mpb-13',
   international: 'international-56',
   classics: 'classics-10',
+  guided: 'guided-23',
 }
 
 export function ProductArtwork({ kind }: { kind: ArtworkKind }) {
