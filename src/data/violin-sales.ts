@@ -7,8 +7,8 @@ export interface ViolinTestimonial {
   photoAlt: string
 }
 export const violinPresentation: { videoSrc: string | null; poster: string } = {
-  videoSrc: '/videos/music-library-apresentacao.mp4',
-  poster: '/videos/music-library-apresentacao.jpg',
+  videoSrc: '/videos/music-library-agorassss.mp4',
+  poster: '/videos/music-library-agorassss.jpg',
 }
 export const violinTestimonials: ViolinTestimonial[] = []
 

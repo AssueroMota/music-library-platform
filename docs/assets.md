@@ -128,3 +128,10 @@ Essas são as três primeiras faixas, nessa ordem. Depois vêm A Whole New World
 ### Foto de apresentação vista pela frente
 
 Para atender à preferência por uma pessoa vista pela frente no palco, o retrato de estúdio foi substituído por [Woman Playing Violin on Stage](https://www.pexels.com/photo/woman-playing-violin-on-stage-7095516/), de cottonbro studio / Pexels. A fotografia mostra uma violinista durante a execução, vista pela frente em leve ângulo, com estantes e cenário de palco visíveis. Arquivo: `public/images/violin-concert-front.jpg`; origem: `https://images.pexels.com/photos/7095516/pexels-photo-7095516.jpeg?auto=compress&cs=tinysrgb&w=1200`. Foi aplicada no cartão de eventos e na composição do Plano Completo, com os créditos e o texto alternativo atualizados. O corte é feito por CSS, sem alterar o arquivo da fotografia. A imagem é ilustrativa.
+
+
+### Vídeo de apresentação atualizado — 02/11/2026
+
+O arquivo `agorassss.mp4`, fornecido pelo proprietário em `Desktop/Music library/videos para reels`, substitui o vídeo da seção `apresentacao`. A versão publicada é `public/videos/music-library-agorassss.mp4`, com pôster extraído do próprio vídeo em `public/videos/music-library-agorassss.jpg`. O original de 56.312.350 bytes foi preservado; a versão para a web tem 7.822.066 bytes, 720 × 1280 pixels, aproximadamente 30,5 segundos, vídeo H.264 e áudio AAC. O MP4 usa fast start e passou por decodificação completa de vídeo e áudio.
+
+`PresentationVideo` observa a visibilidade do player: ao menos 35% visível inicia a reprodução com áudio; sair desse limite pausa sem zerar o tempo. A troca de aba também pausa. A volta à área retoma do ponto anterior, enquanto uma pausa manual dentro da área é respeitada. A trilha da visita pausa quando o vídeo começa e outros players podem assumir o áudio. Se o navegador bloquear autoplay com som, aparece o botão “Assistir com som”; não há reprodução silenciosa para contornar essa preferência. Referência: https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Autoplay .

@@ -12,6 +12,7 @@ import { violinPresentation, violinTestimonials, violinMoments } from '../data/v
 import { Button, Container, Reveal, SectionHeading } from './ui'
 import { useOfferPricing } from '../lib/use-offer-pricing'
 import { formatBRL } from '../../shared/products'
+import { PresentationVideo } from './PresentationVideo'
 
 export function VideoSection() {
   return (
@@ -51,24 +52,10 @@ export function VideoSection() {
         </Reveal>
         <Reveal className="video-frame video-frame--portrait" delay={0.1}>
           {violinPresentation.videoSrc ? (
-            <video
-              controls
-              playsInline
-              preload="none"
-              width={720}
-              height={1280}
+            <PresentationVideo
+              src={violinPresentation.videoSrc}
               poster={violinPresentation.poster}
-              aria-label="Apresentação da Music Library para violinistas"
-              onPlay={(event) =>
-                window.dispatchEvent(
-                  new CustomEvent('music-library-play', { detail: event.currentTarget }),
-                )
-              }
-            >
-              <source src={violinPresentation.videoSrc} type="video/mp4" />
-              Seu navegador não suporta este vídeo.{' '}
-              <a href={violinPresentation.videoSrc}>Abrir o vídeo de apresentação.</a>
-            </video>
+            />
           ) : (
             <div
               className="video-placeholder"

@@ -649,6 +649,7 @@
   overflow: hidden;
 }
 .video-frame.video-frame--portrait {
+  position: relative;
   width: min(100%, 340px);
   justify-self: center;
   transform: none;
@@ -657,6 +658,26 @@
   height: auto;
   aspect-ratio: 9/16;
   object-fit: contain;
+}
+.presentation-video-start {
+  position: absolute;
+  inset: auto 24px 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 48px;
+  padding: 12px;
+  border: 1px solid #ffffff80;
+  border-radius: 8px;
+  background: #23170fef;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 8px 24px #0004;
+}
+.presentation-video-start:hover {
+  background: #3e271b;
 }
 .video-placeholder > img {
   width: 100%;
