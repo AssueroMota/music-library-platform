@@ -1,3 +1,9 @@
+/* Keep the library width stable when filters shorten the page. */
+html:has(.checkout-page.member-page) {
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+}
+
 .member-page {
   --library-ink: #182b40;
   --library-muted: #637387;
