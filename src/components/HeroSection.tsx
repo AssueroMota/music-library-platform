@@ -51,7 +51,7 @@ export function HeroSection() {
                 Acesso vitalício. Compra única, sem mensalidade.
               </span>
               <a className="hero-guided-bonus" href="#partituras-guiadas">
-                <Play size={15} /> Bônus nos dois planos: {guidedScoreCount} partituras guiadas em
+                <Play size={15} /> Bônus no Completo: {guidedScoreCount} partituras guiadas em
                 vídeo ↗
               </a>
             </div>

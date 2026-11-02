@@ -8,11 +8,11 @@ export const salesFaqs = [
   ],
   [
     'Qual é a diferença entre os dois planos?',
-    `Os dois planos oferecem a coleção de 100 partituras para violino, em expansão, ${guidedScoreCount} partituras guiadas em vídeo e acesso vitalício. O Básico inclui 10 setlists; o Completo inclui também playbacks em áudio e 42 setlists. Consulte os materiais já publicados. A compra é única, sem assinatura.`,
+    `Os dois planos oferecem a coleção de 100 partituras para violino, em expansão, e acesso vitalício. O Básico inclui partituras e 10 setlists; o Completo inclui também playbacks em áudio, 42 setlists e o bônus de ${guidedScoreCount} partituras guiadas em vídeo. Consulte os materiais já publicados. A compra é única, sem assinatura.`,
   ],
   [
     'O que são as partituras guiadas?',
-    `São ${guidedScoreCount} vídeos em que você acompanha a partitura passando na tela enquanto a música toca. Eles estão incluídos como bônus nos dois planos, em uma aba própria da biblioteca. Você pode pausar, voltar e ajustar a velocidade no player para estudar no seu ritmo. Os playbacks em áudio separados continuam exclusivos do Completo.`,
+    `São ${guidedScoreCount} vídeos em que você acompanha a partitura passando na tela enquanto a música toca. Eles estão incluídos como bônus exclusivo do Plano Completo, em uma aba própria da biblioteca. Você pode pausar, voltar e ajustar a velocidade no player para estudar no seu ritmo. Os playbacks em áudio separados continuam exclusivos do Completo.`,
   ],
   [
     'O acesso é vitalício nos dois planos?',

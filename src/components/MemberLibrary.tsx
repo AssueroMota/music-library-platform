@@ -112,7 +112,7 @@ function MemberLibraryContent({
         ? {
             ...data,
             setlistLimit: 10,
-            assets: data.assets.filter((asset) => asset.kind === 'score' || asset.kind === 'video'),
+            assets: data.assets.filter((asset) => asset.kind === 'score'),
           }
         : data,
     [data, basicPreview],

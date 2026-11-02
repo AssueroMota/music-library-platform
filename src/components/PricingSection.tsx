@@ -50,7 +50,6 @@ function PricingCard({
           : [
               'Partituras para violino',
               '10 setlists prontos',
-              `Bônus: ${guidedScoreCount} partituras guiadas em vídeo`,
               'Acesso vitalício',
               'Link pessoal por e-mail',
               'Sem playbacks',

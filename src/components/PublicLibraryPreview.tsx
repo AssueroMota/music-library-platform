@@ -58,7 +58,7 @@ const previewMedia: Readonly<Record<string, string>> = {
 export function PublicLibraryPreview() {
   const [basic, setBasic] = useState(false)
   const visibleData: MemberLibraryData = basic
-    ? { ...data, setlistLimit: 10, assets: data.assets.filter((asset) => asset.kind !== 'audio') }
+    ? { ...data, setlistLimit: 10, assets: data.assets.filter((asset) => asset.kind === 'score') }
     : data
   return (
     <section

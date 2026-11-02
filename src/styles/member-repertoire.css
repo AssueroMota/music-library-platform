@@ -574,7 +574,7 @@
   .library-collection-nav button > svg {
     display: none;
   }
-  .library-collection-nav button:last-child {
+  .library-collection-nav button:nth-child(3) {
     flex-basis: 100%;
   }
   .library-setlists-heading {

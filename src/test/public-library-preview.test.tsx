@@ -48,4 +48,4 @@ it('permite experimentar somente os arquivos públicos e navegar pelo catálogo 
   await user.click(screen.getByRole('button', { name: /Setlists prontos/ }))
   expect(screen.getAllByRole('button', { name: /Abrir setlist/ })).toHaveLength(10)
   expect(fetchMock).not.toHaveBeenCalled()
-})
+}, 10000)

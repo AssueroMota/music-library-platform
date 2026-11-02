@@ -8,7 +8,7 @@ import { guidedScoreCount } from '../../shared/guided-scores'
 
 const data: MemberLibraryData = {
   products: [],
-  setlistLimit: 10,
+  setlistLimit: 42,
   assets: [
     {
       id: 'pdf',
@@ -101,22 +101,23 @@ it('permite renovar o acesso após erro ao carregar um vídeo e trocar de vídeo
   expect(container.querySelector('video')).toBeNull()
 })
 
-it('mostra o bônus nos dois planos da demonstração sem solicitar links privados', async () => {
+it('mostra o bônus somente na demonstração do Completo sem solicitar links privados', async () => {
   const fetchMock = vi.fn()
   vi.stubGlobal('fetch', fetchMock)
   const { container } = render(<PublicLibraryPreview />)
   const user = userEvent.setup()
-  for (const plan of ['Básico · Partituras e 10 setlists', 'Completo · Playbacks e 42 setlists']) {
-    await user.click(screen.getByRole('button', { name: plan }))
-    await user.click(screen.getByRole('button', { name: `Partituras guiadas ${guidedScoreCount}` }))
-    expect(container.querySelectorAll('.guided-card')).toHaveLength(guidedScoreCount)
-    await user.click(screen.getByRole('button', { name: 'Assistir My Way' }))
-    expect(
-      within(screen.getByRole('region', { name: 'Vídeo de My Way' })).getByText(
-        /Entre na sua biblioteca para assistir\./,
-      ),
-    ).toBeInTheDocument()
-    expect(container.querySelector('video')).toBeNull()
-  }
+  await user.click(screen.getByRole('button', { name: 'Básico · Partituras e 10 setlists' }))
+  expect(screen.queryByRole('button', { name: /Partituras guiadas/ })).not.toBeInTheDocument()
+  expect(container.querySelectorAll('.guided-card')).toHaveLength(0)
+  await user.click(screen.getByRole('button', { name: 'Completo · Playbacks e 42 setlists' }))
+  await user.click(screen.getByRole('button', { name: `Partituras guiadas ${guidedScoreCount}` }))
+  expect(container.querySelectorAll('.guided-card')).toHaveLength(guidedScoreCount)
+  await user.click(screen.getByRole('button', { name: 'Assistir My Way' }))
+  expect(
+    within(screen.getByRole('region', { name: 'Vídeo de My Way' })).getByText(
+      /Entre na sua biblioteca para assistir\./,
+    ),
+  ).toBeInTheDocument()
+  expect(container.querySelector('video')).toBeNull()
   expect(fetchMock).not.toHaveBeenCalled()
 })

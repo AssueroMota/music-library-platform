@@ -845,17 +845,18 @@ describe('oferta exclusiva de violino', () => {
       const ids = library.json().assets.map((asset: { id: string }) => asset.id)
       expect(library.json().setlistLimit).toBe(offer.accessType === 'SCORES' ? 10 : 42)
       expect(ids).toContain(score.id)
-      expect(ids).toContain(video.id)
-      expect(
-        library.json().assets.find((asset: { id: string }) => asset.id === video.id).format,
-      ).toBe('mp4')
+      expect(ids.includes(video.id)).toBe(offer.accessType === 'INSTRUMENT')
+      if (offer.accessType === 'INSTRUMENT')
+        expect(
+          library.json().assets.find((asset: { id: string }) => asset.id === video.id).format,
+        ).toBe('mp4')
       expect(ids).not.toContain(other.id)
       expect(ids.includes(audio.id)).toBe(offer.accessType === 'INSTRUMENT')
       for (const action of ['view', 'download']) {
         expect(
           (await app.inject({ url: `/api/library/assets/${video.id}/${action}`, headers }))
             .statusCode,
-        ).toBe(200)
+        ).toBe(offer.accessType === 'SCORES' ? 403 : 200)
         expect(
           (await app.inject({ url: `/api/library/assets/${score.id}/${action}`, headers }))
             .statusCode,

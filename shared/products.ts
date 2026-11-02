@@ -64,7 +64,7 @@ export const violinOffers = [
     accessType: 'SCORES',
     priceCents: 1290,
     description:
-      'Coleção de 100 partituras para violino, em expansão. 10 setlists, bônus de 23 partituras guiadas em vídeo e acesso vitalício. Não inclui playbacks em áudio.',
+      'Coleção de 100 partituras para violino, em expansão. 10 setlists prontos e acesso vitalício. Não inclui playbacks.',
   },
   {
     id: 'library-violin-playbacks',

@@ -91,7 +91,10 @@ export function MemberRepertoire({
   const styles = [...new Set(songs.map((song) => song.style).filter(Boolean))].sort()
   const collectionStyles = [...new Set(collection.map((song) => song.style).filter(Boolean))].sort()
   const availableInstruments = [...new Set(songs.map((song) => song.instrument))]
-  const videos = useMemo(() => data.assets.filter((asset) => asset.kind === 'video'), [data.assets])
+  const videos = useMemo(
+    () => (setlistLimit === 42 ? data.assets.filter((asset) => asset.kind === 'video') : []),
+    [data.assets, setlistLimit],
+  )
   const scoreCount = data.assets.filter((asset) => asset.kind === 'score').length
   const filtered = collection
     .filter(
@@ -173,9 +176,11 @@ export function MemberRepertoire({
           <button aria-pressed={view === 'setlists'} onClick={() => changeView('setlists')}>
             <ListMusic size={18} /> Setlists prontos <span>{setlists.length}</span>
           </button>
-          <button aria-pressed={view === 'guided'} onClick={() => changeView('guided')}>
-            <Video size={18} /> Partituras guiadas <span>{videos.length}</span>
-          </button>
+          {setlistLimit === 42 && (
+            <button aria-pressed={view === 'guided'} onClick={() => changeView('guided')}>
+              <Video size={18} /> Partituras guiadas <span>{videos.length}</span>
+            </button>
+          )}
         </nav>
       )}
       {view === 'guided' ? (

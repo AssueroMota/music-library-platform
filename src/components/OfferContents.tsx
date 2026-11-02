@@ -97,7 +97,7 @@ export function OfferContents() {
           </div>
           <div>
             <span className="contents-badge">
-              <Gift size={15} /> NOVO BÔNUS NOS DOIS PLANOS
+              <Gift size={15} /> NOVO BÔNUS DO PLANO COMPLETO
             </span>
             <h2>{guidedScoreCount} vídeos para acompanhar a partitura e tocar junto.</h2>
             <p>

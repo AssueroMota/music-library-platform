@@ -52,7 +52,7 @@ export function ProtectedMedia({
         <p>Este {asset.kind === 'audio' ? 'áudio' : 'material'} está na área do aluno.</p>
         <span>
           {asset.kind === 'video'
-            ? 'As partituras guiadas estão incluídas nos dois planos.'
+            ? 'As partituras guiadas fazem parte do Plano Completo.'
             : asset.kind === 'audio'
               ? 'Os áudios fazem parte do Plano Completo.'
               : 'As partituras estão incluídas nos dois planos.'}{' '}
