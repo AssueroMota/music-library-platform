@@ -52,9 +52,6 @@ it('separa vídeos das partituras e dos setlists, busca sem acentos e abre somen
   const { container } = render(<MemberRepertoire data={data} token="member-token" />)
   const user = userEvent.setup()
   expect(container.querySelectorAll('.repertoire-table tbody tr')).toHaveLength(1)
-  expect(screen.getByRole('group', { name: 'Resumo da coleção' })).toHaveTextContent(
-    '1músicas na coleção',
-  )
   await user.click(screen.getByRole('button', { name: /Setlists prontos/ }))
   expect(screen.queryByText('My Way')).not.toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Partituras guiadas 2' }))

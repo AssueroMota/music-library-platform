@@ -11,7 +11,6 @@ import {
   Maximize2,
   Music2,
   Search,
-  SlidersHorizontal,
   X,
 } from 'lucide-react'
 import type { MemberAsset, MemberLibraryData } from '../../shared/library'
@@ -88,14 +87,12 @@ export function MemberRepertoire({
     if (activeSetlist) setlistHeading.current?.focus()
   }, [activeSetlist])
   const collection = activeSetlist?.songs ?? songs
-  const styles = [...new Set(songs.map((song) => song.style).filter(Boolean))].sort()
   const collectionStyles = [...new Set(collection.map((song) => song.style).filter(Boolean))].sort()
   const availableInstruments = [...new Set(songs.map((song) => song.instrument))]
   const videos = useMemo(
     () => (setlistLimit === 42 ? data.assets.filter((asset) => asset.kind === 'video') : []),
     [data.assets, setlistLimit],
   )
-  const scoreCount = data.assets.filter((asset) => asset.kind === 'score').length
   const filtered = collection
     .filter(
       (song) =>
@@ -139,35 +136,6 @@ export function MemberRepertoire({
       className={`repertoire ${selected ? 'has-selection' : ''} ${focusMode ? 'is-focus-mode' : ''}`}
       aria-label="Repertório disponível"
     >
-      <div className="repertoire-overview" role="group" aria-label="Resumo da coleção">
-        <div>
-          <span className="repertoire-stat-icon">
-            <Music2 size={20} />
-          </span>
-          <span>
-            <strong>{songs.length}</strong>
-            <span>músicas na coleção</span>
-          </span>
-        </div>
-        <div>
-          <span className="repertoire-stat-icon">
-            <BookOpen size={20} />
-          </span>
-          <span>
-            <strong>{scoreCount}</strong>
-            <span>partituras disponíveis</span>
-          </span>
-        </div>
-        <div>
-          <span className="repertoire-stat-icon">
-            <SlidersHorizontal size={20} />
-          </span>
-          <span>
-            <strong>{styles.length}</strong>
-            <span>estilos para explorar</span>
-          </span>
-        </div>
-      </div>
       {(songs.length > 0 || videos.length > 0) && (
         <nav className="library-collection-nav" aria-label="Explorar biblioteca">
           <button aria-pressed={view === 'songs'} onClick={() => changeView('songs')}>
