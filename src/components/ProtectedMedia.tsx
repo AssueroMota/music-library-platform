@@ -14,9 +14,14 @@ export function ProtectedMedia({
   previewMedia?: Readonly<Record<string, string>>
 }) {
   const currentToken = useRef(token)
+  const videoRef = useRef<HTMLVideoElement>(null)
   const [url, setUrl] = useState('')
   const [error, setError] = useState('')
   const [refresh, setRefresh] = useState(0)
+  useEffect(() => {
+    const video = videoRef.current
+    return () => video?.pause()
+  }, [url, previewMedia])
   useEffect(() => {
     currentToken.current = token
   }, [token])
@@ -88,6 +93,7 @@ export function ProtectedMedia({
         />
       ) : asset.kind === 'video' ? (
         <video
+          ref={videoRef}
           controls
           playsInline
           preload="metadata"

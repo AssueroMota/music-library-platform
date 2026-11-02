@@ -98,3 +98,8 @@ A trilha tenta iniciar a 20% do volume ao entrar. Se o navegador recusar com `No
 ### Partituras guiadas (02/11/2026)
 
 O Plano Completo inclui o bônus exclusivo de 23 partituras guiadas em vídeo, em uma aba própria ao lado de Partituras e Setlists. O catálogo não mistura vídeos com os PDFs ou com os áudios. Os MP4 ficam no bucket privado; listagem, visualização e download verificam o acesso ativo ao Completo. O Básico não lista nem autoriza vídeos. A demonstração pública do Completo exibe os títulos, mas não libera os vídeos. A visualização do Básico não mostra a aba de vídeos. `shared/guided-scores.ts` mantém o catálogo público e a quantidade do bônus. O karaokê de Making Love Out of Nothing at All foi excluído por não mostrar partitura.
+
+
+### Tabela de partituras guiadas
+
+A aba de vídeos do Completo usa os mesmos estilos de tabela, linhas, busca, filtro de estilo e painel de estudo da aba Partituras. Cada linha abre um único vídeo pelo botão Assistir. A seleção pode ser ampliada ou fechada; trocar de vídeo, fechar ou sair da aba pausa o elemento anterior e cancela consultas pendentes. O filtro combina música/artista e estilo, com opção de limpar. A prévia pública mantém o mesmo layout e continua bloqueando os arquivos privados.

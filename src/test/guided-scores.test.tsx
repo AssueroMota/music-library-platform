@@ -94,11 +94,16 @@ it('permite renovar o acesso após erro ao carregar um vídeo e trocar de vídeo
   expect(screen.getByRole('alert')).toHaveTextContent('Não foi possível carregar')
   await user.click(screen.getByRole('button', { name: 'Tentar novamente' }))
   await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2))
+  await waitFor(() => expect(container.querySelector('video')).not.toBeNull())
+  const previousVideo = container.querySelector('video')!
   await user.click(screen.getByRole('button', { name: 'Assistir Bênçãos Que Não Têm Fim' }))
   await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3))
   expect(container.querySelectorAll('video')).toHaveLength(1)
+  expect(vi.mocked(HTMLMediaElement.prototype.pause).mock.contexts).toContain(previousVideo)
+  const currentVideo = container.querySelector('video')!
   await user.click(screen.getByRole('button', { name: 'Fechar vídeo' }))
   expect(container.querySelector('video')).toBeNull()
+  expect(vi.mocked(HTMLMediaElement.prototype.pause).mock.contexts).toContain(currentVideo)
 })
 
 it('mostra o bônus somente na demonstração do Completo sem solicitar links privados', async () => {
@@ -108,10 +113,16 @@ it('mostra o bônus somente na demonstração do Completo sem solicitar links pr
   const user = userEvent.setup()
   await user.click(screen.getByRole('button', { name: 'Básico · Partituras e 10 setlists' }))
   expect(screen.queryByRole('button', { name: /Partituras guiadas/ })).not.toBeInTheDocument()
-  expect(container.querySelectorAll('.guided-card')).toHaveLength(0)
+  expect(
+    screen.queryByRole('table', { name: 'Partituras guiadas em vídeo da sua biblioteca' }),
+  ).toBeNull()
   await user.click(screen.getByRole('button', { name: 'Completo · Playbacks e 42 setlists' }))
   await user.click(screen.getByRole('button', { name: `Partituras guiadas ${guidedScoreCount}` }))
-  expect(container.querySelectorAll('.guided-card')).toHaveLength(guidedScoreCount)
+  expect(
+    within(
+      screen.getByRole('table', { name: 'Partituras guiadas em vídeo da sua biblioteca' }),
+    ).getAllByRole('row'),
+  ).toHaveLength(guidedScoreCount + 1)
   await user.click(screen.getByRole('button', { name: 'Assistir My Way' }))
   expect(
     within(screen.getByRole('region', { name: 'Vídeo de My Way' })).getByText(
@@ -120,4 +131,52 @@ it('mostra o bônus somente na demonstração do Completo sem solicitar links pr
   ).toBeInTheDocument()
   expect(container.querySelector('video')).toBeNull()
   expect(fetchMock).not.toHaveBeenCalled()
+})
+
+it('usa tabela com estilo, combina filtros e restaura a lista ao limpar', async () => {
+  const fetchMock = vi.fn()
+  vi.stubGlobal('fetch', fetchMock)
+  render(<MemberRepertoire data={data} token="member-token" />)
+  const user = userEvent.setup()
+  await user.click(screen.getByRole('button', { name: 'Partituras guiadas 2' }))
+  const table = screen.getByRole('table', { name: 'Partituras guiadas em vídeo da sua biblioteca' })
+  expect(
+    within(table)
+      .getAllByRole('columnheader')
+      .map((cell) => cell.textContent),
+  ).toEqual(['Música', 'Estilo', 'Materiais'])
+  expect(within(table).getAllByRole('row')).toHaveLength(3)
+  await user.selectOptions(screen.getByRole('combobox', { name: 'Estilo' }), 'Gospel')
+  expect(within(table).getAllByRole('row')).toHaveLength(2)
+  expect(screen.queryByRole('button', { name: 'Assistir My Way' })).toBeNull()
+  await user.type(screen.getByRole('searchbox'), 'Sinatra')
+  expect(screen.getByRole('heading', { name: 'Nenhum vídeo encontrado.' })).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Limpar filtros' }))
+  expect(screen.getByRole('searchbox')).toHaveValue('')
+  expect(screen.getByRole('combobox', { name: 'Estilo' })).toHaveValue('')
+  expect(screen.getByRole('button', { name: 'Assistir My Way' })).toBeInTheDocument()
+  expect(fetchMock).not.toHaveBeenCalled()
+})
+
+it('abre o painel de estudo pela música, amplia e devolve o foco ao fechar', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(
+      async () => new Response(JSON.stringify({ url: 'https://storage.example.test/video.mp4' })),
+    ),
+  )
+  const { container } = render(<MemberRepertoire data={data} token="member-token" />)
+  const user = userEvent.setup()
+  await user.click(screen.getByRole('button', { name: /Partituras guiadas/ }))
+  const trigger = screen.getByRole('button', { name: 'Abrir partitura guiada de My Way' })
+  await user.click(trigger)
+  const workspace = screen.getByRole('region', { name: 'Vídeo de My Way' })
+  expect(within(workspace).getByRole('heading', { name: 'My Way' })).toHaveFocus()
+  expect(within(workspace).queryByRole('combobox')).toBeNull()
+  await user.click(screen.getByRole('button', { name: 'Ampliar área de estudo' }))
+  expect(container.querySelector('.guided-scores')).toHaveClass('is-focus-mode')
+  await user.click(screen.getByRole('button', { name: 'Mostrar lista de músicas' }))
+  expect(container.querySelector('.guided-scores')).not.toHaveClass('is-focus-mode')
+  await user.click(screen.getByRole('button', { name: 'Fechar vídeo' }))
+  expect(trigger).toHaveFocus()
 })
