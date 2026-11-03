@@ -14,10 +14,12 @@ export function ScorePdf({
   url,
   title,
   onError,
+  onLoad,
 }: {
   url: string
   title: string
   onError: () => void
+  onLoad?: () => void
 }) {
   const [document, setDocument] = useState<PDFDocumentProxy | null>(null)
   const [page, setPage] = useState(1)
@@ -97,6 +99,7 @@ export function ScorePdf({
         if (active) {
           canvas.dataset.rendered = 'true'
           setRendering(false)
+          onLoad?.()
         }
       })
       .catch(() => {
@@ -106,7 +109,7 @@ export function ScorePdf({
       active = false
       renderingTask?.cancel()
     }
-  }, [document, page, bounds, title, onError])
+  }, [document, page, bounds, title, onError, onLoad])
 
   return (
     <div className="repertoire-pdf-viewer">

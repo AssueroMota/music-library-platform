@@ -1070,6 +1070,12 @@ html:has(.checkout-page.member-page) {
   color: #637387;
   font-size: 11px;
 }
+.repertoire-media-notice {
+  flex-shrink: 0;
+  margin-top: 6px;
+  color: #637387;
+  font-size: 12px;
+}
 .repertoire-media-footer button {
   display: inline-flex;
   align-items: center;

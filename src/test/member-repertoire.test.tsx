@@ -164,7 +164,6 @@ it('preserva o áudio e a partitura ao renovar o token e usa a nova credencial n
   expect(screen.queryByRole('combobox', { name: 'Zoom da partitura' })).not.toBeInTheDocument()
   expect(fetchMock).toHaveBeenCalledTimes(requests)
   fireEvent.error(image)
-  await user.click(screen.getByRole('button', { name: 'Tentar novamente' }))
   await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(requests + 1))
   expect(fetchMock.mock.calls.at(-1)?.[1]).toMatchObject({
     headers: { Authorization: 'Bearer renewed-test-token' },
@@ -212,7 +211,6 @@ it('abre áudio e PNG na plataforma, permite trocar para PDF e renova URLs auten
   expect(audio.currentTime).toBe(42)
   const calls = fetchMock.mock.calls.length
   fireEvent.error(audio)
-  await user.click(screen.getByRole('button', { name: 'Tentar novamente' }))
   await waitFor(() => expect(fetchMock.mock.calls.length).toBe(calls + 1))
   await user.click(screen.getByRole('button', { name: 'Fechar materiais' }))
   expect(document.querySelector('audio')).not.toBeInTheDocument()
