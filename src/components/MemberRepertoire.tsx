@@ -1,14 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   ArrowLeft,
-  ArrowRight,
-  BookOpen,
   Check,
   FileMusic,
   Headphones,
   ListMusic,
   Video,
-  Maximize2,
   Music2,
   Search,
   X,
@@ -49,7 +46,6 @@ export function MemberRepertoire({
   const [instrument, setInstrument] = useState('')
   const [style, setStyle] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [focusMode, setFocusMode] = useState(false)
   const [view, setView] = useState<'songs' | 'setlists' | 'guided'>('songs')
   const [setlistId, setSetlistId] = useState<string | null>(null)
   const setlistHeading = useRef<HTMLHeadingElement>(null)
@@ -113,29 +109,22 @@ export function MemberRepertoire({
     setStyle('')
   }
   function openSong(id: string) {
-    setFocusMode(false)
     setSelectedId(id)
   }
   function changeView(next: 'songs' | 'setlists' | 'guided') {
     setView(next)
     setSetlistId(null)
     setSelectedId(null)
-    setFocusMode(false)
     clearFilters()
   }
   function openSetlist(id: string) {
     setSetlistId(id)
     setSelectedId(null)
-    setFocusMode(false)
     clearFilters()
   }
-  const selectedPosition = activeSetlist?.songs.findIndex((song) => song.id === selectedId) ?? -1
 
   return (
-    <section
-      className={`repertoire ${selected ? 'has-selection' : ''} ${focusMode ? 'is-focus-mode' : ''}`}
-      aria-label="Repertório disponível"
-    >
+    <section className="repertoire" aria-label="Repertório disponível">
       {(songs.length > 0 || videos.length > 0) && (
         <nav className="library-collection-nav" aria-label="Explorar biblioteca">
           <button aria-pressed={view === 'songs'} onClick={() => changeView('songs')}>
@@ -361,26 +350,7 @@ export function MemberRepertoire({
                 previewMedia={previewMedia}
                 onClose={() => {
                   setSelectedId(null)
-                  setFocusMode(false)
                 }}
-                expanded={focusMode}
-                onToggleExpanded={() => setFocusMode((value) => !value)}
-                sequence={
-                  activeSetlist && selectedPosition >= 0
-                    ? {
-                        position: selectedPosition + 1,
-                        total: activeSetlist.songs.length,
-                        previous:
-                          selectedPosition > 0
-                            ? () => openSong(activeSetlist.songs[selectedPosition - 1].id)
-                            : undefined,
-                        next:
-                          selectedPosition < activeSetlist.songs.length - 1
-                            ? () => openSong(activeSetlist.songs[selectedPosition + 1].id)
-                            : undefined,
-                      }
-                    : undefined
-                }
               />
             )}
           </div>
@@ -394,143 +364,117 @@ function SongWorkspace({
   song,
   token,
   onClose,
-  expanded,
-  onToggleExpanded,
-  sequence,
   previewMedia,
 }: {
   song: Song
   token: string
   previewMedia?: Readonly<Record<string, string>>
   onClose: () => void
-  expanded: boolean
-  onToggleExpanded: () => void
-  sequence?: { position: number; total: number; previous?: () => void; next?: () => void }
 }) {
   const audios = song.assets.filter((asset) => asset.kind === 'audio')
   const scores = song.assets.filter((asset) => asset.kind === 'score')
   const [audioId, setAudioId] = useState(audios[0]?.id ?? '')
   const [scoreId, setScoreId] = useState(scores[0]?.id ?? '')
-  const panel = useRef<HTMLElement>(null)
+  const panel = useRef<HTMLDialogElement>(null)
   const heading = useRef<HTMLHeadingElement>(null)
   useEffect(() => {
     const previousFocus = document.activeElement
+    const previousOverflow = document.body.style.overflow
+    panel.current?.showModal()
+    document.body.style.overflow = 'hidden'
     heading.current?.focus({ preventScroll: true })
-    if (window.matchMedia('(max-width: 1099px)').matches)
-      panel.current?.scrollIntoView?.({ behavior: 'smooth', block: 'start' })
     return () => {
+      document.body.style.overflow = previousOverflow
       if (previousFocus instanceof HTMLElement && previousFocus.isConnected)
         previousFocus.focus({ preventScroll: true })
     }
   }, [])
   return (
-    <section ref={panel} className="repertoire-workspace" aria-label={`Materiais de ${song.title}`}>
-      <header>
-        <div>
-          <span className="eyebrow">
-            <BookOpen size={14} /> ÁREA DE ESTUDO
-          </span>
-          <h2 ref={heading} tabIndex={-1}>
-            {song.title}
-          </h2>
-          <p>
-            {[song.artist, instrumentName(song.instrument), song.style].filter(Boolean).join(' · ')}
-          </p>
-        </div>
-        <div className="repertoire-workspace-actions">
-          <button
-            className="repertoire-expand"
-            onClick={onToggleExpanded}
-            aria-label={expanded ? 'Mostrar lista de músicas' : 'Ampliar área de estudo'}
-            aria-pressed={expanded}
-            title={expanded ? 'Mostrar lista de músicas' : 'Ampliar área de estudo'}
-          >
-            {expanded ? <ArrowLeft size={18} /> : <Maximize2 size={18} />}
-          </button>
-          <button onClick={onClose} aria-label="Fechar materiais" title="Fechar materiais">
-            <X size={21} />
-          </button>
-        </div>
-      </header>
-      {sequence && (
-        <nav className="library-setlist-sequence" aria-label="Navegar pelo setlist">
-          <button
-            className="repertoire-action"
-            disabled={!sequence.previous}
-            onClick={sequence.previous}
-            aria-label="Música anterior do setlist"
-          >
-            <ArrowLeft size={17} /> Anterior
-          </button>
-          <span>
-            {sequence.position} de {sequence.total}
-          </span>
-          <button
-            className="repertoire-action"
-            disabled={!sequence.next}
-            onClick={sequence.next}
-            aria-label="Próxima música do setlist"
-          >
-            Próxima <ArrowRight size={17} />
-          </button>
-        </nav>
-      )}
-      {audios.length > 0 && (
-        <div className="repertoire-audio">
-          <div className="repertoire-media-heading">
-            <h3>
-              <Headphones size={19} /> Áudio
-            </h3>
-            {audios.length > 1 && (
-              <LibrarySelect
-                label="Escolher áudio"
-                value={audioId}
-                onChange={(event) => setAudioId(event.target.value)}
-              >
-                {audios.map((asset) => (
-                  <option key={asset.id} value={asset.id}>
-                    {asset.title}
-                  </option>
-                ))}
-              </LibrarySelect>
-            )}
+    <dialog
+      ref={panel}
+      className="repertoire-workspace repertoire-study-dialog"
+      aria-label={`Materiais de ${song.title}`}
+      onCancel={(event) => {
+        event.preventDefault()
+        onClose()
+      }}
+      onClose={onClose}
+    >
+      <h2 ref={heading} tabIndex={-1} className="sr-only">
+        {song.title}
+      </h2>
+      <button
+        className="repertoire-study-close"
+        onClick={onClose}
+        aria-label="Fechar materiais"
+        title="Fechar materiais"
+      >
+        <X size={21} />
+      </button>
+      <div className="repertoire-study-body">
+        {scores.length === 0 && (
+          <div className="repertoire-audio-only">
+            <Headphones size={54} strokeWidth={1.2} />
+            <h3>{song.title}</h3>
+            <p>Ouça o acompanhamento no player abaixo.</p>
           </div>
-          <ProtectedMedia
-            key={audioId}
-            asset={audios.find((asset) => asset.id === audioId)!}
-            token={token}
-            previewMedia={previewMedia}
-          />
-        </div>
-      )}
-      {scores.length > 0 && (
-        <div className="repertoire-score">
-          <div className="repertoire-media-heading">
-            <h3>
-              <FileMusic size={19} /> Partitura
-            </h3>
+        )}
+        {scores.length > 0 && (
+          <div className="repertoire-score">
             {scores.length > 1 && (
-              <LibrarySelect
-                label="Escolher partitura"
-                value={scoreId}
-                onChange={(event) => setScoreId(event.target.value)}
-              >
-                {scores.map((asset) => (
-                  <option key={asset.id} value={asset.id}>
-                    {asset.title} ({asset.format?.toUpperCase()})
-                  </option>
-                ))}
-              </LibrarySelect>
+              <div className="repertoire-media-heading">
+                <LibrarySelect
+                  label="Escolher partitura"
+                  value={scoreId}
+                  onChange={(event) => setScoreId(event.target.value)}
+                >
+                  {scores.map((asset) => (
+                    <option key={asset.id} value={asset.id}>
+                      {asset.title} ({asset.format?.toUpperCase()})
+                    </option>
+                  ))}
+                </LibrarySelect>
+              </div>
             )}
+            <ProtectedMedia
+              key={scoreId}
+              asset={scores.find((asset) => asset.id === scoreId)!}
+              token={token}
+              previewMedia={previewMedia}
+              minimal
+            />
           </div>
-          <ProtectedMedia
-            key={scoreId}
-            asset={scores.find((asset) => asset.id === scoreId)!}
-            token={token}
-            previewMedia={previewMedia}
-          />
-        </div>
+        )}
+      </div>
+      {audios.length > 0 && (
+        <footer className="repertoire-study-player" aria-label="Áudio da partitura">
+          <div className="repertoire-audio">
+            {audios.length > 1 && (
+              <div className="repertoire-media-heading">
+                <LibrarySelect
+                  label="Escolher áudio"
+                  value={audioId}
+                  onChange={(event) => setAudioId(event.target.value)}
+                >
+                  {audios.map((asset) => (
+                    <option key={asset.id} value={asset.id}>
+                      {asset.title}
+                    </option>
+                  ))}
+                </LibrarySelect>
+              </div>
+            )}
+            <ProtectedMedia
+              key={audioId}
+              asset={audios.find((asset) => asset.id === audioId)!}
+              token={token}
+              previewMedia={previewMedia}
+              autoPlay
+              minimal
+            />
+          </div>
+        </footer>
       )}
-    </section>
+    </dialog>
   )
 }

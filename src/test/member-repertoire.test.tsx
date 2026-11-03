@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, it, vi } from 'vitest'
 import { MemberRepertoire } from '../components/MemberRepertoire'
@@ -163,7 +163,8 @@ it('preserva o áudio e a partitura ao renovar o token e usa a nova credencial n
   expect(audio.currentTime).toBe(40)
   expect(screen.queryByRole('combobox', { name: 'Zoom da partitura' })).not.toBeInTheDocument()
   expect(fetchMock).toHaveBeenCalledTimes(requests)
-  await user.click(screen.getAllByRole('button', { name: 'Renovar acesso ao arquivo' })[0])
+  fireEvent.error(image)
+  await user.click(screen.getByRole('button', { name: 'Tentar novamente' }))
   await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(requests + 1))
   expect(fetchMock.mock.calls.at(-1)?.[1]).toMatchObject({
     headers: { Authorization: 'Bearer renewed-test-token' },
@@ -192,6 +193,8 @@ it('abre áudio e PNG na plataforma, permite trocar para PDF e renova URLs auten
     ),
   )
   expect(document.querySelector('audio')).toHaveAttribute('controls')
+  const audio = document.querySelector('audio')!
+  audio.currentTime = 42
   expect(fetchMock).toHaveBeenCalledWith(
     expect.stringContaining('/score-png/view'),
     expect.objectContaining({ headers: { Authorization: 'Bearer test-token' } }),
@@ -205,8 +208,11 @@ it('abre áudio e PNG na plataforma, permite trocar para PDF e renova URLs auten
     'data-url',
     'https://storage.example.test/score.pdf',
   )
+  expect(document.querySelector('audio')).toBe(audio)
+  expect(audio.currentTime).toBe(42)
   const calls = fetchMock.mock.calls.length
-  await user.click(screen.getAllByRole('button', { name: 'Renovar acesso ao arquivo' })[1])
+  fireEvent.error(audio)
+  await user.click(screen.getByRole('button', { name: 'Tentar novamente' }))
   await waitFor(() => expect(fetchMock.mock.calls.length).toBe(calls + 1))
   await user.click(screen.getByRole('button', { name: 'Fechar materiais' }))
   expect(document.querySelector('audio')).not.toBeInTheDocument()
@@ -248,24 +254,28 @@ it('mantém apenas busca e estilo e oculta todo áudio no plano básico', async 
   expect(fetchMock).not.toHaveBeenCalled()
 })
 
-it('amplia a área de estudo e volta à lista mantendo a partitura aberta', async () => {
+it('abre os materiais em modal, bloqueia a rolagem do fundo e restaura o foco ao fechar com Escape', async () => {
   const fetchMock = vi.fn(
     async () => new Response(JSON.stringify({ url: 'https://storage.example.test/score.png' })),
   )
   vi.stubGlobal('fetch', fetchMock)
   render(<MemberRepertoire data={{ ...data, assets: [data.assets[0]] }} token="test-token" />)
   const user = userEvent.setup()
-  await user.click(screen.getByRole('button', { name: 'Ver partitura de Fix You' }))
-  const image = await screen.findByRole('img', { name: 'Fix You - imagem' })
-  await user.click(screen.getByRole('button', { name: 'Ampliar área de estudo' }))
-  expect(screen.getByRole('region', { name: 'Repertório disponível' })).toHaveClass('is-focus-mode')
-  await user.click(screen.getByRole('button', { name: 'Mostrar lista de músicas' }))
-  expect(screen.getByRole('img', { name: 'Fix You - imagem' })).toBe(image)
-  expect(screen.queryByRole('combobox', { name: 'Zoom da partitura' })).not.toBeInTheDocument()
+  const trigger = screen.getByRole('button', { name: 'Ver partitura de Fix You' })
+  await user.click(trigger)
+  await screen.findByRole('img', { name: 'Fix You - imagem' })
+  const dialog = screen.getByRole('dialog', { name: 'Materiais de Fix You' })
+  expect(dialog).toHaveAttribute('open')
+  expect(document.body.style.overflow).toBe('hidden')
+  expect(screen.getByRole('heading', { name: 'Fix You' })).toHaveFocus()
+  fireEvent(dialog, new Event('cancel', { cancelable: true }))
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  expect(document.body.style.overflow).not.toBe('hidden')
+  expect(trigger).toHaveFocus()
   expect(fetchMock).toHaveBeenCalledTimes(1)
 })
 
-it('abre um setlist, mantém sua ordem e navega entre as partituras autorizadas', async () => {
+it('mantém a ordem do setlist e abre cada partitura no modal sem lista de músicas', async () => {
   const fetchMock = vi.fn(
     async () => new Response(JSON.stringify({ url: 'https://storage.example.test/score.png' })),
   )
@@ -299,17 +309,66 @@ it('abre um setlist, mantém sua ordem e navega entre as partituras autorizadas'
   expect(fetchMock).not.toHaveBeenCalled()
   await user.click(screen.getByRole('button', { name: 'Ver partitura de A Thousand Years' }))
   await screen.findByRole('img', { name: 'A Thousand Years' })
-  expect(screen.getByRole('button', { name: 'Música anterior do setlist' })).toBeDisabled()
-  await user.click(screen.getByRole('button', { name: 'Próxima música do setlist' }))
-  await screen.findByRole('img', { name: "Can't Help Falling in Love" })
-  expect(screen.getByRole('navigation', { name: 'Navegar pelo setlist' })).toHaveTextContent(
-    '2 de 3',
+  expect(screen.queryByRole('navigation', { name: 'Navegar pelo setlist' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('combobox', { name: /Lista de músicas/ })).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Fechar materiais' }))
+  await user.click(
+    screen.getByRole('button', { name: "Ver partitura de Can't Help Falling in Love" }),
   )
-  await user.click(screen.getByRole('button', { name: 'Próxima música do setlist' }))
+  await screen.findByRole('img', { name: "Can't Help Falling in Love" })
+  await user.click(screen.getByRole('button', { name: 'Fechar materiais' }))
+  await user.click(screen.getByRole('button', { name: 'Ver partitura de Perfect' }))
   await screen.findByRole('img', { name: 'Perfect' })
-  expect(screen.getByRole('button', { name: 'Próxima música do setlist' })).toBeDisabled()
+  await user.click(screen.getByRole('button', { name: 'Fechar materiais' }))
   await user.click(screen.getByRole('button', { name: 'Voltar aos setlists' }))
   expect(screen.queryByRole('img', { name: 'Perfect' })).not.toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: /^Partituras \d/ }))
   expect(screen.getByRole('heading', { name: 'Seu repertório' })).toBeInTheDocument()
+})
+
+it('exibe apenas o material e o player, inicia o áudio e o pausa ao fechar', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(
+      async (input: string) =>
+        new Response(
+          JSON.stringify({
+            url: `https://storage.example.test/${input.includes('next-audio') ? 'next' : 'track'}.mp3`,
+          }),
+        ),
+    ),
+  )
+  const play = vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue()
+  const pause = vi.spyOn(HTMLMediaElement.prototype, 'pause')
+  const assets = [
+    data.assets[2],
+    { ...data.assets[2], id: 'next-audio', title: 'Yellow - acompanhamento', songTitle: 'Yellow' },
+  ]
+  render(<MemberRepertoire data={{ ...data, assets }} token="test-token" />)
+  const user = userEvent.setup()
+  await user.click(screen.getByRole('button', { name: 'Abrir áudio de Fix You' }))
+  await waitFor(() =>
+    expect(document.querySelector('audio')).toHaveAttribute(
+      'src',
+      'https://storage.example.test/track.mp3',
+    ),
+  )
+  expect(play).toHaveBeenCalled()
+  const audio = document.querySelector('audio')!
+  const dialog = screen.getByRole('dialog', { name: 'Materiais de Fix You' })
+  expect(
+    within(dialog).queryByRole('combobox', { name: /Lista de músicas/ }),
+  ).not.toBeInTheDocument()
+  expect(within(dialog).queryByText('ÁREA DE ESTUDO')).not.toBeInTheDocument()
+  expect(
+    within(dialog).queryByRole('button', { name: 'Renovar acesso ao arquivo' }),
+  ).not.toBeInTheDocument()
+  expect(within(dialog).getByLabelText('Áudio da partitura')).toContainElement(audio)
+  fireEvent.ended(audio)
+  expect(screen.getByRole('dialog', { name: 'Materiais de Fix You' })).toBe(dialog)
+  await user.click(screen.getByRole('button', { name: 'Fechar materiais' }))
+  expect(pause.mock.instances).toContain(audio)
+  expect(document.querySelector('audio')).not.toBeInTheDocument()
+  play.mockRestore()
+  pause.mockRestore()
 })

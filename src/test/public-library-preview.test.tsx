@@ -29,6 +29,7 @@ it('permite experimentar somente os arquivos públicos e navegar pelo catálogo 
   expect(screen.getByText('Este material está na área do aluno.')).toBeInTheDocument()
   expect(container.querySelector('audio')).not.toBeInTheDocument()
   expect(screen.queryByRole('img')).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Fechar materiais' }))
   await user.click(screen.getByRole('button', { name: /Setlists prontos/ }))
   const cards = within(
     screen.getByRole('region', { name: 'Seu próximo repertório já tem um começo.' }),
@@ -37,14 +38,19 @@ it('permite experimentar somente os arquivos públicos e navegar pelo catálogo 
   await user.click(screen.getByRole('button', { name: 'Abrir setlist Cerimônia romântica' }))
   expect(screen.queryByRole('combobox', { name: 'Ordenar por' })).not.toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Ver partitura de A Thousand Years' }))
-  await user.click(screen.getByRole('button', { name: 'Próxima música do setlist' }))
+  await user.click(screen.getByRole('button', { name: 'Fechar materiais' }))
+  await user.click(
+    screen.getByRole('button', { name: "Ver partitura de Can't Help Falling in Love" }),
+  )
   expect(screen.getByRole('heading', { name: "Can't Help Falling in Love" })).toBeInTheDocument()
   expect(screen.getByText('Este material está na área do aluno.')).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Fechar materiais' }))
   await user.click(screen.getByRole('button', { name: 'Básico · Partituras e 10 setlists' }))
   expect(screen.queryByRole('button', { name: /Abrir áudio/ })).not.toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Ver partitura de A Thousand Years' }))
   expect(screen.getByRole('img')).toHaveAttribute('src', violinDemonstration.score)
   expect(container.querySelector('audio')).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Fechar materiais' }))
   await user.click(screen.getByRole('button', { name: /Setlists prontos/ }))
   expect(screen.getAllByRole('button', { name: /Abrir setlist/ })).toHaveLength(10)
   expect(fetchMock).not.toHaveBeenCalled()

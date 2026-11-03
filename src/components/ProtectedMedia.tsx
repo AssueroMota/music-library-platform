@@ -8,20 +8,38 @@ export function ProtectedMedia({
   asset,
   token,
   previewMedia,
+  autoPlay = false,
+  minimal = false,
 }: {
   asset: MemberAsset
   token: string
   previewMedia?: Readonly<Record<string, string>>
+  autoPlay?: boolean
+  minimal?: boolean
 }) {
   const currentToken = useRef(token)
   const videoRef = useRef<HTMLVideoElement>(null)
+  const audioRef = useRef<HTMLAudioElement>(null)
   const [url, setUrl] = useState('')
   const [error, setError] = useState('')
   const [refresh, setRefresh] = useState(0)
   useEffect(() => {
     const video = videoRef.current
-    return () => video?.pause()
-  }, [url, previewMedia])
+    const audio = audioRef.current
+    const pauseOther = (event: Event) => {
+      const playing = (event as CustomEvent).detail
+      if (playing !== audio) audio?.pause()
+      if (playing !== video) video?.pause()
+    }
+    window.addEventListener('music-library-play', pauseOther)
+    // Browsers may require another tap after the authenticated URL is loaded.
+    if (autoPlay && audio) void audio.play().catch(() => {})
+    return () => {
+      window.removeEventListener('music-library-play', pauseOther)
+      video?.pause()
+      audio?.pause()
+    }
+  }, [url, previewMedia, autoPlay])
   useEffect(() => {
     currentToken.current = token
   }, [token])
@@ -80,6 +98,7 @@ export function ProtectedMedia({
         </p>
       ) : asset.kind === 'audio' ? (
         <audio
+          ref={audioRef}
           controls
           preload="metadata"
           src={mediaUrl}
@@ -115,7 +134,7 @@ export function ProtectedMedia({
           <ScorePdf key={mediaUrl} url={mediaUrl} title={asset.title} onError={loadError} />
         </Suspense>
       )}
-      {!previewMedia && (
+      {!previewMedia && (!minimal || error) && (
         <div className="repertoire-media-footer">
           <button
             onClick={() => {
