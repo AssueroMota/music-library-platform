@@ -67,12 +67,16 @@ it('separa vídeos das partituras e dos setlists, busca sem acentos e abre somen
   )
   expect(container.querySelector('video')).toHaveAttribute('controls')
   expect(container.querySelector('video')).toHaveAttribute('playsinline')
+  expect(screen.getByRole('dialog', { name: 'Vídeo de Bênçãos Que Não Têm Fim' })).toHaveAttribute(
+    'open',
+  )
   expect(fetchMock).toHaveBeenCalledWith(
     expect.stringContaining('/library/assets/video-1/view'),
     expect.objectContaining({
       headers: expect.objectContaining({ Authorization: 'Bearer member-token' }),
     }),
   )
+  await user.click(screen.getByRole('button', { name: 'Fechar vídeo' }))
   await user.click(screen.getByRole('button', { name: /^Partituras \+ Playbacks \d/ }))
   expect(container.querySelector('video')).not.toBeInTheDocument()
 })
@@ -93,6 +97,7 @@ it('permite renovar o acesso após erro ao carregar um vídeo e trocar de vídeo
   await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2))
   await waitFor(() => expect(container.querySelector('video')).not.toBeNull())
   const previousVideo = container.querySelector('video')!
+  await user.click(screen.getByRole('button', { name: 'Fechar vídeo' }))
   await user.click(screen.getByRole('button', { name: 'Assistir Bênçãos Que Não Têm Fim' }))
   await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3))
   expect(container.querySelectorAll('video')).toHaveLength(1)
@@ -122,7 +127,7 @@ it('mostra o bônus somente na demonstração do Completo sem solicitar links pr
   ).toHaveLength(guidedScoreCount + 1)
   await user.click(screen.getByRole('button', { name: 'Assistir My Way' }))
   expect(
-    within(screen.getByRole('region', { name: 'Vídeo de My Way' })).getByText(
+    within(screen.getByRole('dialog', { name: 'Vídeo de My Way' })).getByText(
       /Entre na sua biblioteca para assistir\./,
     ),
   ).toBeInTheDocument()
@@ -155,25 +160,33 @@ it('usa tabela com estilo, combina filtros e restaura a lista ao limpar', async 
   expect(fetchMock).not.toHaveBeenCalled()
 })
 
-it('abre o painel de estudo pela música, amplia e devolve o foco ao fechar', async () => {
+it('abre o vídeo em modal pela música, preserva a reprodução ao renovar a sessão e restaura o foco com Escape', async () => {
   vi.stubGlobal(
     'fetch',
     vi.fn(
       async () => new Response(JSON.stringify({ url: 'https://storage.example.test/video.mp4' })),
     ),
   )
-  const { container } = render(<MemberRepertoire data={data} token="member-token" />)
+  const { container, rerender } = render(<MemberRepertoire data={data} token="member-token" />)
   const user = userEvent.setup()
   await user.click(screen.getByRole('button', { name: /Partituras guiadas/ }))
   const trigger = screen.getByRole('button', { name: 'Abrir partitura guiada de My Way' })
   await user.click(trigger)
-  const workspace = screen.getByRole('region', { name: 'Vídeo de My Way' })
+  const workspace = screen.getByRole('dialog', { name: 'Vídeo de My Way' })
+  expect(workspace).toHaveAttribute('open')
+  expect(document.body.style.overflow).toBe('hidden')
   expect(within(workspace).getByRole('heading', { name: 'My Way' })).toHaveFocus()
   expect(within(workspace).queryByRole('combobox')).toBeNull()
-  await user.click(screen.getByRole('button', { name: 'Ampliar área de estudo' }))
-  expect(container.querySelector('.guided-scores')).toHaveClass('is-focus-mode')
-  await user.click(screen.getByRole('button', { name: 'Mostrar lista de músicas' }))
-  expect(container.querySelector('.guided-scores')).not.toHaveClass('is-focus-mode')
-  await user.click(screen.getByRole('button', { name: 'Fechar vídeo' }))
+  await waitFor(() => expect(container.querySelector('video')).not.toBeNull())
+  const video = container.querySelector('video')!
+  expect(vi.mocked(HTMLMediaElement.prototype.play).mock.contexts).toContain(video)
+  video.currentTime = 35
+  rerender(<MemberRepertoire data={data} token="renewed-token" />)
+  expect(container.querySelector('video')).toBe(video)
+  expect(video.currentTime).toBe(35)
+  fireEvent(workspace, new Event('cancel', { cancelable: true }))
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  expect(document.body.style.overflow).not.toBe('hidden')
+  expect(vi.mocked(HTMLMediaElement.prototype.pause).mock.contexts).toContain(video)
   expect(trigger).toHaveFocus()
 })

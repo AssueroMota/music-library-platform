@@ -19,6 +19,7 @@ import { resolveSetlists } from '../data/setlists'
 
 import { ProtectedMedia } from './ProtectedMedia'
 import { LibraryGuidedScores } from './LibraryGuidedScores'
+import { StudyDialog } from './StudyDialog'
 
 interface Song {
   id: string
@@ -375,42 +376,13 @@ function SongWorkspace({
   const scores = song.assets.filter((asset) => asset.kind === 'score')
   const [audioId, setAudioId] = useState(audios[0]?.id ?? '')
   const [scoreId, setScoreId] = useState(scores[0]?.id ?? '')
-  const panel = useRef<HTMLDialogElement>(null)
-  const heading = useRef<HTMLHeadingElement>(null)
-  useEffect(() => {
-    const previousFocus = document.activeElement
-    const previousOverflow = document.body.style.overflow
-    panel.current?.showModal()
-    document.body.style.overflow = 'hidden'
-    heading.current?.focus({ preventScroll: true })
-    return () => {
-      document.body.style.overflow = previousOverflow
-      if (previousFocus instanceof HTMLElement && previousFocus.isConnected)
-        previousFocus.focus({ preventScroll: true })
-    }
-  }, [])
   return (
-    <dialog
-      ref={panel}
-      className="repertoire-workspace repertoire-study-dialog"
-      aria-label={`Materiais de ${song.title}`}
-      onCancel={(event) => {
-        event.preventDefault()
-        onClose()
-      }}
+    <StudyDialog
+      title={song.title}
+      label={`Materiais de ${song.title}`}
+      closeLabel="Fechar materiais"
       onClose={onClose}
     >
-      <h2 ref={heading} tabIndex={-1} className="sr-only">
-        {song.title}
-      </h2>
-      <button
-        className="repertoire-study-close"
-        onClick={onClose}
-        aria-label="Fechar materiais"
-        title="Fechar materiais"
-      >
-        <X size={21} />
-      </button>
       <div className="repertoire-study-body">
         {scores.length === 0 && (
           <div className="repertoire-audio-only">
@@ -475,6 +447,6 @@ function SongWorkspace({
           </div>
         </footer>
       )}
-    </dialog>
+    </StudyDialog>
   )
 }

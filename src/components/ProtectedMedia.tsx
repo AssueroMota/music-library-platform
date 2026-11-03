@@ -33,7 +33,8 @@ export function ProtectedMedia({
     }
     window.addEventListener('music-library-play', pauseOther)
     // Browsers may require another tap after the authenticated URL is loaded.
-    if (autoPlay && audio) void audio.play().catch(() => {})
+    const media = audio ?? video
+    if (autoPlay && media) void media.play().catch(() => {})
     return () => {
       window.removeEventListener('music-library-play', pauseOther)
       video?.pause()

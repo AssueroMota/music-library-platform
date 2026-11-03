@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
-import { ArrowLeft, Check, Maximize2, Music2, Play, Search, Video, X } from 'lucide-react'
+import { useState } from 'react'
+import { Check, Music2, Play, Search, Video, X } from 'lucide-react'
 import type { MemberAsset } from '../../shared/library'
 import { normalizeSearch } from '../data/library'
 import { LibrarySelect } from './LibrarySelect'
 import { ProtectedMedia } from './ProtectedMedia'
+import { StudyDialog } from './StudyDialog'
 
 export function LibraryGuidedScores({
   videos,
@@ -17,7 +18,6 @@ export function LibraryGuidedScores({
   const [search, setSearch] = useState('')
   const [style, setStyle] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [expanded, setExpanded] = useState(false)
   const selected = videos.find((video) => video.id === selectedId)
   const styles = [...new Set(videos.map((video) => video.style).filter(Boolean))].sort()
   const filtered = videos
@@ -35,14 +35,11 @@ export function LibraryGuidedScores({
     setStyle('')
   }
   function openVideo(id: string) {
-    setExpanded(false)
     setSelectedId(id)
   }
 
   return (
-    <div
-      className={`guided-scores repertoire ${selected ? 'has-selection' : ''} ${expanded ? 'is-focus-mode' : ''}`}
-    >
+    <div className="guided-scores repertoire">
       <div className="repertoire-filters">
         <div className="repertoire-search-field">
           <label htmlFor="guided-search">Encontre sua próxima música</label>
@@ -182,11 +179,8 @@ export function LibraryGuidedScores({
             asset={selected}
             token={token}
             previewMedia={previewMedia}
-            expanded={expanded}
-            onExpand={() => setExpanded((value) => !value)}
             onClose={() => {
               setSelectedId(null)
-              setExpanded(false)
             }}
           />
         )}
@@ -199,68 +193,23 @@ function GuidedWorkspace({
   asset,
   token,
   previewMedia,
-  expanded,
-  onExpand,
   onClose,
 }: {
   asset: MemberAsset
   token: string
   previewMedia?: Readonly<Record<string, string>>
-  expanded: boolean
-  onExpand: () => void
   onClose: () => void
 }) {
-  const panel = useRef<HTMLElement>(null)
-  const heading = useRef<HTMLHeadingElement>(null)
-  useEffect(() => {
-    const trigger = document.activeElement
-    heading.current?.focus({ preventScroll: true })
-    if (window.matchMedia('(max-width: 1099px)').matches)
-      panel.current?.scrollIntoView?.({ behavior: 'smooth', block: 'start' })
-    return () => {
-      if (trigger instanceof HTMLElement && trigger.isConnected)
-        trigger.focus({ preventScroll: true })
-    }
-  }, [])
   return (
-    <section
-      ref={panel}
-      className="repertoire-workspace"
-      aria-label={`Vídeo de ${asset.songTitle || asset.title}`}
+    <StudyDialog
+      title={asset.songTitle || asset.title}
+      label={`Vídeo de ${asset.songTitle || asset.title}`}
+      closeLabel="Fechar vídeo"
+      onClose={onClose}
     >
-      <header>
-        <div>
-          <span className="eyebrow">
-            <Video size={14} /> ÁREA DE ESTUDO
-          </span>
-          <h2 ref={heading} tabIndex={-1}>
-            {asset.songTitle || asset.title}
-          </h2>
-          <p>{[asset.artist, asset.style].filter(Boolean).join(' · ')}</p>
-        </div>
-        <div className="repertoire-workspace-actions">
-          <button
-            className="repertoire-expand"
-            aria-label={expanded ? 'Mostrar lista de músicas' : 'Ampliar área de estudo'}
-            title={expanded ? 'Mostrar lista de músicas' : 'Ampliar área de estudo'}
-            aria-pressed={expanded}
-            onClick={onExpand}
-          >
-            {expanded ? <ArrowLeft size={18} /> : <Maximize2 size={18} />}
-          </button>
-          <button aria-label="Fechar vídeo" title="Fechar vídeo" onClick={onClose}>
-            <X size={21} />
-          </button>
-        </div>
-      </header>
-      <div className="repertoire-score">
-        <div className="repertoire-media-heading">
-          <h3>
-            <Video size={19} /> Partitura guiada
-          </h3>
-        </div>
-        <ProtectedMedia asset={asset} token={token} previewMedia={previewMedia} />
+      <div className="repertoire-study-body repertoire-study-video">
+        <ProtectedMedia asset={asset} token={token} previewMedia={previewMedia} autoPlay minimal />
       </div>
-    </section>
+    </StudyDialog>
   )
 }
