@@ -1,12 +1,17 @@
 import { api, ApiError, LIBRARY_REQUEST_TIMEOUT_MS } from './api'
 
 // Only this read-only request is retried. Access denials must remain visible.
-export async function mediaAccessUrl(id: string, token: () => string, signal: AbortSignal) {
+export async function mediaAccessUrl(
+  id: string,
+  token: () => string,
+  signal: AbortSignal,
+  refresh = false,
+) {
   for (let attempt = 0; ; attempt++) {
     signal.throwIfAborted()
     try {
       const result = await api<{ url: string }>(
-        `/library/assets/${id}/view`,
+        `/library/assets/${id}/view${refresh || attempt > 0 ? '?refresh=1' : ''}`,
         { headers: { Authorization: `Bearer ${token()}` }, signal },
         LIBRARY_REQUEST_TIMEOUT_MS,
       )

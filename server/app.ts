@@ -6,12 +6,15 @@ import { z, ZodError } from 'zod'
 import { CheckoutService, checkoutSchema, tokenSchema, uuidSchema } from './service.js'
 import { AppError, checkToken, hashToken, validateSignature } from './security.js'
 import { libraryFileFormat } from '../shared/library.js'
-import { personalLibraryLink } from './library-access.js'
+import { personalLibraryLink, storedPersonalLibraryLink } from './library-access.js'
+import { libraryAssetAccess, librarySnapshot, personalAccessRecord } from './library-queries.js'
+import { RequestTiming } from './timing.js'
+import { SignedViewCache } from './signed-view-cache.js'
 import { violinOffers } from '../shared/products.js'
 import { violinPriceCents } from '../shared/violin-launch.js'
-import type { Prisma } from '@prisma/client'
 
 export function createApp(service: CheckoutService, logging = true) {
+  const signedViews = new SignedViewCache()
   const app = Fastify({
     bodyLimit: 32768,
     logController: new LogController({ disableRequestLogging: true }),
@@ -193,27 +196,14 @@ export function createApp(service: CheckoutService, logging = true) {
   app.post(
     '/api/auth/access',
     { config: { rateLimit: { max: 10, timeWindow: '1 minute' } } },
-    async (request) => {
+    async (request, reply) => {
+      const timing = new RequestTiming(reply)
       const { id, token } = z
         .object({ id: uuidSchema, token: tokenSchema })
         .strict()
         .parse(request.body)
-      const link = await service.db.libraryAccessLink.findUnique({
-        where: { id },
-        include: {
-          user: {
-            include: {
-              entitlements: { where: { revokedAt: null, order: { status: 'APPROVED' } }, take: 1 },
-              previewAccess: { where: { revokedAt: null, expiresAt: { gt: new Date() } }, take: 1 },
-            },
-          },
-        },
-      })
-      if (
-        !link ||
-        !checkToken(token, link.secretHash) ||
-        (!link.user.entitlements.length && !link.user.previewAccess.length)
-      )
+      const link = await timing.measure('database', () => personalAccessRecord(service.db, id))
+      if (!link || !checkToken(token, link.secretHash) || !link.hasAccess)
         throw new AppError(
           403,
           'ACCESS_LINK_UNAVAILABLE',
@@ -221,129 +211,101 @@ export function createApp(service: CheckoutService, logging = true) {
         )
       const header = request.headers.authorization
       if (header?.startsWith('Bearer ')) {
-        const current = await service.providers.authenticate(header.slice(7))
-        if (current?.id === link.userId && current.email === link.user.email)
+        const current = await timing.measure('auth', () =>
+          service.providers.authenticate(header.slice(7)),
+        )
+        if (current?.id === link.userId && current.email === link.email)
           return { authenticated: true as const }
       }
-      const login = await service.providers.createLogin(link.user.email)
-      if (login.userId !== link.userId || login.email !== link.user.email)
+      const login = await timing.measure('login', () => service.providers.createLogin(link.email))
+      if (login.userId !== link.userId || login.email !== link.email)
         throw new Error('AUTH_USER_MISMATCH')
       return { url: login.link }
     },
   )
-  app.get('/api/library', async (request) => {
-    const user = await authenticate(request.headers.authorization)
-    const [rights, previews] = await Promise.all([
-      service.db.entitlement.findMany({
-        where: { userId: user.id, revokedAt: null, order: { status: 'APPROVED' } },
-        include: { product: true },
-      }),
-      service.db.libraryPreviewAccess.findMany({
-        where: { userId: user.id, revokedAt: null, expiresAt: { gt: new Date() } },
-        select: { instrument: true, expiresAt: true },
-      }),
-    ])
-    const complete = rights.some((r) => r.product.accessType === 'COMPLETE')
+  app.get('/api/library', async (request, reply) => {
+    const timing = new RequestTiming(reply)
+    const user = await timing.measure('auth', () => authenticate(request.headers.authorization))
+    const { products, previews, assets, link } = await timing.measure('database', () =>
+      librarySnapshot(service.db, user.id),
+    )
+    const complete = products.some((product) => product.accessType === 'COMPLETE')
     const instruments = [
       ...new Set([
-        ...rights.flatMap((r) => (r.product.instrument ? [r.product.instrument] : [])),
+        ...products.flatMap((product) => (product.instrument ? [product.instrument] : [])),
         ...previews.map((preview) => preview.instrument),
       ]),
     ]
-    const scopes: Prisma.LibraryAssetWhereInput[] = [
-      ...rights.flatMap(({ product }): Prisma.LibraryAssetWhereInput[] => {
-        if (product.accessType === 'COMPLETE') return [{}]
-        if (product.accessType === 'INSTRUMENT' && product.instrument)
-          return [{ instrument: product.instrument }]
-        if (product.accessType === 'SCORES' && product.instrument)
-          return [{ instrument: product.instrument, kind: 'score' }]
-        return []
-      }),
-      ...previews.map(({ instrument }) => ({ instrument })),
-    ]
-    const assets =
+    const personalLink =
       complete || instruments.length
-        ? await service.db.libraryAsset.findMany({
-            where: { OR: scopes },
-            select: {
-              id: true,
-              title: true,
-              songTitle: true,
-              artist: true,
-              style: true,
-              kind: true,
-              instrument: true,
-              storageKey: true,
-            },
-            orderBy: { title: 'asc' },
-          })
-        : []
+        ? link
+          ? storedPersonalLibraryLink(
+              link,
+              service.config.FRONTEND_URL,
+              service.config.EMAIL_LINK_ENCRYPTION_KEY,
+            )
+          : await timing.measure('database', () =>
+              personalLibraryLink(
+                service.db,
+                user.id,
+                service.config.FRONTEND_URL,
+                service.config.EMAIL_LINK_ENCRYPTION_KEY,
+              ),
+            )
+        : null
     return {
       setlistLimit:
-        rights.some(({ product }) => product.accessType !== 'SCORES') || previews.length ? 42 : 10,
-      products: [
-        ...new Map(
-          rights.map((r) => [r.productId, { id: r.productId, name: r.product.name }]),
-        ).values(),
-      ],
+        products.some((product) => product.accessType !== 'SCORES') || previews.length ? 42 : 10,
+      products: products.map(({ id, name }) => ({ id, name })),
       assets: assets.map(({ storageKey, ...asset }) => ({
         ...asset,
         format: libraryFileFormat(storageKey),
       })),
-      previewAccess: previews,
-      personalLink:
-        complete || instruments.length
-          ? await personalLibraryLink(
-              service.db,
-              user.id,
-              service.config.FRONTEND_URL,
-              service.config.EMAIL_LINK_ENCRYPTION_KEY,
-            )
-          : null,
+      previewAccess: previews.map((preview) => ({
+        ...preview,
+        expiresAt: new Date(preview.expiresAt).toISOString(),
+      })),
+      personalLink,
     }
   })
-  async function authorizedAsset(header: string | undefined, params: unknown) {
-    const user = await authenticate(header)
+  async function authorizedAsset(
+    header: string | undefined,
+    params: unknown,
+    timing: RequestTiming,
+  ) {
+    const user = await timing.measure('auth', () => authenticate(header))
     const { id } = z.object({ id: uuidSchema }).parse(params)
-    const asset = await service.db.libraryAsset.findUnique({ where: { id } })
+    const asset = await timing.measure('database', () =>
+      libraryAssetAccess(service.db, user.id, id),
+    )
     if (!asset) throw new AppError(404, 'NOT_FOUND', 'Arquivo não encontrado.')
-    const [right, preview] = await Promise.all([
-      service.db.entitlement.findFirst({
-        where: {
-          userId: user.id,
-          revokedAt: null,
-          order: { status: 'APPROVED' },
-          product: {
-            OR: [
-              { accessType: 'COMPLETE' },
-              { accessType: 'INSTRUMENT', instrument: asset.instrument },
-              ...(asset.kind === 'score'
-                ? [{ accessType: 'SCORES', instrument: asset.instrument }]
-                : []),
-            ],
-          },
-        },
-      }),
-      service.db.libraryPreviewAccess.findFirst({
-        where: {
-          userId: user.id,
-          instrument: asset.instrument,
-          revokedAt: null,
-          expiresAt: { gt: new Date() },
-        },
-      }),
-    ])
-    if (!right && !preview)
+    if (!asset.allowed)
       throw new AppError(403, 'ACCESS_DENIED', 'Este material não faz parte dos seus acessos.')
-    return asset
+    return { ...asset, userId: user.id }
   }
-  app.get('/api/library/assets/:id/download', async (request) => {
-    const asset = await authorizedAsset(request.headers.authorization, request.params)
-    return { url: await service.providers.signedDownload(asset.storageKey) }
+  app.get('/api/library/assets/:id/download', async (request, reply) => {
+    const timing = new RequestTiming(reply)
+    const asset = await authorizedAsset(request.headers.authorization, request.params, timing)
+    return {
+      url: await timing.measure('storage', () =>
+        service.providers.signedDownload(asset.storageKey),
+      ),
+    }
   })
-  app.get('/api/library/assets/:id/view', async (request) => {
-    const asset = await authorizedAsset(request.headers.authorization, request.params)
-    return { url: await service.providers.signedView(asset.storageKey) }
+  app.get('/api/library/assets/:id/view', async (request, reply) => {
+    const timing = new RequestTiming(reply)
+    const asset = await authorizedAsset(request.headers.authorization, request.params, timing)
+    const { refresh } = z.object({ refresh: z.literal('1').optional() }).parse(request.query)
+    return {
+      url: await timing.measure('storage', () =>
+        signedViews.get(
+          asset.userId,
+          asset.storageKey,
+          () => service.providers.signedView(asset.storageKey),
+          refresh === '1',
+        ),
+      ),
+    }
   })
   return app
 }

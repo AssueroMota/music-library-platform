@@ -1,8 +1,22 @@
 import { randomBytes } from 'node:crypto'
 import type { Prisma } from '@prisma/client'
 import { decryptLink, encryptLink, hashToken } from './security.js'
+import type { StoredLibraryLink } from './library-queries.js'
 
 type LinkStore = Pick<Prisma.TransactionClient, 'libraryAccessLink'>
+
+export function storedPersonalLibraryLink(
+  record: StoredLibraryLink,
+  origin: string,
+  encryptionKey: string,
+) {
+  const url = new URL('/biblioteca', origin)
+  url.hash = new URLSearchParams({
+    id: record.id,
+    acesso: decryptLink(record.secretCiphertext, encryptionKey),
+  }).toString()
+  return url.href
+}
 
 // The ID is public; its independent 256-bit secret stays in the URL fragment.
 export async function personalLibraryLink(
@@ -14,12 +28,7 @@ export async function personalLibraryLink(
 ) {
   const existing = await db.libraryAccessLink.findUnique({ where: { userId } })
   if (existing && !rotate) {
-    const url = new URL('/biblioteca', origin)
-    url.hash = new URLSearchParams({
-      id: existing.id,
-      acesso: decryptLink(existing.secretCiphertext, encryptionKey),
-    }).toString()
-    return url.href
+    return storedPersonalLibraryLink(existing, origin, encryptionKey)
   }
   const secret = randomBytes(32).toString('hex')
   const credentials = {
@@ -34,10 +43,5 @@ export async function personalLibraryLink(
         data: { ...credentials, rotatedAt: new Date() },
       })
     : await db.libraryAccessLink.findUniqueOrThrow({ where: { userId } })
-  const url = new URL('/biblioteca', origin)
-  url.hash = new URLSearchParams({
-    id: record.id,
-    acesso: decryptLink(record.secretCiphertext, encryptionKey),
-  }).toString()
-  return url.href
+  return storedPersonalLibraryLink(record, origin, encryptionKey)
 }

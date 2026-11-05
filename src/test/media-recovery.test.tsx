@@ -38,6 +38,7 @@ it('repete a autorização uma vez após 503, usando a credencial mais recente',
   expect(await result).toBe('https://storage.example.test/audio.mp3')
   expect(fetchMock).toHaveBeenCalledTimes(2)
   expect(fetchMock.mock.calls[1][1].headers.Authorization).toBe('Bearer new')
+  expect(fetchMock.mock.calls[1][0]).toContain('/view?refresh=1')
 })
 
 it('não repete recusa de acesso e interrompe novas tentativas ao fechar o material', async () => {
@@ -87,6 +88,8 @@ it('renova o arquivo após falha e restaura o tempo de reprodução', async () =
   expect(play.mock.contexts).toContain(renewed)
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   expect(fetchMock).toHaveBeenCalledTimes(2)
+  expect(fetchMock.mock.calls[0][0]).not.toContain('refresh=1')
+  expect(fetchMock.mock.calls[1][0]).toContain('/view?refresh=1')
 })
 
 it('limita a recuperação automática e mantém uma tentativa manual disponível', async () => {

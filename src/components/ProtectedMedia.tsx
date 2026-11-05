@@ -119,7 +119,7 @@ export function ProtectedMedia({
   useEffect(() => {
     if (previewMedia) return
     const controller = new AbortController()
-    mediaAccessUrl(asset.id, () => currentToken.current, controller.signal)
+    mediaAccessUrl(asset.id, () => currentToken.current, controller.signal, refresh > 0)
       .then((result) => {
         if (!controller.signal.aborted) {
           retrying.current = false

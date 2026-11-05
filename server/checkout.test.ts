@@ -490,6 +490,15 @@ describe('webhooks, confirmação e liberação', () => {
       ).toBe(200)
     }
     expect(providers.signedView).toHaveBeenCalledWith('violin/test.pdf')
+    expect(
+      (await app.inject({ url: `/api/library/assets/${violin.id}/view`, headers })).statusCode,
+    ).toBe(200)
+    expect(providers.signedView).toHaveBeenCalledTimes(1)
+    expect(
+      (await app.inject({ url: `/api/library/assets/${violin.id}/view?refresh=1`, headers }))
+        .statusCode,
+    ).toBe(200)
+    expect(providers.signedView).toHaveBeenCalledTimes(2)
     vi.mocked(providers.getOrder).mockResolvedValue(remote(order!, 'refunded', 'refunded'))
     await service.reconcile(order!.providerOrderId!)
     expect(
@@ -498,6 +507,7 @@ describe('webhooks, confirmação e liberação', () => {
     expect(
       (await app.inject({ url: `/api/library/assets/${violin.id}/view`, headers })).statusCode,
     ).toBe(403)
+    expect(providers.signedView).toHaveBeenCalledTimes(2)
   })
   it('não regride um aprovado para pendente com notificação fora de ordem', async () => {
     const { order } = await checkout()
@@ -735,6 +745,108 @@ describe('webhooks, confirmação e liberação', () => {
       expect(providers.signedDownload).not.toHaveBeenCalled()
     },
   )
+  it('isola acessos combinados e revalida expiração e pagamento em cada consulta', async () => {
+    const otherId = randomUUID()
+    await db.user.createMany({
+      data: [
+        { id: userId, email: buyerEmail },
+        { id: otherId, email: 'other@example.test' },
+      ],
+    })
+    async function grant(accountId: string, productId: string) {
+      const product = await db.product.findUniqueOrThrow({ where: { id: productId } })
+      return db.order.create({
+        data: {
+          idempotencyKey: randomUUID(),
+          statusTokenHash: 'unused-test-token',
+          userId: accountId,
+          productId,
+          productCode: product.code,
+          productName: product.name,
+          priceCents: product.priceCents,
+          currency: product.currency,
+          status: 'APPROVED',
+          entitlement: { create: { userId: accountId, productId } },
+        },
+      })
+    }
+    const [first, duplicate] = await Promise.all([
+      grant(userId, 'library-violin-scores'),
+      grant(userId, 'library-violin-scores'),
+      grant(otherId, 'library-complete'),
+    ])
+    await db.libraryPreviewAccess.create({
+      data: {
+        userId,
+        instrument: 'cello',
+        createdAt: new Date(Date.now() - 3600000),
+        expiresAt: new Date(Date.now() + 3600000),
+      },
+    })
+    const score = await db.libraryAsset.create({
+      data: { title: 'Z score', instrument: 'violin', kind: 'score', storageKey: 'violin/z.pdf' },
+    })
+    const preview = await db.libraryAsset.create({
+      data: { title: 'A preview', instrument: 'cello', kind: 'audio', storageKey: 'cello/a.mp3' },
+    })
+    const excluded = await db.libraryAsset.create({
+      data: { title: 'Video', instrument: 'violin', kind: 'video', storageKey: 'violin/v.mp4' },
+    })
+    const headers = { authorization: 'Bearer valid-test-session' }
+    const response = await app.inject({ url: '/api/library', headers })
+    expect(response.headers['server-timing']).toMatch(/^auth;dur=\d+\.\d, database;dur=\d+\.\d/)
+    const library = response.json()
+    expect(library.assets.map((asset: { id: string }) => asset.id)).toEqual([preview.id, score.id])
+    expect(library.products).toEqual([
+      { id: 'library-violin-scores', name: 'Violino · Partituras' },
+    ])
+    expect(library.setlistLimit).toBe(42)
+    expect(JSON.stringify(library)).not.toMatch(/storageKey|secretCiphertext|secretHash|accessType/)
+    const link = new URLSearchParams(new URL(library.personalLink).hash.slice(1))
+    const payload = { id: link.get('id'), token: link.get('acesso') }
+    expect(
+      (await app.inject({ method: 'POST', url: '/api/auth/access', payload, headers })).statusCode,
+    ).toBe(200)
+    expect(
+      (await app.inject({ url: `/api/library/assets/${preview.id}/view`, headers })).statusCode,
+    ).toBe(200)
+    for (const action of ['view', 'download']) {
+      expect(
+        (await app.inject({ url: `/api/library/assets/${excluded.id}/${action}`, headers }))
+          .statusCode,
+      ).toBe(403)
+      expect(
+        (await app.inject({ url: `/api/library/assets/${randomUUID()}/${action}`, headers }))
+          .statusCode,
+      ).toBe(404)
+    }
+    await db.libraryPreviewAccess.updateMany({
+      where: { userId },
+      data: { expiresAt: new Date(Date.now() - 1000) },
+    })
+    const basic = (await app.inject({ url: '/api/library', headers })).json()
+    expect(basic.assets.map((asset: { id: string }) => asset.id)).toEqual([score.id])
+    expect(basic.setlistLimit).toBe(10)
+    expect(basic.personalLink).toBe(library.personalLink)
+    expect(
+      (await app.inject({ url: `/api/library/assets/${preview.id}/view`, headers })).statusCode,
+    ).toBe(403)
+    // Payment state must be checked even if an entitlement has not been revoked yet.
+    await db.order.updateMany({
+      where: { id: { in: [first.id, duplicate.id] } },
+      data: { status: 'REFUNDED' },
+    })
+    const empty = (await app.inject({ url: '/api/library', headers })).json()
+    expect(empty.assets).toEqual([])
+    expect(empty.products).toEqual([])
+    expect(empty.personalLink).toBeNull()
+    expect(
+      (await app.inject({ method: 'POST', url: '/api/auth/access', payload, headers })).statusCode,
+    ).toBe(403)
+    expect(
+      (await app.inject({ url: `/api/library/assets/${score.id}/view`, headers })).statusCode,
+    ).toBe(403)
+  })
   it('escapa conteúdo no template de confirmação', () => {
     const email = confirmationEmail(
       '<img src=x onerror=alert(1)>',
