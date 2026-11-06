@@ -37,6 +37,8 @@ export const guidedScores = [
   ['Michelle', 'The Beatles', 'Pop internacional'],
   ['Till There Was You', 'The Beatles', 'Pop internacional'],
   ['Yesterday', 'The Beatles', 'Pop internacional'],
+  ['Carinhoso', 'Pixinguinha', 'MPB'],
+  ['Sozinho', 'Caetano Veloso', 'MPB'],
 ] as const
 
 export const guidedScoreCount = guidedScores.length
