@@ -48,7 +48,7 @@ export function OfferContents() {
             <img
               className="contents-bundle"
               src="/images/collections/violin-complete-bundle-guided.webp"
-              alt="Pacote digital Music Library: acervo de 100 partituras para violino, quatro coleções por estilo, 23 partituras guiadas em vídeo e playbacks"
+              alt={`Pacote digital Music Library: acervo de 100 partituras para violino, quatro coleções por estilo, ${guidedScoreCount} partituras guiadas em vídeo e playbacks`}
               width="1536"
               height="1024"
               loading="lazy"

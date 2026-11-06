@@ -27,6 +27,16 @@ export const guidedScores = [
   ['The Sound of Silence', 'Simon & Garfunkel', 'Pop internacional'],
   ['Heaven', 'Bryan Adams', 'Pop internacional'],
   ['Love of My Life', 'Queen', 'Pop internacional'],
+  ['And I Love Her', 'The Beatles', 'Pop internacional'],
+  ['Here Comes the Sun', 'The Beatles', 'Pop internacional'],
+  ['Hey Jude', 'The Beatles', 'Pop internacional'],
+  ['I Will', 'The Beatles', 'Pop internacional'],
+  ['If I Fell', 'The Beatles', 'Pop internacional'],
+  ['In My Life', 'The Beatles', 'Pop internacional'],
+  ['Let It Be', 'The Beatles', 'Pop internacional'],
+  ['Michelle', 'The Beatles', 'Pop internacional'],
+  ['Till There Was You', 'The Beatles', 'Pop internacional'],
+  ['Yesterday', 'The Beatles', 'Pop internacional'],
 ] as const
 
 export const guidedScoreCount = guidedScores.length

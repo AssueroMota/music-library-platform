@@ -46,6 +46,7 @@ export function MemberRepertoire({
   const [search, setSearch] = useState('')
   const [instrument, setInstrument] = useState('')
   const [style, setStyle] = useState('')
+  const [artist, setArtist] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [view, setView] = useState<'songs' | 'setlists' | 'guided'>('songs')
   const [setlistId, setSetlistId] = useState<string | null>(null)
@@ -85,6 +86,9 @@ export function MemberRepertoire({
   }, [activeSetlist])
   const collection = activeSetlist?.songs ?? songs
   const collectionStyles = [...new Set(collection.map((song) => song.style).filter(Boolean))].sort()
+  const collectionArtists = [
+    ...new Set(collection.map((song) => song.artist).filter(Boolean)),
+  ].sort((a, b) => a.localeCompare(b, 'pt-BR'))
   const availableInstruments = [...new Set(songs.map((song) => song.instrument))]
   const videos = useMemo(
     () => (setlistLimit === 42 ? data.assets.filter((asset) => asset.kind === 'video') : []),
@@ -95,6 +99,7 @@ export function MemberRepertoire({
       (song) =>
         (!instrument || song.instrument === instrument) &&
         (!style || song.style === style) &&
+        (!artist || song.artist === artist) &&
         normalizeSearch(`${song.title} ${song.artist}`).includes(normalizeSearch(search.trim())),
     )
     .sort((a, b) =>
@@ -103,11 +108,12 @@ export function MemberRepertoire({
         : a.title.localeCompare(b.title, 'pt-BR'),
     )
   const selected = songs.find((song) => song.id === selectedId)
-  const hasFilters = Boolean(search || instrument || style)
+  const hasFilters = Boolean(search || instrument || style || artist)
   function clearFilters() {
     setSearch('')
     setInstrument('')
     setStyle('')
+    setArtist('')
   }
   function openSong(id: string) {
     setSelectedId(id)
@@ -204,6 +210,18 @@ export function MemberRepertoire({
               {collectionStyles.map((name) => (
                 <option key={name} value={name}>
                   {name} ({collection.filter((song) => song.style === name).length})
+                </option>
+              ))}
+            </LibrarySelect>
+            <LibrarySelect
+              label="Banda / artista"
+              value={artist}
+              onChange={(event) => setArtist(event.target.value)}
+            >
+              <option value="">Todas as bandas e artistas</option>
+              {collectionArtists.map((name) => (
+                <option key={name} value={name}>
+                  {name} ({collection.filter((song) => song.artist === name).length})
                 </option>
               ))}
             </LibrarySelect>

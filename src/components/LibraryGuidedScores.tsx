@@ -17,22 +17,28 @@ export function LibraryGuidedScores({
 }) {
   const [search, setSearch] = useState('')
   const [style, setStyle] = useState('')
+  const [artist, setArtist] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const selected = videos.find((video) => video.id === selectedId)
   const styles = [...new Set(videos.map((video) => video.style).filter(Boolean))].sort()
+  const artists = [...new Set(videos.map((video) => video.artist).filter(Boolean))].sort((a, b) =>
+    a.localeCompare(b, 'pt-BR'),
+  )
   const filtered = videos
     .filter(
       (video) =>
         (!style || video.style === style) &&
+        (!artist || video.artist === artist) &&
         normalizeSearch(`${video.songTitle} ${video.title} ${video.artist}`).includes(
           normalizeSearch(search.trim()),
         ),
     )
     .sort((a, b) => (a.songTitle || a.title).localeCompare(b.songTitle || b.title, 'pt-BR'))
-  const hasFilters = Boolean(search || style)
+  const hasFilters = Boolean(search || style || artist)
   function clearFilters() {
     setSearch('')
     setStyle('')
+    setArtist('')
   }
   function openVideo(id: string) {
     setSelectedId(id)
@@ -69,6 +75,18 @@ export function LibraryGuidedScores({
           {styles.map((name) => (
             <option key={name} value={name}>
               {name} ({videos.filter((video) => video.style === name).length})
+            </option>
+          ))}
+        </LibrarySelect>
+        <LibrarySelect
+          label="Banda / artista"
+          value={artist}
+          onChange={(event) => setArtist(event.target.value)}
+        >
+          <option value="">Todas as bandas e artistas</option>
+          {artists.map((name) => (
+            <option key={name} value={name}>
+              {name} ({videos.filter((video) => video.artist === name).length})
             </option>
           ))}
         </LibrarySelect>

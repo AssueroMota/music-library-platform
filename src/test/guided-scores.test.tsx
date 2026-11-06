@@ -163,6 +163,33 @@ it('usa tabela com estilo, combina filtros e restaura a lista ao limpar', async 
   expect(fetchMock).not.toHaveBeenCalled()
 })
 
+it('filtra os dez vídeos dos Beatles por banda, combina estilo e busca e limpa todos os filtros', async () => {
+  const fetchMock = vi.fn()
+  vi.stubGlobal('fetch', fetchMock)
+  render(<PublicLibraryPreview />)
+  const user = userEvent.setup()
+  await user.click(screen.getByRole('button', { name: 'Completo · Playbacks e 42 setlists' }))
+  await user.click(screen.getByRole('button', { name: `Partituras guiadas ${guidedScoreCount}` }))
+  const artist = screen.getByRole('combobox', { name: 'Banda / artista' })
+  expect(within(artist).getAllByRole('option', { name: 'The Beatles (10)' })).toHaveLength(1)
+  await user.selectOptions(artist, 'The Beatles')
+  expect(screen.getByText('10 vídeos')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Assistir My Way' })).not.toBeInTheDocument()
+  await user.selectOptions(screen.getByRole('combobox', { name: 'Estilo' }), 'Pop internacional')
+  await user.type(screen.getByRole('searchbox'), 'yesterday')
+  expect(screen.getByText('1 vídeo')).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Assistir Yesterday' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Assistir Hey Jude' })).not.toBeInTheDocument()
+  await user.selectOptions(screen.getByRole('combobox', { name: 'Estilo' }), 'Gospel')
+  expect(screen.getByRole('heading', { name: 'Nenhum vídeo encontrado.' })).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Ver todos os vídeos' }))
+  expect(artist).toHaveValue('')
+  expect(screen.getByRole('combobox', { name: 'Estilo' })).toHaveValue('')
+  expect(screen.getByRole('searchbox')).toHaveValue('')
+  expect(screen.getByText(`${guidedScoreCount} vídeos`)).toBeInTheDocument()
+  expect(fetchMock).not.toHaveBeenCalled()
+})
+
 it('abre o vídeo em modal pela música, preserva a reprodução ao renovar a sessão e restaura o foco com Escape', async () => {
   vi.stubGlobal(
     'fetch',
