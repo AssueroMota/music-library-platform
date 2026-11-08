@@ -20,6 +20,8 @@ import { resolveSetlists } from '../data/setlists'
 import { ProtectedMedia } from './ProtectedMedia'
 import { LibraryGuidedScores } from './LibraryGuidedScores'
 import { StudyDialog } from './StudyDialog'
+import { CustomSetlists } from './CustomSetlists'
+import { setlistSongId } from '../../shared/custom-setlists'
 
 interface Song {
   id: string
@@ -48,7 +50,7 @@ export function MemberRepertoire({
   const [style, setStyle] = useState('')
   const [artist, setArtist] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [view, setView] = useState<'songs' | 'setlists' | 'guided'>('songs')
+  const [view, setView] = useState<'songs' | 'setlists' | 'guided' | 'custom'>('songs')
   const [setlistId, setSetlistId] = useState<string | null>(null)
   const setlistHeading = useRef<HTMLHeadingElement>(null)
   const setlistLimit =
@@ -59,11 +61,7 @@ export function MemberRepertoire({
       if (asset.kind === 'video') continue
       if (setlistLimit === 10 && asset.kind === 'audio') continue
       const title = asset.songTitle || asset.title
-      const id = JSON.stringify([
-        asset.instrument,
-        normalizeSearch(title),
-        normalizeSearch(asset.artist || ''),
-      ])
+      const id = setlistSongId({ title, artist: asset.artist || '', instrument: asset.instrument })
       const song = grouped.get(id) ?? {
         id,
         title,
@@ -118,7 +116,7 @@ export function MemberRepertoire({
   function openSong(id: string) {
     setSelectedId(id)
   }
-  function changeView(next: 'songs' | 'setlists' | 'guided') {
+  function changeView(next: 'songs' | 'setlists' | 'guided' | 'custom') {
     setView(next)
     setSetlistId(null)
     setSelectedId(null)
@@ -141,6 +139,11 @@ export function MemberRepertoire({
           <button aria-pressed={view === 'setlists'} onClick={() => changeView('setlists')}>
             <ListMusic size={18} /> Setlists prontos <span>{setlists.length}</span>
           </button>
+          {token && !previewMedia && (
+            <button aria-pressed={view === 'custom'} onClick={() => changeView('custom')}>
+              <ListMusic size={18} /> Meus setlists
+            </button>
+          )}
           {setlistLimit === 42 && (
             <button aria-pressed={view === 'guided'} onClick={() => changeView('guided')}>
               <Video size={18} /> Partituras guiadas <span>{videos.length}</span>
@@ -148,7 +151,9 @@ export function MemberRepertoire({
           )}
         </nav>
       )}
-      {view === 'guided' ? (
+      {view === 'custom' ? (
+        <CustomSetlists songs={songs} token={token} onOpenSong={openSong} />
+      ) : view === 'guided' ? (
         <LibraryGuidedScores videos={videos} token={token} previewMedia={previewMedia} />
       ) : view === 'setlists' && !activeSetlist ? (
         <LibrarySetlists setlists={setlists} onOpen={openSetlist} />
@@ -361,19 +366,17 @@ export function MemberRepertoire({
                 </div>
               )}
             </div>
-            {selected && (
-              <SongWorkspace
-                key={selected.id}
-                song={selected}
-                token={token}
-                previewMedia={previewMedia}
-                onClose={() => {
-                  setSelectedId(null)
-                }}
-              />
-            )}
           </div>
         </>
+      )}
+      {selected && (
+        <SongWorkspace
+          key={selected.id}
+          song={selected}
+          token={token}
+          previewMedia={previewMedia}
+          onClose={() => setSelectedId(null)}
+        />
       )}
     </section>
   )

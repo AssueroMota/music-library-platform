@@ -217,7 +217,9 @@ it('mostra a prévia básica para o titular completo sem alterar os materiais da
   window.history.replaceState({}, '', '/biblioteca')
   render(<MemberLibrary />)
   await act(async () => {})
-  expect(screen.getAllByRole('button', { name: /Abrir áudio/ })).toHaveLength(103)
+  expect(screen.getAllByRole('button', { name: /Abrir áudio/ })).toHaveLength(
+    publicRepertoire.length,
+  )
   fireEvent.click(screen.getByRole('button', { name: /Setlists prontos/ }))
   expect(screen.getAllByRole('button', { name: /Abrir setlist/ })).toHaveLength(42)
 })

@@ -324,7 +324,11 @@ function MemberLibraryContent({
                     liberados.
                   </p>
                 )}
-                <MemberRepertoire data={repertoireData!} token={session.access_token} />
+                <MemberRepertoire
+                  key={session.user.id}
+                  data={repertoireData!}
+                  token={session.access_token}
+                />
               </>
             )}
             {!data && !error && <LibraryLoading waitingLonger={waitingLonger} />}

@@ -9,6 +9,7 @@ import type { Config } from './config.js'
 import type { Providers, RemoteOrder } from './providers.js'
 import { confirmationEmail } from './email.js'
 import { personalLibraryLink } from './library-access.js'
+import { MAX_SETLIST_SONGS } from '../shared/custom-setlists.js'
 
 const config = {
   CHECKOUT_ENABLED: true,
@@ -1235,4 +1236,203 @@ it('recusa total desatualizado sem criar pedido nem chamar o pagamento', async (
   expect(result.json().code).toBe('PRODUCT_PRICE_CHANGED')
   expect(await db.order.count()).toBe(0)
   expect(providers.createOrder).not.toHaveBeenCalled()
+})
+
+describe('setlists personalizados', () => {
+  const headers = { authorization: 'Bearer valid-test-session' }
+  const john = { title: 'All of Me', artist: 'John Legend', instrument: 'violin' }
+  const frank = { title: 'All of Me', artist: 'Frank Sinatra', instrument: 'violin' }
+  const payload = { title: '  Meu show  ', songs: [frank, john] }
+
+  async function prepare() {
+    await db.user.create({ data: { id: userId, email: buyerEmail } })
+    const product = await db.product.findUniqueOrThrow({ where: { id: 'library-violin-scores' } })
+    const order = await db.order.create({
+      data: {
+        idempotencyKey: randomUUID(),
+        statusTokenHash: 'unused',
+        userId,
+        productId: product.id,
+        productCode: product.code,
+        productName: product.name,
+        priceCents: product.priceCents,
+        currency: product.currency,
+        status: 'APPROVED',
+        entitlement: { create: { userId, productId: product.id } },
+      },
+    })
+    await db.libraryAsset.createMany({
+      data: [
+        ...[john, frank].map((song, index) => ({
+          ...song,
+          title: `${song.title} - PDF`,
+          songTitle: song.title,
+          kind: 'score',
+          storageKey: `violin/${index}.pdf`,
+        })),
+        {
+          title: 'Vídeo exclusivo',
+          instrument: 'violin',
+          kind: 'video',
+          storageKey: 'violin/video.mp4',
+        },
+        {
+          title: 'Somente áudio',
+          instrument: 'violin',
+          kind: 'audio',
+          storageKey: 'violin/audio.mp3',
+        },
+        {
+          title: 'Outro instrumento',
+          instrument: 'cello',
+          kind: 'score',
+          storageKey: 'cello/score.pdf',
+        },
+      ],
+    })
+    return order
+  }
+  it('persiste nome, versões e ordem, permite editar e exclui somente o setlist', async () => {
+    await prepare()
+    const created = await app.inject({
+      method: 'POST',
+      url: '/api/library/setlists',
+      headers,
+      payload,
+    })
+    expect(created.statusCode).toBe(201)
+    const saved = created.json()
+    expect(saved).toEqual({ id: expect.any(String), title: 'Meu show', songs: [frank, john] })
+    expect((await app.inject({ url: '/api/library/setlists', headers })).json()).toEqual({
+      setlists: [saved],
+    })
+    const updated = await app.inject({
+      method: 'PUT',
+      url: `/api/library/setlists/${saved.id}`,
+      headers,
+      payload: { title: 'Casamento', songs: [john] },
+    })
+    expect(updated.statusCode).toBe(200)
+    expect((await app.inject({ url: '/api/library/setlists', headers })).json().setlists).toEqual([
+      { id: saved.id, title: 'Casamento', songs: [john] },
+    ])
+    expect(
+      (await app.inject({ method: 'DELETE', url: `/api/library/setlists/${saved.id}`, headers }))
+        .statusCode,
+    ).toBe(200)
+    expect((await app.inject({ url: '/api/library/setlists', headers })).json()).toEqual({
+      setlists: [],
+    })
+    expect(await db.libraryAsset.count()).toBe(5)
+  })
+  it('isola os setlists por conta e exige autenticação em todas as operações', async () => {
+    await prepare()
+    const saved = (
+      await app.inject({ method: 'POST', url: '/api/library/setlists', headers, payload })
+    ).json()
+    for (const method of ['GET', 'POST', 'PUT', 'DELETE'] as const) {
+      const url = `/api/library/setlists${method === 'PUT' || method === 'DELETE' ? `/${saved.id}` : ''}`
+      expect(
+        (
+          await app.inject({
+            method,
+            url,
+            ...(method === 'POST' || method === 'PUT' ? { payload } : {}),
+          })
+        ).statusCode,
+      ).toBe(401)
+    }
+    const other = { id: randomUUID(), email: 'setlist-other@example.test' }
+    await db.user.create({ data: other })
+    for (const method of ['GET', 'PUT', 'DELETE'] as const) {
+      vi.mocked(providers.authenticate).mockResolvedValueOnce(other)
+      const response = await app.inject({
+        method,
+        headers,
+        url: `/api/library/setlists${method === 'GET' ? '' : `/${saved.id}`}`,
+        ...(method === 'PUT' ? { payload } : {}),
+      })
+      if (method === 'GET') expect(response.json()).toEqual({ setlists: [] })
+      else expect(response.statusCode).toBe(404)
+    }
+    expect((await db.customSetlist.findUniqueOrThrow({ where: { id: saved.id } })).title).toBe(
+      'Meu show',
+    )
+  })
+  it('valida nomes, limites, duplicatas e músicas fora do plano inclusive após revogação', async () => {
+    const order = await prepare()
+    for (const invalid of [
+      { title: '  ', songs: [john] },
+      { title: 'x'.repeat(101), songs: [john] },
+      { title: 'Vazio', songs: [] },
+      { title: 'Duplicado', songs: [john, { ...john, title: 'ALL OF ME' }] },
+      { title: 'Extenso', songs: Array.from({ length: MAX_SETLIST_SONGS + 1 }, () => john) },
+    ]) {
+      expect(
+        (
+          await app.inject({
+            method: 'POST',
+            url: '/api/library/setlists',
+            headers,
+            payload: invalid,
+          })
+        ).statusCode,
+      ).toBe(400)
+    }
+    for (const song of [
+      { title: 'Vídeo exclusivo', artist: '', instrument: 'violin' },
+      { title: 'Somente áudio', artist: '', instrument: 'violin' },
+      { title: 'Outro instrumento', artist: '', instrument: 'cello' },
+      { ...john, artist: 'Artista inventado' },
+    ]) {
+      expect(
+        (
+          await app.inject({
+            method: 'POST',
+            url: '/api/library/setlists',
+            headers,
+            payload: { title: 'Fora do plano', songs: [song] },
+          })
+        ).statusCode,
+      ).toBe(403)
+    }
+    const saved = (
+      await app.inject({ method: 'POST', url: '/api/library/setlists', headers, payload })
+    ).json()
+    await db.order.update({ where: { id: order.id }, data: { status: 'REFUNDED' } })
+    expect(
+      (
+        await app.inject({
+          method: 'PUT',
+          url: `/api/library/setlists/${saved.id}`,
+          headers,
+          payload,
+        })
+      ).statusCode,
+    ).toBe(403)
+    expect(
+      (await app.inject({ method: 'POST', url: '/api/library/setlists', headers, payload }))
+        .statusCode,
+    ).toBe(403)
+    expect(
+      (await app.inject({ url: '/api/library/setlists', headers })).json().setlists,
+    ).toHaveLength(1)
+    expect(providers.signedView).not.toHaveBeenCalled()
+    expect(providers.signedDownload).not.toHaveBeenCalled()
+  })
+  it('autoriza edição e exclusão por CORS na origem do frontend', async () => {
+    for (const method of ['PUT', 'DELETE']) {
+      const response = await app.inject({
+        method: 'OPTIONS',
+        url: `/api/library/setlists/${randomUUID()}`,
+        headers: {
+          origin: config.FRONTEND_URL,
+          'access-control-request-method': method,
+          'access-control-request-headers': 'authorization,content-type',
+        },
+      })
+      expect(response.statusCode).toBe(204)
+      expect(response.headers['access-control-allow-methods']).toContain(method)
+    }
+  })
 })

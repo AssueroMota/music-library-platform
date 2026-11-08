@@ -12,6 +12,7 @@ import { RequestTiming } from './timing.js'
 import { SignedViewCache } from './signed-view-cache.js'
 import { violinOffers } from '../shared/products.js'
 import { violinPriceCents } from '../shared/violin-launch.js'
+import { serializeSetlist, setlistNotFound, validateSetlist } from './custom-setlists.js'
 
 export function createApp(service: CheckoutService, logging = true) {
   const signedViews = new SignedViewCache()
@@ -32,7 +33,7 @@ export function createApp(service: CheckoutService, logging = true) {
   })
   app.register(cors, {
     origin: service.config.FRONTEND_URL,
-    methods: ['GET', 'POST'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key', 'X-Checkout-Token'],
   })
   app.register(rateLimit, { max: 120, timeWindow: '1 minute' })
@@ -267,6 +268,40 @@ export function createApp(service: CheckoutService, logging = true) {
       })),
       personalLink,
     }
+  })
+  app.get('/api/library/setlists', async (request) => {
+    const user = await authenticate(request.headers.authorization)
+    const records = await service.db.customSetlist.findMany({
+      where: { userId: user.id },
+      orderBy: [{ updatedAt: 'desc' }, { id: 'asc' }],
+    })
+    return { setlists: records.map(serializeSetlist) }
+  })
+  app.post('/api/library/setlists', { bodyLimit: 262144 }, async (request, reply) => {
+    const user = await authenticate(request.headers.authorization)
+    const data = await validateSetlist(service.db, user.id, request.body)
+    const record = await service.db.customSetlist.create({ data: { ...data, userId: user.id } })
+    return reply.code(201).send(serializeSetlist(record))
+  })
+  app.put('/api/library/setlists/:id', { bodyLimit: 262144 }, async (request) => {
+    const user = await authenticate(request.headers.authorization)
+    const { id } = z.object({ id: uuidSchema }).parse(request.params)
+    const existing = await service.db.customSetlist.findFirst({ where: { id, userId: user.id } })
+    if (!existing) throw setlistNotFound()
+    const data = await validateSetlist(service.db, user.id, request.body)
+    const result = await service.db.customSetlist.updateMany({
+      where: { id, userId: user.id },
+      data,
+    })
+    if (!result.count) throw setlistNotFound()
+    return { id, ...data }
+  })
+  app.delete('/api/library/setlists/:id', async (request) => {
+    const user = await authenticate(request.headers.authorization)
+    const { id } = z.object({ id: uuidSchema }).parse(request.params)
+    const result = await service.db.customSetlist.deleteMany({ where: { id, userId: user.id } })
+    if (!result.count) throw setlistNotFound()
+    return { deleted: true }
   })
   async function authorizedAsset(
     header: string | undefined,

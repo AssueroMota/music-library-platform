@@ -82,6 +82,12 @@ No Render, use `npm start` como comando de início para executar também o `pres
 Para publicar o frontend na Vercel, use o `vercel.json` e siga [docs/vercel.md](docs/vercel.md). A configuração do frontend não publica automaticamente a API ou o processamento da fila.
 
 
+### Setlists personalizados
+
+A área do aluno tem a aba **Meus setlists**, disponível nos dois planos. O aluno pode nomear o repertório, buscar músicas por título ou artista, adicionar até 200 músicas, mudar a ordem com as setas, editar, abrir os materiais e excluir com confirmação. Os setlists ficam salvos na conta, permitindo acessá-los em outros dispositivos. Versões de artistas ou instrumentos diferentes permanecem separadas.
+
+As rotas autenticadas `GET/POST /api/library/setlists` e `PUT/DELETE /api/library/setlists/:id` isolam os registros por usuário. Ao salvar, a API verifica novamente o acesso a cada música; o setlist não concede acesso a arquivos. Músicas removidas do catálogo ou fora do acesso atual permanecem identificadas na lista salva e precisam ser retiradas antes de salvar uma edição. A demonstração pública não cria setlists. A migração `202611080001_custom_setlists` cria a tabela; publique a API com essa migração antes de disponibilizar o novo frontend.
+
 ### Partituras guiadas (atualizado em 06/11/2026)
 
 O Plano Completo inclui o bônus exclusivo de 35 partituras guiadas em vídeo, em uma aba própria ao lado de Partituras e Setlists. O catálogo não mistura vídeos com os PDFs ou com os áudios. Os MP4 ficam no bucket privado; listagem, visualização e download verificam o acesso ativo ao Completo. O Básico não lista nem autoriza vídeos. A demonstração pública do Completo exibe os títulos, mas não libera os vídeos. A visualização do Básico não mostra a aba de vídeos. `shared/guided-scores.ts` mantém o catálogo público e a quantidade do bônus. O karaokê de Making Love Out of Nothing at All foi excluído por não mostrar partitura.
