@@ -71,6 +71,7 @@ export const publicRepertoire: readonly (readonly [string, string, string, boole
   ['Making Love Out of Nothing at All', 'Air Supply', 'Pop internacional', true],
   ['Marry You', '', 'Pop internacional', true],
   ['Meu Abrigo', 'Melim', 'MPB', true],
+  ['Mucuripe', 'Fagner', 'MPB', true],
   ['My Way', '', 'Pop internacional', true],
   ['Ninguém Explica Deus', '', 'Gospel', true],
   ['O Caderno', 'Toquinho', 'MPB', true],

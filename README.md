@@ -98,6 +98,8 @@ Borbulhas de Amor (Fagner) foi adicionada ao estilo MPB com as duas páginas da 
 
 Deslizes (Fagner) também está disponível em MPB, com as duas páginas originais da partitura e o karaokê da pasta `karaok`, convertido de M4A para MP3. As páginas ficam agrupadas na mesma música e podem ser trocadas sem interromper o áudio.
 
+Mucuripe (Fagner) foi acrescentada ao estilo MPB com a partitura de uma página e o karaokê fornecidos na pasta `karaok`. A imagem original foi preservada e o M4A convertido para MP3, mantendo as permissões de acesso da biblioteca.
+
 ### Partituras guiadas (atualizado em 06/11/2026)
 
 O Plano Completo inclui o bônus exclusivo de 35 partituras guiadas em vídeo, em uma aba própria ao lado de Partituras e Setlists. O catálogo não mistura vídeos com os PDFs ou com os áudios. Os MP4 ficam no bucket privado; listagem, visualização e download verificam o acesso ativo ao Completo. O Básico não lista nem autoriza vídeos. A demonstração pública do Completo exibe os títulos, mas não libera os vídeos. A visualização do Básico não mostra a aba de vídeos. `shared/guided-scores.ts` mantém o catálogo público e a quantidade do bônus. O karaokê de Making Love Out of Nothing at All foi excluído por não mostrar partitura.
