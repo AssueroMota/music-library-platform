@@ -19,6 +19,7 @@ export const publicRepertoire: readonly (readonly [string, string, string, boole
   ['Before You Go', 'Lewis Capaldi', 'Pop internacional', true],
   ['Birds of a Feather', 'Billie Eilish', 'Pop internacional', true],
   ['Bondade de Deus', '', 'Gospel', true],
+  ['Borbulhas de Amor', 'Fagner', 'MPB', true],
   ["Can't Help Falling in Love", 'Elvis Presley', 'Pop internacional', true],
   ['Canon in D', 'Johann Pachelbel', 'Clássico', true],
   ['Canteiros', 'Fagner', 'MPB', true],
