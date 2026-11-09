@@ -88,6 +88,8 @@ A área do aluno tem a aba **Meus setlists**, disponível nos dois planos. O alu
 
 As rotas autenticadas `GET/POST /api/library/setlists` e `PUT/DELETE /api/library/setlists/:id` isolam os registros por usuário. Ao salvar, a API verifica novamente o acesso a cada música; o setlist não concede acesso a arquivos. Músicas removidas do catálogo ou fora do acesso atual permanecem identificadas na lista salva e precisam ser retiradas antes de salvar uma edição. A demonstração pública não cria setlists. A migração `202611080001_custom_setlists` cria a tabela; publique a API com essa migração antes de disponibilizar o novo frontend.
 
+Every Breath You Take está identificada com o nome completo e o artista The Police. A biblioteca inclui a partitura de uma página para violino e o acompanhamento instrumental fornecidos em 09/11/2026. O M4A foi convertido para MP3; a imagem foi preservada sem alterações. A partitura e o áudio anteriores continuam como versões alternativas da mesma música. A partitura guiada permanece na aba de vídeos.
+
 ### Partituras guiadas (atualizado em 06/11/2026)
 
 O Plano Completo inclui o bônus exclusivo de 35 partituras guiadas em vídeo, em uma aba própria ao lado de Partituras e Setlists. O catálogo não mistura vídeos com os PDFs ou com os áudios. Os MP4 ficam no bucket privado; listagem, visualização e download verificam o acesso ativo ao Completo. O Básico não lista nem autoriza vídeos. A demonstração pública do Completo exibe os títulos, mas não libera os vídeos. A visualização do Básico não mostra a aba de vídeos. `shared/guided-scores.ts` mantém o catálogo público e a quantidade do bônus. O karaokê de Making Love Out of Nothing at All foi excluído por não mostrar partitura.

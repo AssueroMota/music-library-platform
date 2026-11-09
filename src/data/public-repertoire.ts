@@ -38,7 +38,7 @@ export const publicRepertoire: readonly (readonly [string, string, string, boole
   ['Era Uma Vez', 'Kell Smith', 'MPB', true],
   ['Escolhi Te Esperar', 'Marcela Taís', 'Gospel', true],
   ['Eu Sei Que Vou Te Amar', 'Tom Jobim e Vinicius de Moraes', 'MPB', true],
-  ['Every Breath', '', 'Pop internacional', true],
+  ['Every Breath You Take', 'The Police', 'Pop internacional', true],
   ['Faded', 'Alan Walker', 'Pop internacional', true],
   ['Fairytale', 'Alexander Rybak', 'Pop internacional', true],
   ['Fico Assim Sem Você', 'Adriana Calcanhotto', 'MPB', true],
