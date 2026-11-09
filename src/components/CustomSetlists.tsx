@@ -59,6 +59,11 @@ export function CustomSetlists({
   const { draft, change: setDraft } = editor
   const [today, setToday] = useState(setlistToday)
   const [filter, setFilter] = useState('active')
+  const [listSearch, setListSearch] = useState('')
+  const [typeFilter, setTypeFilter] = useState('all')
+  const [sort, setSort] = useState('date-asc')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
   const editing = Boolean(draft)
   const [search, setSearch] = useState('')
   const [busy, setBusy] = useState(false)
@@ -67,11 +72,59 @@ export function CustomSetlists({
   const available = useMemo(() => new Map(songs.map((song) => [song.id, song])), [songs])
   const active = setlists.find((setlist) => setlist.id === activeId)
   const expired = active && isSetlistExpired(active, today)
-  const filteredSetlists = setlists.filter(
-    (item) =>
-      filter === 'all' ||
-      (filter === 'expired' ? isSetlistExpired(item, today) : !isSetlistExpired(item, today)),
+  const filteredSetlists = setlists
+    .filter((item) => {
+      const inactive = isSetlistExpired(item, today)
+      const matchesStatus =
+        filter === 'all' ||
+        (filter === 'expired'
+          ? inactive
+          : !inactive &&
+            (filter === 'active' ||
+              (filter === 'draft' ? item.status === 'draft' : item.status !== 'draft')))
+      const eventDate = (item.type ?? 'personal') === 'personal' ? null : item.eventDate
+      return (
+        matchesStatus &&
+        (typeFilter === 'all' || (item.type ?? 'personal') === typeFilter) &&
+        normalizeSearch(item.title || 'Setlist sem nome').includes(
+          normalizeSearch(listSearch.trim()),
+        ) &&
+        (!dateFrom || Boolean(eventDate && eventDate >= dateFrom)) &&
+        (!dateTo || Boolean(eventDate && eventDate <= dateTo))
+      )
+    })
+    .sort((first, second) => {
+      if (sort === 'recent') return 0 // The API and automatic saves already put the latest edits first.
+      const byName = first.title.localeCompare(second.title, 'pt-BR', {
+        sensitivity: 'base',
+        numeric: true,
+      })
+      if (sort === 'name-asc') return byName
+      if (sort === 'name-desc') return -byName
+      const firstDate = (first.type ?? 'personal') === 'personal' ? null : first.eventDate
+      const secondDate = (second.type ?? 'personal') === 'personal' ? null : second.eventDate
+      if (!firstDate && !secondDate) return byName
+      if (!firstDate) return 1
+      if (!secondDate) return -1
+      const byDate = firstDate.localeCompare(secondDate)
+      return (sort === 'date-desc' ? -byDate : byDate) || byName
+    })
+  const hasListFilters = Boolean(
+    listSearch ||
+    typeFilter !== 'all' ||
+    filter !== 'active' ||
+    dateFrom ||
+    dateTo ||
+    sort !== 'date-asc',
   )
+  function clearListFilters() {
+    setListSearch('')
+    setTypeFilter('all')
+    setFilter('active')
+    setDateFrom('')
+    setDateTo('')
+    setSort('date-asc')
+  }
   const draftIds = new Set(draft?.songs.map(setlistSongId))
   const unavailable = draft?.songs.some((song) => !available.has(setlistSongId(song)))
   const canFinalize =
@@ -540,18 +593,101 @@ export function CustomSetlists({
                 <p>Crie seu primeiro setlist para um show, uma cerimônia ou seus estudos.</p>
               </div>
             )}
-            <div className="custom-list-filter">
-              <label htmlFor="custom-setlist-filter">Exibir setlists</label>
-              <select
-                id="custom-setlist-filter"
-                value={filter}
-                onChange={(event) => setFilter(event.target.value)}
-              >
-                <option value="active">Ativos e rascunhos</option>
-                <option value="expired">Inativos</option>
-                <option value="all">Todos</option>
-              </select>
+            <div
+              className="custom-list-filter"
+              role="group"
+              aria-label="Filtrar e ordenar meus setlists"
+            >
+              <div className="custom-name custom-list-search">
+                <label htmlFor="custom-setlist-search">Buscar setlists</label>
+                <input
+                  id="custom-setlist-search"
+                  type="search"
+                  placeholder="Busque pelo nome…"
+                  value={listSearch}
+                  onChange={(event) => setListSearch(event.target.value)}
+                />
+              </div>
+              <div className="custom-name">
+                <label htmlFor="custom-setlist-type-filter">Filtrar por tipo</label>
+                <select
+                  id="custom-setlist-type-filter"
+                  value={typeFilter}
+                  onChange={(event) => setTypeFilter(event.target.value)}
+                >
+                  <option value="all">Todos os tipos</option>
+                  {Object.entries(SETLIST_TYPES).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="custom-name">
+                <label htmlFor="custom-setlist-filter">Exibir setlists</label>
+                <select
+                  id="custom-setlist-filter"
+                  value={filter}
+                  onChange={(event) => setFilter(event.target.value)}
+                >
+                  <option value="active">Ativos e rascunhos</option>
+                  <option value="ready">Ativos finalizados</option>
+                  <option value="draft">Rascunhos</option>
+                  <option value="expired">Inativos</option>
+                  <option value="all">Todos</option>
+                </select>
+              </div>
+              <div className="custom-name">
+                <label htmlFor="custom-setlist-sort">Ordenar setlists</label>
+                <select
+                  id="custom-setlist-sort"
+                  value={sort}
+                  onChange={(event) => setSort(event.target.value)}
+                >
+                  <option value="date-asc">Data: mais próxima</option>
+                  <option value="date-desc">Data: mais distante</option>
+                  <option value="name-asc">Nome: A–Z</option>
+                  <option value="name-desc">Nome: Z–A</option>
+                  <option value="recent">Editados recentemente</option>
+                </select>
+              </div>
+              <div className="custom-name">
+                <label htmlFor="custom-setlist-date-from">Data inicial</label>
+                <input
+                  id="custom-setlist-date-from"
+                  type="date"
+                  value={dateFrom}
+                  max={dateTo || undefined}
+                  onChange={(event) => setDateFrom(event.target.value)}
+                />
+              </div>
+              <div className="custom-name">
+                <label htmlFor="custom-setlist-date-to">Data final</label>
+                <input
+                  id="custom-setlist-date-to"
+                  type="date"
+                  value={dateTo}
+                  min={dateFrom || undefined}
+                  onChange={(event) => setDateTo(event.target.value)}
+                />
+              </div>
             </div>
+            <div className="custom-list-summary">
+              <p role="status">
+                {filteredSetlists.length} de {setlists.length}{' '}
+                {setlists.length === 1 ? 'setlist' : 'setlists'}
+              </p>
+              {hasListFilters && (
+                <button className="repertoire-clear" onClick={clearListFilters}>
+                  Limpar filtros
+                </button>
+              )}
+            </div>
+            {dateFrom && dateTo && dateFrom > dateTo && (
+              <p className="checkout-error" role="alert">
+                A data inicial deve ser anterior ou igual à data final.
+              </p>
+            )}
             {setlists.length > 0 && !filteredSetlists.length && (
               <p>Nenhum setlist nesta seleção.</p>
             )}

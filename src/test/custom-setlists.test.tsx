@@ -147,7 +147,7 @@ it('exige confirmação para excluir, preserva o setlist na falha e permite tent
   expect(await screen.findByRole('alert')).toHaveTextContent('Falha ao excluir.')
   expect(screen.getByRole('heading', { name: 'Show' })).toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Confirmar exclusão' }))
-  expect(await screen.findByRole('status')).toHaveTextContent('Setlist excluído.')
+  expect(await screen.findByText('Setlist excluído.')).toHaveAttribute('role', 'status')
   expect(screen.getByText('Seu repertório, do seu jeito.')).toBeInTheDocument()
 })
 
@@ -293,4 +293,106 @@ it('vence apenas depois do dia do evento pelo calendário de São Paulo', () => 
   expect(isSetlistExpired(event, '2026-12-13')).toBe(true)
   expect(isSetlistExpired({ type: 'personal', eventDate: '2000-01-01' }, '2026-12-13')).toBe(false)
   expect(isSetlistExpired({}, '2026-12-13')).toBe(false)
+})
+
+it('combina busca, tipo, situação e período, ordena por data ou nome e limpa os filtros', async () => {
+  const { user } = setup([
+    { id: 'personal', title: 'Álbum próprio', songs: [fix], type: 'personal', status: 'ready' },
+    {
+      id: 'far',
+      title: 'Casamento Zélia',
+      songs: [fix],
+      type: 'wedding',
+      eventDate: '2099-12-12',
+      status: 'ready',
+    },
+    {
+      id: 'near',
+      title: 'Restaurante Árvore',
+      songs: [fix],
+      type: 'restaurant',
+      eventDate: '2099-01-01',
+      status: 'ready',
+    },
+    {
+      id: 'draft',
+      title: 'Casamento Ana',
+      songs: [],
+      type: 'wedding',
+      eventDate: '2099-06-15',
+      status: 'draft',
+    },
+    {
+      id: 'old',
+      title: 'Evento antigo',
+      songs: [fix],
+      type: 'event',
+      eventDate: '2000-01-01',
+      status: 'ready',
+    },
+  ])
+  render(<MemberRepertoire data={data} token="member-token" />)
+  await user.click(screen.getByRole('button', { name: 'Meus setlists' }))
+  await screen.findByLabelText('Ordenar setlists')
+  const titles = () =>
+    screen
+      .queryAllByRole('button', { name: /^Abrir meu setlist / })
+      .map((item) => item.getAttribute('aria-label')!.replace('Abrir meu setlist ', ''))
+  expect(titles()).toEqual([
+    'Restaurante Árvore',
+    'Casamento Ana',
+    'Casamento Zélia',
+    'Álbum próprio',
+  ])
+  await user.selectOptions(screen.getByLabelText('Ordenar setlists'), 'date-desc')
+  expect(titles()).toEqual([
+    'Casamento Zélia',
+    'Casamento Ana',
+    'Restaurante Árvore',
+    'Álbum próprio',
+  ])
+  await user.selectOptions(screen.getByLabelText('Ordenar setlists'), 'name-asc')
+  expect(titles()).toEqual([
+    'Álbum próprio',
+    'Casamento Ana',
+    'Casamento Zélia',
+    'Restaurante Árvore',
+  ])
+  await user.selectOptions(screen.getByLabelText('Ordenar setlists'), 'name-desc')
+  expect(titles()).toEqual([
+    'Restaurante Árvore',
+    'Casamento Zélia',
+    'Casamento Ana',
+    'Álbum próprio',
+  ])
+  await user.selectOptions(screen.getByLabelText('Ordenar setlists'), 'recent')
+  expect(titles()).toEqual([
+    'Álbum próprio',
+    'Casamento Zélia',
+    'Restaurante Árvore',
+    'Casamento Ana',
+  ])
+  await user.selectOptions(screen.getByLabelText('Filtrar por tipo'), 'wedding')
+  expect(titles()).toEqual(['Casamento Zélia', 'Casamento Ana'])
+  await user.selectOptions(screen.getByLabelText('Exibir setlists'), 'draft')
+  expect(titles()).toEqual(['Casamento Ana'])
+  await user.selectOptions(screen.getByLabelText('Exibir setlists'), 'ready')
+  expect(titles()).toEqual(['Casamento Zélia'])
+  await user.click(screen.getByRole('button', { name: 'Limpar filtros' }))
+  await user.type(screen.getByLabelText('Buscar setlists'), 'arvore')
+  expect(titles()).toEqual(['Restaurante Árvore'])
+  await user.click(screen.getByRole('button', { name: 'Limpar filtros' }))
+  fireEvent.change(screen.getByLabelText('Data inicial'), { target: { value: '2099-01-01' } })
+  fireEvent.change(screen.getByLabelText('Data final'), { target: { value: '2099-06-15' } })
+  expect(titles()).toEqual(['Restaurante Árvore', 'Casamento Ana'])
+  expect(screen.getByRole('status')).toHaveTextContent('2 de 5 setlists')
+  await user.selectOptions(screen.getByLabelText('Filtrar por tipo'), 'wedding')
+  expect(titles()).toEqual(['Casamento Ana'])
+  await user.type(screen.getByLabelText('Buscar setlists'), 'Inexistente')
+  expect(screen.getByText('Nenhum setlist nesta seleção.')).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Limpar filtros' }))
+  await user.selectOptions(screen.getByLabelText('Exibir setlists'), 'expired')
+  expect(titles()).toEqual(['Evento antigo'])
+  await user.selectOptions(screen.getByLabelText('Exibir setlists'), 'all')
+  expect(titles()).toHaveLength(5)
 })
