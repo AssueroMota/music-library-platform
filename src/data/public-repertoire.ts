@@ -29,6 +29,7 @@ export const publicRepertoire: readonly (readonly [string, string, string, boole
   ['Close to You', 'Carpenters', 'Pop internacional', true],
   ['Como É Grande o Meu Amor por Você', 'Roberto Carlos', 'MPB', true],
   ['De Janeiro a Janeiro', 'Roberta Campos e Nando Reis', 'MPB', true],
+  ['Deslizes', 'Fagner', 'MPB', true],
   ['Deus de Promessas', 'Davi Sacer', 'Gospel', true],
   ['Die With a Smile', 'Lady Gaga e Bruno Mars', 'Pop internacional', true],
   ['Dreams', 'The Cranberries', 'Pop internacional', true],
