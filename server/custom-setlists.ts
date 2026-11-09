@@ -1,6 +1,6 @@
 import type { PrismaClient } from '@prisma/client'
 import { z } from 'zod'
-import { MAX_SETLIST_SONGS, setlistSongId } from '../shared/custom-setlists.js'
+import { MAX_SETLIST_SONGS, SETLIST_TYPE_IDS, setlistSongId } from '../shared/custom-setlists.js'
 import { librarySnapshot } from './library-queries.js'
 import { AppError } from './security.js'
 
@@ -14,13 +14,55 @@ const songSchema = z
 
 export const customSetlistSchema = z
   .object({
-    title: z.string().trim().min(1).max(100),
-    songs: z.array(songSchema).min(1).max(MAX_SETLIST_SONGS),
+    id: z.uuid().optional(),
+    title: z.string().trim().max(100),
+    songs: z.array(songSchema).max(MAX_SETLIST_SONGS),
+    type: z.enum(SETLIST_TYPE_IDS).default('personal'),
+    eventDate: z.iso.date().nullable().default(null),
+    status: z.enum(['draft', 'ready']).default('ready'),
   })
   .strict()
+  .superRefine((input, context) => {
+    if (input.status === 'ready') {
+      if (!input.title)
+        context.addIssue({ code: 'custom', path: ['title'], message: 'Informe o nome do setlist.' })
+      if (!input.songs.length)
+        context.addIssue({
+          code: 'custom',
+          path: ['songs'],
+          message: 'Adicione pelo menos uma música.',
+        })
+      if (input.type !== 'personal' && !input.eventDate)
+        context.addIssue({
+          code: 'custom',
+          path: ['eventDate'],
+          message: 'Selecione a data do evento.',
+        })
+    }
+    if (input.type === 'personal' && input.eventDate)
+      context.addIssue({
+        code: 'custom',
+        path: ['eventDate'],
+        message: 'Setlists próprios não têm vencimento.',
+      })
+  })
 
-export function serializeSetlist(record: { id: string; title: string; songs: unknown }) {
-  return { id: record.id, title: record.title, songs: z.array(songSchema).parse(record.songs) }
+export function serializeSetlist(record: {
+  id: string
+  title: string
+  songs: unknown
+  type: string
+  eventDate: string | null
+  status: string
+}) {
+  return {
+    id: record.id,
+    title: record.title,
+    songs: z.array(songSchema).parse(record.songs),
+    type: record.type,
+    eventDate: record.eventDate,
+    status: record.status,
+  }
 }
 
 export function setlistNotFound() {
@@ -51,5 +93,11 @@ export async function validateSetlist(db: PrismaClient, userId: string, body: un
       'SONG_UNAVAILABLE',
       'Selecione somente músicas disponíveis no seu acesso atual.',
     )
-  return { title: input.title, songs: ids.map((id) => available.get(id)!) }
+  return {
+    title: input.title,
+    songs: ids.map((id) => available.get(id)!),
+    type: input.type,
+    eventDate: input.eventDate,
+    status: input.status,
+  }
 }

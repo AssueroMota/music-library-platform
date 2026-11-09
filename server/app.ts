@@ -280,7 +280,19 @@ export function createApp(service: CheckoutService, logging = true) {
   app.post('/api/library/setlists', { bodyLimit: 262144 }, async (request, reply) => {
     const user = await authenticate(request.headers.authorization)
     const data = await validateSetlist(service.db, user.id, request.body)
-    const record = await service.db.customSetlist.create({ data: { ...data, userId: user.id } })
+    // A client UUID makes automatic-save retries safe after a lost response.
+    const { id } = z.object({ id: uuidSchema.optional() }).parse(request.body)
+    if (id) {
+      const existing = await service.db.customSetlist.findUnique({ where: { id } })
+      if (existing && existing.userId !== user.id) throw setlistNotFound()
+    }
+    const record = id
+      ? await service.db.customSetlist.upsert({
+          where: { id, userId: user.id },
+          create: { id, ...data, userId: user.id },
+          update: data,
+        })
+      : await service.db.customSetlist.create({ data: { ...data, userId: user.id } })
     return reply.code(201).send(serializeSetlist(record))
   })
   app.put('/api/library/setlists/:id', { bodyLimit: 262144 }, async (request) => {

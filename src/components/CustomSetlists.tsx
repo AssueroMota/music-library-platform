@@ -12,17 +12,21 @@ import {
 } from 'lucide-react'
 import {
   MAX_SETLIST_SONGS,
+  SETLIST_TYPES,
+  isSetlistExpired,
+  setlistToday,
+  type SetlistType,
   setlistSongId,
   type CustomSetlist,
   type SetlistSong,
 } from '../../shared/custom-setlists'
 import { api, LIBRARY_REQUEST_TIMEOUT_MS } from '../lib/api'
+import { useSetlistDraft } from '../lib/use-setlist-draft'
 import { normalizeSearch } from '../data/library'
 import { allInstruments } from '../data/content'
 import '../styles/custom-setlists.css'
 
 type AvailableSong = SetlistSong & { id: string }
-type Draft = { id?: string; title: string; songs: SetlistSong[] }
 
 function songDescription(song: SetlistSong) {
   return [
@@ -49,7 +53,12 @@ export function CustomSetlists({
   const [notice, setNotice] = useState('')
   const [reload, setReload] = useState(0)
   const [activeId, setActiveId] = useState<string | null>(null)
-  const [draft, setDraft] = useState<Draft | null>(null)
+  const editor = useSetlistDraft(token, (saved) => {
+    setSetlists((items) => [saved, ...items.filter((item) => item.id !== saved.id)])
+  })
+  const { draft, change: setDraft } = editor
+  const [today, setToday] = useState(setlistToday)
+  const [filter, setFilter] = useState('active')
   const editing = Boolean(draft)
   const [search, setSearch] = useState('')
   const [busy, setBusy] = useState(false)
@@ -57,8 +66,20 @@ export function CustomSetlists({
   const heading = useRef<HTMLHeadingElement>(null)
   const available = useMemo(() => new Map(songs.map((song) => [song.id, song])), [songs])
   const active = setlists.find((setlist) => setlist.id === activeId)
+  const expired = active && isSetlistExpired(active, today)
+  const filteredSetlists = setlists.filter(
+    (item) =>
+      filter === 'all' ||
+      (filter === 'expired' ? isSetlistExpired(item, today) : !isSetlistExpired(item, today)),
+  )
   const draftIds = new Set(draft?.songs.map(setlistSongId))
   const unavailable = draft?.songs.some((song) => !available.has(setlistSongId(song)))
+  const canFinalize =
+    draft &&
+    draft.title.trim() &&
+    draft.songs.length &&
+    !unavailable &&
+    (draft.type === 'personal' || draft.eventDate)
   const matches = songs.filter((song) =>
     normalizeSearch(`${song.title} ${song.artist}`).includes(normalizeSearch(search.trim())),
   )
@@ -89,8 +110,18 @@ export function CustomSetlists({
     heading.current?.focus()
   }, [activeId, editing])
 
+  useEffect(() => {
+    const update = () => setToday(setlistToday())
+    const timer = window.setInterval(update, 30000)
+    window.addEventListener('focus', update)
+    return () => {
+      window.clearInterval(timer)
+      window.removeEventListener('focus', update)
+    }
+  }, [])
+
   function edit(setlist?: CustomSetlist) {
-    setDraft(setlist ? { ...setlist, songs: [...setlist.songs] } : { title: '', songs: [] })
+    editor.edit(setlist)
     setSearch('')
     setError('')
     setNotice('')
@@ -107,35 +138,21 @@ export function CustomSetlists({
   }
   async function save(event: FormEvent) {
     event.preventDefault()
-    if (!draft || busy || unavailable || !draft.title.trim() || !draft.songs.length) return
+    if (!draft || busy || !canFinalize) return
     setBusy(true)
-    setError('')
-    try {
-      const saved = await api<CustomSetlist>(
-        `/library/setlists${draft.id ? `/${draft.id}` : ''}`,
-        {
-          method: draft.id ? 'PUT' : 'POST',
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            title: draft.title.trim(),
-            songs: draft.songs.map(({ title, artist, instrument }) => ({
-              title,
-              artist,
-              instrument,
-            })),
-          }),
-        },
-        LIBRARY_REQUEST_TIMEOUT_MS,
-      )
-      setSetlists((items) => [saved, ...items.filter((item) => item.id !== saved.id)])
-      setActiveId(saved.id)
-      setDraft(null)
+    const id = draft.id
+    if (await editor.close(true)) {
+      setActiveId(id)
       setNotice('Setlist salvo na sua conta.')
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Não foi possível salvar o setlist.')
-    } finally {
-      setBusy(false)
     }
+    setBusy(false)
+  }
+  async function back() {
+    if (draft && !(await editor.close())) return
+    setActiveId(null)
+    setError('')
+    setNotice('')
+    setConfirmDelete(false)
   }
   async function remove() {
     if (!active || busy) return
@@ -163,29 +180,23 @@ export function CustomSetlists({
 
   return (
     <section className="custom-setlists" aria-labelledby="custom-setlists-heading">
-      <header className="custom-setlists-heading">
+      <header
+        className={`custom-setlists-heading${draft ? ' custom-setlists-heading-editing' : ''}`}
+      >
         <div>
           {(draft || active) && (
             <button
               className="repertoire-clear"
               disabled={busy}
               onClick={() => {
-                setDraft(null)
-                setActiveId(null)
-                setError('')
-                setNotice('')
-                setConfirmDelete(false)
+                void back()
               }}
             >
               <ArrowLeft size={16} /> Voltar aos meus setlists
             </button>
           )}
           <h2 id="custom-setlists-heading" ref={heading} tabIndex={-1}>
-            {draft
-              ? draft.id
-                ? 'Editar setlist'
-                : 'Novo setlist'
-              : (active?.title ?? 'Meus setlists')}
+            {draft ? 'Personalizar setlist' : (active?.title ?? 'Meus setlists')}
           </h2>
           <p>
             {draft
@@ -195,6 +206,41 @@ export function CustomSetlists({
                 : 'Monte seu repertório e acesse seus setlists em qualquer dispositivo com sua conta.'}
           </p>
         </div>
+        {draft && (
+          <div className="custom-editor-toolbar">
+            <button
+              form="custom-setlist-form"
+              className="repertoire-action custom-primary"
+              type="submit"
+              disabled={busy || !canFinalize}
+            >
+              {busy ? 'Salvando…' : 'Salvar setlist'}
+            </button>
+            <span role="status" className="custom-save-status">
+              {editor.saving
+                ? 'Salvando automaticamente…'
+                : editor.error
+                  ? 'Alterações pendentes. Tente salvar novamente.'
+                  : editor.dirty
+                    ? 'Alterações pendentes…'
+                    : editor.persisted
+                      ? 'Salvo automaticamente na sua conta'
+                      : 'Salvamento automático ativado'}
+            </span>
+            {editor.error && (
+              <button
+                type="button"
+                className="repertoire-action"
+                disabled={editor.saving}
+                onClick={() => {
+                  void editor.retry()
+                }}
+              >
+                Tentar salvar rascunho
+              </button>
+            )}
+          </div>
+        )}
         {!draft && !active && (
           <button
             className="repertoire-action custom-primary"
@@ -238,9 +284,9 @@ export function CustomSetlists({
           </button>
         </div>
       )}
-      {error && (
+      {(error || editor.error) && (
         <p className="checkout-error" role="alert">
-          {error}
+          {error || editor.error}
         </p>
       )}
       {notice && (
@@ -266,20 +312,62 @@ export function CustomSetlists({
         </div>
       )}
       {draft ? (
-        <form onSubmit={save}>
+        <form id="custom-setlist-form" onSubmit={save}>
           <fieldset className="custom-editor" disabled={busy}>
             <legend className="sr-only">Personalizar setlist</legend>
-            <div className="custom-name">
-              <label htmlFor="custom-setlist-title">Nome do setlist</label>
-              <input
-                id="custom-setlist-title"
-                value={draft.title}
-                required
-                maxLength={100}
-                placeholder="Ex.: Casamento da Ana e do Pedro"
-                onChange={(event) => setDraft({ ...draft, title: event.target.value })}
-              />
+            <div className="custom-metadata">
+              <div className="custom-name">
+                <label htmlFor="custom-setlist-title">Nome do setlist</label>
+                <input
+                  id="custom-setlist-title"
+                  value={draft.title}
+                  required
+                  maxLength={100}
+                  placeholder="Ex.: Casamento da Ana e do Pedro"
+                  onChange={(event) => setDraft({ ...draft, title: event.target.value })}
+                />
+              </div>
+              <div className="custom-name">
+                <label htmlFor="custom-setlist-type">Tipo do setlist</label>
+                <select
+                  id="custom-setlist-type"
+                  value={draft.type}
+                  onChange={(event) => {
+                    const type = event.target.value as SetlistType
+                    setDraft({
+                      ...draft,
+                      type,
+                      eventDate: type === 'personal' ? null : draft.eventDate,
+                    })
+                  }}
+                >
+                  {Object.entries(SETLIST_TYPES).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="custom-name">
+                <label htmlFor="custom-setlist-date">Data do evento</label>
+                <input
+                  id="custom-setlist-date"
+                  type="date"
+                  value={draft.eventDate ?? ''}
+                  disabled={draft.type === 'personal'}
+                  required={draft.type !== 'personal'}
+                  onChange={(event) =>
+                    setDraft({ ...draft, eventDate: event.target.value || null })
+                  }
+                  aria-describedby="custom-setlist-expiry"
+                />
+              </div>
             </div>
+            <p id="custom-setlist-expiry" className="custom-expiry-help">
+              {draft.type === 'personal'
+                ? 'Setlist próprio: sem vencimento. Use para seus estudos e playlists.'
+                : 'O setlist fica inativo no dia seguinte à data do evento. Você pode editar a data para reutilizá-lo.'}
+            </p>
             <div className="custom-editor-columns">
               <section className="custom-panel" aria-labelledby="custom-available-heading">
                 <h3 id="custom-available-heading">Adicionar músicas</h3>
@@ -391,56 +479,56 @@ export function CustomSetlists({
                 </ol>
               </section>
             </div>
-            <footer className="custom-actions">
-              <button
-                className="repertoire-action custom-primary"
-                type="submit"
-                disabled={!draft.title.trim() || !draft.songs.length || unavailable}
-              >
-                {busy ? 'Salvando…' : 'Salvar setlist'}
-              </button>
-              <button
-                className="repertoire-action"
-                type="button"
-                onClick={() => {
-                  setDraft(null)
-                  setError('')
-                }}
-              >
-                Cancelar edição
-              </button>
-            </footer>
           </fieldset>
         </form>
       ) : active ? (
-        <ol
-          className="custom-song-list custom-saved-songs"
-          aria-label="Músicas do setlist personalizado"
-        >
-          {active.songs.map((song, index) => {
-            const current = available.get(setlistSongId(song))
-            return (
-              <li key={setlistSongId(song)}>
-                <span className="custom-song-number">{index + 1}</span>
-                <span className="custom-song-label">
-                  <strong>{song.title}</strong>
-                  <small>{songDescription(song)}</small>
-                </span>
-                {current ? (
-                  <button
-                    className="repertoire-action"
-                    aria-label={`Abrir materiais de ${song.title}`}
-                    onClick={() => onOpenSong(current.id)}
-                  >
-                    <FileMusic size={17} /> Abrir
-                  </button>
-                ) : (
-                  <span className="repertoire-unavailable">Indisponível no seu acesso</span>
-                )}
-              </li>
-            )
-          })}
-        </ol>
+        <>
+          <p className="custom-setlist-summary">
+            {SETLIST_TYPES[active.type ?? 'personal']} ·{' '}
+            {active.eventDate ? active.eventDate.split('-').reverse().join('/') : 'Sem vencimento'}{' '}
+            ·{' '}
+            {expired
+              ? 'Inativo — evento encerrado'
+              : active.status === 'draft'
+                ? 'Rascunho'
+                : 'Ativo'}
+          </p>
+          {expired && (
+            <p className="custom-feedback">
+              A data deste evento já passou. Edite a data para reativar este setlist.
+            </p>
+          )}
+          <ol
+            className="custom-song-list custom-saved-songs"
+            aria-label="Músicas do setlist personalizado"
+          >
+            {active.songs.map((song, index) => {
+              const current = available.get(setlistSongId(song))
+              return (
+                <li key={setlistSongId(song)}>
+                  <span className="custom-song-number">{index + 1}</span>
+                  <span className="custom-song-label">
+                    <strong>{song.title}</strong>
+                    <small>{songDescription(song)}</small>
+                  </span>
+                  {current && !expired ? (
+                    <button
+                      className="repertoire-action"
+                      aria-label={`Abrir materiais de ${song.title}`}
+                      onClick={() => onOpenSong(current.id)}
+                    >
+                      <FileMusic size={17} /> Abrir
+                    </button>
+                  ) : (
+                    <span className="repertoire-unavailable">
+                      {expired ? 'Evento encerrado' : 'Indisponível no seu acesso'}
+                    </span>
+                  )}
+                </li>
+              )
+            })}
+          </ol>
+        </>
       ) : (
         !loading &&
         !loadError && (
@@ -452,12 +540,27 @@ export function CustomSetlists({
                 <p>Crie seu primeiro setlist para um show, uma cerimônia ou seus estudos.</p>
               </div>
             )}
+            <div className="custom-list-filter">
+              <label htmlFor="custom-setlist-filter">Exibir setlists</label>
+              <select
+                id="custom-setlist-filter"
+                value={filter}
+                onChange={(event) => setFilter(event.target.value)}
+              >
+                <option value="active">Ativos e rascunhos</option>
+                <option value="expired">Inativos</option>
+                <option value="all">Todos</option>
+              </select>
+            </div>
+            {setlists.length > 0 && !filteredSetlists.length && (
+              <p>Nenhum setlist nesta seleção.</p>
+            )}
             <div className="library-setlist-grid">
-              {setlists.map((setlist) => (
+              {filteredSetlists.map((setlist) => (
                 <button
-                  className="library-setlist-card"
+                  className={`library-setlist-card${isSetlistExpired(setlist, today) ? ' custom-setlist-expired' : ''}`}
                   key={setlist.id}
-                  aria-label={`Abrir meu setlist ${setlist.title}`}
+                  aria-label={`Abrir meu setlist ${setlist.title || 'Sem nome'}`}
                   onClick={() => {
                     setActiveId(setlist.id)
                     setNotice('')
@@ -465,9 +568,20 @@ export function CustomSetlists({
                   }}
                 >
                   <span className="library-setlist-card-top">
-                    <ListMusic size={18} /> Personalizado
+                    <ListMusic size={18} /> {SETLIST_TYPES[setlist.type ?? 'personal']}
                   </span>
-                  <strong>{setlist.title}</strong>
+                  <strong>{setlist.title || 'Setlist sem nome'}</strong>
+                  <span className="custom-setlist-meta">
+                    {setlist.eventDate
+                      ? setlist.eventDate.split('-').reverse().join('/')
+                      : 'Sem vencimento'}{' '}
+                    ·{' '}
+                    {isSetlistExpired(setlist, today)
+                      ? 'Inativo'
+                      : setlist.status === 'draft'
+                        ? 'Rascunho'
+                        : 'Ativo'}
+                  </span>
                   <span className="library-setlist-preview">
                     {setlist.songs
                       .slice(0, 3)

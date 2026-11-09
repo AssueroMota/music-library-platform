@@ -152,7 +152,7 @@ export function MemberRepertoire({
         </nav>
       )}
       {view === 'custom' ? (
-        <CustomSetlists songs={songs} token={token} onOpenSong={openSong} />
+        <CustomSetlists key={token} songs={songs} token={token} onOpenSong={openSong} />
       ) : view === 'guided' ? (
         <LibraryGuidedScores videos={videos} token={token} previewMedia={previewMedia} />
       ) : view === 'setlists' && !activeSetlist ? (

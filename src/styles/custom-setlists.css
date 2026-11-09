@@ -13,6 +13,11 @@
   min-width: 0;
   flex: 1 1 280px;
 }
+.custom-setlists-heading-editing {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  align-items: start;
+}
 .member-page .custom-setlists h2 {
   margin: 10px 0 6px;
   font-size: 24px;
@@ -51,15 +56,62 @@
   min-width: 0;
 }
 .custom-name {
-  max-width: 600px;
-  margin-bottom: 22px;
+  min-width: 0;
+}
+.custom-metadata {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(160px, 1fr) minmax(160px, 1fr);
+  gap: 18px;
+}
+.custom-editor-toolbar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-self: end;
+  width: 280px;
+  max-width: 100%;
+  gap: 8px;
+}
+.custom-editor-toolbar > .custom-primary {
+  min-width: 120px;
+  min-height: 42px;
+}
+.custom-save-status {
+  width: 100%;
+  min-height: 40px;
+  line-height: 20px;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.custom-save-status,
+.custom-expiry-help,
+.custom-setlist-meta {
+  font-size: 13px;
+  color: var(--library-muted);
+}
+.custom-expiry-help {
+  margin: 12px 0 24px;
+}
+.custom-list-filter {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.custom-list-filter select {
+  max-width: 240px;
+}
+.custom-setlist-expired {
+  opacity: 0.7;
 }
 .custom-name label {
   display: block;
   font-weight: 600;
   margin-bottom: 7px;
 }
-.custom-setlists input {
+.custom-setlists input,
+.custom-setlists select {
   width: 100%;
   min-width: 0;
   min-height: 46px;
@@ -169,6 +221,12 @@
   overflow-wrap: anywhere;
 }
 @media (max-width: 900px) {
+  .custom-metadata {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .custom-metadata .custom-name:first-child {
+    grid-column: 1 / -1;
+  }
   .custom-editor-columns {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -176,7 +234,15 @@
     max-height: 340px;
   }
 }
+@media (max-width: 650px) {
+  .custom-setlists-heading-editing {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 @media (max-width: 500px) {
+  .custom-metadata {
+    grid-template-columns: minmax(0, 1fr);
+  }
   .custom-panel {
     padding: 14px;
   }

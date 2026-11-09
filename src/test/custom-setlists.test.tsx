@@ -1,9 +1,10 @@
-import { render, screen, within, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, within, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, it, vi } from 'vitest'
 import { MemberRepertoire } from '../components/MemberRepertoire'
 import type { MemberLibraryData } from '../../shared/library'
 import type { CustomSetlist } from '../../shared/custom-setlists'
+import { isSetlistExpired, setlistToday } from '../../shared/custom-setlists'
 
 vi.mock('../components/ProtectedMedia', () => ({
   ProtectedMedia: ({ asset }: { asset: { title: string } }) => <p>Material: {asset.title}</p>,
@@ -36,7 +37,10 @@ const data: MemberLibraryData = {
   ],
 }
 
-afterEach(() => vi.unstubAllGlobals())
+afterEach(() => {
+  vi.unstubAllGlobals()
+  localStorage.clear()
+})
 
 function setup(initial: CustomSetlist[] = []) {
   let stored = initial
@@ -81,7 +85,7 @@ it('cria com versões distintas, reordena, persiste na conta, reabre e edita sem
   expect(await screen.findByRole('status')).toHaveTextContent('Setlist salvo na sua conta.')
   const call = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST')!
   expect(call[1]?.headers).toMatchObject({ Authorization: 'Bearer member-token' })
-  expect(JSON.parse(call[1]?.body as string)).toEqual({
+  expect(JSON.parse(call[1]?.body as string)).toMatchObject({
     title: 'Meu casamento',
     songs: [frank, john],
   })
@@ -104,11 +108,13 @@ it('cria com versões distintas, reordena, persiste na conta, reabre e edita sem
   await user.click(screen.getByRole('button', { name: 'Salvar setlist' }))
   await waitFor(() => expect(screen.getByRole('heading', { name: 'Show' })).toBeInTheDocument())
   expect(
-    JSON.parse(fetchMock.mock.calls.find(([, init]) => init?.method === 'PUT')![1]?.body as string),
-  ).toEqual({ title: 'Show', songs: [john] })
+    JSON.parse(
+      fetchMock.mock.calls.filter(([, init]) => init?.method === 'PUT').at(-1)![1]?.body as string,
+    ),
+  ).toMatchObject({ title: 'Show', songs: [john], status: 'ready' })
 })
 
-it('mantém o rascunho após falha e permite cancelar edição sem alterar o setlist salvo', async () => {
+it('mantém o rascunho após falha e permite tentar novamente sem confirmação', async () => {
   const { user, fetchMock } = setup([{ id: 'saved-1', title: 'Original', songs: [fix] }])
   render(<MemberRepertoire data={data} token="member-token" />)
   await user.click(screen.getByRole('button', { name: 'Meus setlists' }))
@@ -121,8 +127,8 @@ it('mantém o rascunho após falha e permite cancelar edição sem alterar o set
   await user.click(screen.getByRole('button', { name: 'Salvar setlist' }))
   expect(await screen.findByRole('alert')).toHaveTextContent('Falha ao salvar.')
   expect(screen.getByRole('textbox', { name: 'Nome do setlist' })).toHaveValue('Original editado')
-  await user.click(screen.getByRole('button', { name: 'Cancelar edição' }))
-  expect(screen.getByRole('heading', { name: 'Original' })).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Salvar setlist' }))
+  expect(await screen.findByRole('heading', { name: 'Original editado' })).toBeInTheDocument()
 })
 
 it('exige confirmação para excluir, preserva o setlist na falha e permite tentar novamente', async () => {
@@ -174,4 +180,117 @@ it('mostra falha de carregamento com tentativa nova e não mostra a função na 
   view.unmount()
   render(<MemberRepertoire data={data} token="" previewMedia={{}} />)
   expect(screen.queryByRole('button', { name: 'Meus setlists' })).not.toBeInTheDocument()
+})
+
+it('salva rascunho incompleto automaticamente e preserva ao voltar sem confirmar', async () => {
+  const { user, fetchMock } = setup()
+  render(<MemberRepertoire data={data} token="member-token" />)
+  await user.click(screen.getByRole('button', { name: 'Meus setlists' }))
+  await user.click(await screen.findByRole('button', { name: 'Criar setlist' }))
+  await user.type(screen.getByLabelText('Nome do setlist'), 'Em preparação')
+  await waitFor(() =>
+    expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(true),
+  )
+  const body = JSON.parse(
+    fetchMock.mock.calls.find(([, init]) => init?.method === 'POST')![1]?.body as string,
+  )
+  expect(body).toMatchObject({
+    title: 'Em preparação',
+    songs: [],
+    status: 'draft',
+    type: 'personal',
+    eventDate: null,
+  })
+  await user.click(screen.getByRole('button', { name: 'Voltar aos meus setlists' }))
+  await user.click(await screen.findByRole('button', { name: 'Abrir meu setlist Em preparação' }))
+  expect(screen.getByText(/Setlist próprio · Sem vencimento · Rascunho/)).toBeInTheDocument()
+})
+
+it('recupera alterações ao recarregar antes do salvamento automático', async () => {
+  const { user } = setup()
+  const view = render(<MemberRepertoire data={data} token="member-token" />)
+  await user.click(screen.getByRole('button', { name: 'Meus setlists' }))
+  await user.click(await screen.findByRole('button', { name: 'Criar setlist' }))
+  fireEvent.change(screen.getByLabelText('Nome do setlist'), { target: { value: 'Não perder' } })
+  view.unmount()
+  render(<MemberRepertoire data={data} token="member-token" />)
+  await user.click(screen.getByRole('button', { name: 'Meus setlists' }))
+  expect(await screen.findByLabelText('Nome do setlist')).toHaveValue('Não perder')
+})
+
+it('não perde edições durante requisição lenta nem cria setlists duplicados', async () => {
+  const { user, fetchMock } = setup()
+  render(<MemberRepertoire data={data} token="member-token" />)
+  await user.click(screen.getByRole('button', { name: 'Meus setlists' }))
+  await user.click(await screen.findByRole('button', { name: 'Criar setlist' }))
+  let finish!: (response: Response) => void
+  fetchMock.mockImplementationOnce(
+    () =>
+      new Promise<Response>((resolve) => {
+        finish = resolve
+      }),
+  )
+  fireEvent.change(screen.getByLabelText('Nome do setlist'), { target: { value: 'Primeiro' } })
+  await waitFor(() => expect(finish).toBeDefined())
+  const firstBody = JSON.parse(
+    fetchMock.mock.calls.find(([, init]) => init?.method === 'POST')![1]?.body as string,
+  )
+  fireEvent.change(screen.getByLabelText('Nome do setlist'), { target: { value: 'Última edição' } })
+  await act(async () => {
+    finish(new Response(JSON.stringify(firstBody)))
+  })
+  await waitFor(() =>
+    expect(fetchMock.mock.calls.filter(([, init]) => init?.method === 'PUT')).toHaveLength(1),
+  )
+  expect(fetchMock.mock.calls.filter(([, init]) => init?.method === 'POST')).toHaveLength(1)
+  expect(JSON.parse(fetchMock.mock.calls.at(-1)![1]?.body as string)).toMatchObject({
+    id: firstBody.id,
+    title: 'Última edição',
+  })
+})
+
+it('exige data nos eventos, mantém pessoal sem vencimento e permite reativar evento vencido', async () => {
+  const { user } = setup([
+    {
+      id: 'saved-1',
+      title: 'Casamento antigo',
+      songs: [fix],
+      type: 'wedding',
+      eventDate: '2000-01-01',
+      status: 'ready',
+    },
+  ])
+  render(<MemberRepertoire data={data} token="member-token" />)
+  await user.click(screen.getByRole('button', { name: 'Meus setlists' }))
+  await screen.findByLabelText('Exibir setlists')
+  expect(
+    screen.queryByRole('button', { name: 'Abrir meu setlist Casamento antigo' }),
+  ).not.toBeInTheDocument()
+  await user.selectOptions(screen.getByLabelText('Exibir setlists'), 'expired')
+  await user.click(screen.getByRole('button', { name: 'Abrir meu setlist Casamento antigo' }))
+  expect(screen.getByText(/Inativo — evento encerrado/)).toBeInTheDocument()
+  expect(
+    screen.queryByRole('button', { name: 'Abrir materiais de Fix You' }),
+  ).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Editar setlist' }))
+  fireEvent.change(screen.getByLabelText('Data do evento'), { target: { value: '' } })
+  expect(screen.getByRole('button', { name: 'Salvar setlist' })).toBeDisabled()
+  fireEvent.change(screen.getByLabelText('Data do evento'), { target: { value: '2099-12-12' } })
+  await user.click(screen.getByRole('button', { name: 'Salvar setlist' }))
+  expect(
+    await screen.findByRole('button', { name: 'Abrir materiais de Fix You' }),
+  ).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Editar setlist' }))
+  await user.selectOptions(screen.getByLabelText('Tipo do setlist'), 'personal')
+  expect(screen.getByLabelText('Data do evento')).toBeDisabled()
+  expect(screen.getByLabelText('Data do evento')).toHaveValue('')
+})
+
+it('vence apenas depois do dia do evento pelo calendário de São Paulo', () => {
+  const event = { type: 'event' as const, eventDate: '2026-12-12' }
+  expect(setlistToday(new Date('2026-12-13T02:59:59Z'))).toBe('2026-12-12')
+  expect(isSetlistExpired(event, '2026-12-12')).toBe(false)
+  expect(isSetlistExpired(event, '2026-12-13')).toBe(true)
+  expect(isSetlistExpired({ type: 'personal', eventDate: '2000-01-01' }, '2026-12-13')).toBe(false)
+  expect(isSetlistExpired({}, '2026-12-13')).toBe(false)
 })

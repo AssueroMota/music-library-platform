@@ -1302,7 +1302,14 @@ describe('setlists personalizados', () => {
     })
     expect(created.statusCode).toBe(201)
     const saved = created.json()
-    expect(saved).toEqual({ id: expect.any(String), title: 'Meu show', songs: [frank, john] })
+    expect(saved).toEqual({
+      id: expect.any(String),
+      title: 'Meu show',
+      songs: [frank, john],
+      type: 'personal',
+      eventDate: null,
+      status: 'ready',
+    })
     expect((await app.inject({ url: '/api/library/setlists', headers })).json()).toEqual({
       setlists: [saved],
     })
@@ -1314,7 +1321,14 @@ describe('setlists personalizados', () => {
     })
     expect(updated.statusCode).toBe(200)
     expect((await app.inject({ url: '/api/library/setlists', headers })).json().setlists).toEqual([
-      { id: saved.id, title: 'Casamento', songs: [john] },
+      {
+        id: saved.id,
+        title: 'Casamento',
+        songs: [john],
+        type: 'personal',
+        eventDate: null,
+        status: 'ready',
+      },
     ])
     expect(
       (await app.inject({ method: 'DELETE', url: `/api/library/setlists/${saved.id}`, headers }))
@@ -1434,5 +1448,67 @@ describe('setlists personalizados', () => {
       expect(response.statusCode).toBe(204)
       expect(response.headers['access-control-allow-methods']).toContain(method)
     }
+  })
+  it('salva rascunhos incompletos, repete criação sem duplicar e valida datas de eventos', async () => {
+    await prepare()
+    const id = randomUUID()
+    const draft = { id, title: '', songs: [], type: 'wedding', eventDate: null, status: 'draft' }
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/library/setlists',
+        headers,
+        payload: draft,
+      })
+      expect(response.statusCode).toBe(201)
+      expect(response.json()).toMatchObject(draft)
+    }
+    expect(await db.customSetlist.count()).toBe(1)
+    for (const invalid of [
+      { ...draft, title: 'Casamento', songs: [john], status: 'ready' },
+      { ...draft, eventDate: '2026-02-30' },
+      { ...draft, eventDate: '12/12/2026' },
+      { ...draft, type: 'personal', eventDate: '2026-12-12' },
+      { ...draft, type: 'invalid' },
+    ]) {
+      expect(
+        (
+          await app.inject({
+            method: 'PUT',
+            url: `/api/library/setlists/${id}`,
+            headers,
+            payload: invalid,
+          })
+        ).statusCode,
+      ).toBe(400)
+    }
+    const ready = {
+      ...draft,
+      title: 'Casamento',
+      songs: [john],
+      status: 'ready',
+      eventDate: '2026-12-12',
+    }
+    expect(
+      (
+        await app.inject({
+          method: 'PUT',
+          url: `/api/library/setlists/${id}`,
+          headers,
+          payload: ready,
+        })
+      ).json(),
+    ).toEqual(ready)
+    expect((await app.inject({ url: '/api/library/setlists', headers })).json().setlists).toEqual([
+      ready,
+    ])
+    const other = { id: randomUUID(), email: 'draft-other@example.test' }
+    await db.user.create({ data: other })
+    vi.mocked(providers.authenticate).mockResolvedValueOnce(other)
+    expect(
+      (await app.inject({ method: 'POST', url: '/api/library/setlists', headers, payload: draft }))
+        .statusCode,
+    ).toBe(404)
+    expect((await db.customSetlist.findUniqueOrThrow({ where: { id } })).title).toBe('Casamento')
   })
 })
