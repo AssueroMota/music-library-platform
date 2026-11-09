@@ -21,6 +21,7 @@ export const publicRepertoire: readonly (readonly [string, string, string, boole
   ['Bondade de Deus', '', 'Gospel', true],
   ["Can't Help Falling in Love", 'Elvis Presley', 'Pop internacional', true],
   ['Canon in D', 'Johann Pachelbel', 'Clássico', true],
+  ['Canteiros', 'Fagner', 'MPB', true],
   ['Carol of the Bells', '', 'Natal', true],
   ['Céu de Santo Amaro', '', 'MPB', true],
   ['Cinema Paradiso - Love Theme', 'Ennio Morricone', 'Trilha sonora', true],

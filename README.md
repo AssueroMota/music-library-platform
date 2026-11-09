@@ -90,6 +90,8 @@ As rotas autenticadas `GET/POST /api/library/setlists` e `PUT/DELETE /api/librar
 
 Every Breath You Take está identificada com o nome completo e o artista The Police. A biblioteca inclui a partitura de uma página para violino e o acompanhamento instrumental fornecidos em 09/11/2026. O M4A foi convertido para MP3; a imagem foi preservada sem alterações. A partitura e o áudio anteriores continuam como versões alternativas da mesma música. A partitura guiada permanece na aba de vídeos.
 
+Canteiros (Fagner) foi acrescentada ao estilo MPB em 09/11/2026, com a imagem da partitura fornecida e o acompanhamento acústico da pasta `karaok`, convertido de M4A para MP3. Os arquivos ficam no bucket privado e seguem as permissões de partituras e áudios dos planos existentes.
+
 ### Partituras guiadas (atualizado em 06/11/2026)
 
 O Plano Completo inclui o bônus exclusivo de 35 partituras guiadas em vídeo, em uma aba própria ao lado de Partituras e Setlists. O catálogo não mistura vídeos com os PDFs ou com os áudios. Os MP4 ficam no bucket privado; listagem, visualização e download verificam o acesso ativo ao Completo. O Básico não lista nem autoriza vídeos. A demonstração pública do Completo exibe os títulos, mas não libera os vídeos. A visualização do Básico não mostra a aba de vídeos. `shared/guided-scores.ts` mantém o catálogo público e a quantidade do bônus. O karaokê de Making Love Out of Nothing at All foi excluído por não mostrar partitura.
