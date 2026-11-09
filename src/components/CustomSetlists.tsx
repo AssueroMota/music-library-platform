@@ -24,6 +24,7 @@ import { api, LIBRARY_REQUEST_TIMEOUT_MS } from '../lib/api'
 import { useSetlistDraft } from '../lib/use-setlist-draft'
 import { normalizeSearch } from '../data/library'
 import { allInstruments } from '../data/content'
+import { LibrarySelect } from './LibrarySelect'
 import '../styles/custom-setlists.css'
 
 type AvailableSong = SetlistSong & { id: string }
@@ -72,20 +73,39 @@ export function CustomSetlists({
   const available = useMemo(() => new Map(songs.map((song) => [song.id, song])), [songs])
   const active = setlists.find((setlist) => setlist.id === activeId)
   const expired = active && isSetlistExpired(active, today)
+  const existingTypes = new Set(setlists.map((item) => item.type ?? 'personal'))
+  const typeOptions = Object.entries(SETLIST_TYPES).filter(([value]) =>
+    existingTypes.has(value as SetlistType),
+  )
+  const hasReady = setlists.some(
+    (item) => !isSetlistExpired(item, today) && item.status !== 'draft',
+  )
+  const hasDraft = setlists.some(
+    (item) => !isSetlistExpired(item, today) && item.status === 'draft',
+  )
+  const hasExpired = setlists.some((item) => isSetlistExpired(item, today))
+  const selectedType =
+    typeFilter === 'all' || existingTypes.has(typeFilter as SetlistType) ? typeFilter : 'all'
+  const selectedStatus =
+    (filter === 'ready' && !hasReady) ||
+    (filter === 'draft' && !hasDraft) ||
+    (filter === 'expired' && !hasExpired)
+      ? 'active'
+      : filter
   const filteredSetlists = setlists
     .filter((item) => {
       const inactive = isSetlistExpired(item, today)
       const matchesStatus =
-        filter === 'all' ||
-        (filter === 'expired'
+        selectedStatus === 'all' ||
+        (selectedStatus === 'expired'
           ? inactive
           : !inactive &&
-            (filter === 'active' ||
-              (filter === 'draft' ? item.status === 'draft' : item.status !== 'draft')))
+            (selectedStatus === 'active' ||
+              (selectedStatus === 'draft' ? item.status === 'draft' : item.status !== 'draft')))
       const eventDate = (item.type ?? 'personal') === 'personal' ? null : item.eventDate
       return (
         matchesStatus &&
-        (typeFilter === 'all' || (item.type ?? 'personal') === typeFilter) &&
+        (selectedType === 'all' || (item.type ?? 'personal') === selectedType) &&
         normalizeSearch(item.title || 'Setlist sem nome').includes(
           normalizeSearch(listSearch.trim()),
         ) &&
@@ -111,8 +131,8 @@ export function CustomSetlists({
     })
   const hasListFilters = Boolean(
     listSearch ||
-    typeFilter !== 'all' ||
-    filter !== 'active' ||
+    selectedType !== 'all' ||
+    selectedStatus !== 'active' ||
     dateFrom ||
     dateTo ||
     sort !== 'date-asc',
@@ -380,27 +400,26 @@ export function CustomSetlists({
                   onChange={(event) => setDraft({ ...draft, title: event.target.value })}
                 />
               </div>
-              <div className="custom-name">
-                <label htmlFor="custom-setlist-type">Tipo do setlist</label>
-                <select
-                  id="custom-setlist-type"
-                  value={draft.type}
-                  onChange={(event) => {
-                    const type = event.target.value as SetlistType
-                    setDraft({
-                      ...draft,
-                      type,
-                      eventDate: type === 'personal' ? null : draft.eventDate,
-                    })
-                  }}
-                >
-                  {Object.entries(SETLIST_TYPES).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <LibrarySelect
+                className="custom-name"
+                label="Tipo do setlist"
+                id="custom-setlist-type"
+                value={draft.type}
+                onChange={(event) => {
+                  const type = event.target.value as SetlistType
+                  setDraft({
+                    ...draft,
+                    type,
+                    eventDate: type === 'personal' ? null : draft.eventDate,
+                  })
+                }}
+              >
+                {Object.entries(SETLIST_TYPES).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </LibrarySelect>
               <div className="custom-name">
                 <label htmlFor="custom-setlist-date">Data do evento</label>
                 <input
@@ -608,49 +627,46 @@ export function CustomSetlists({
                   onChange={(event) => setListSearch(event.target.value)}
                 />
               </div>
-              <div className="custom-name">
-                <label htmlFor="custom-setlist-type-filter">Filtrar por tipo</label>
-                <select
-                  id="custom-setlist-type-filter"
-                  value={typeFilter}
-                  onChange={(event) => setTypeFilter(event.target.value)}
-                >
-                  <option value="all">Todos os tipos</option>
-                  {Object.entries(SETLIST_TYPES).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="custom-name">
-                <label htmlFor="custom-setlist-filter">Exibir setlists</label>
-                <select
-                  id="custom-setlist-filter"
-                  value={filter}
-                  onChange={(event) => setFilter(event.target.value)}
-                >
-                  <option value="active">Ativos e rascunhos</option>
-                  <option value="ready">Ativos finalizados</option>
-                  <option value="draft">Rascunhos</option>
-                  <option value="expired">Inativos</option>
-                  <option value="all">Todos</option>
-                </select>
-              </div>
-              <div className="custom-name">
-                <label htmlFor="custom-setlist-sort">Ordenar setlists</label>
-                <select
-                  id="custom-setlist-sort"
-                  value={sort}
-                  onChange={(event) => setSort(event.target.value)}
-                >
-                  <option value="date-asc">Data: mais próxima</option>
-                  <option value="date-desc">Data: mais distante</option>
-                  <option value="name-asc">Nome: A–Z</option>
-                  <option value="name-desc">Nome: Z–A</option>
-                  <option value="recent">Editados recentemente</option>
-                </select>
-              </div>
+              <LibrarySelect
+                className="custom-name"
+                label="Filtrar por tipo"
+                id="custom-setlist-type-filter"
+                value={selectedType}
+                onChange={(event) => setTypeFilter(event.target.value)}
+              >
+                <option value="all">Todos os tipos</option>
+                {typeOptions.map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </LibrarySelect>
+              <LibrarySelect
+                className="custom-name"
+                label="Exibir setlists"
+                id="custom-setlist-filter"
+                value={selectedStatus}
+                onChange={(event) => setFilter(event.target.value)}
+              >
+                <option value="active">{hasDraft ? 'Ativos e rascunhos' : 'Ativos'}</option>
+                {hasReady && <option value="ready">Ativos finalizados</option>}
+                {hasDraft && <option value="draft">Rascunhos</option>}
+                {hasExpired && <option value="expired">Inativos</option>}
+                <option value="all">Todos</option>
+              </LibrarySelect>
+              <LibrarySelect
+                className="custom-name"
+                label="Ordenar setlists"
+                id="custom-setlist-sort"
+                value={sort}
+                onChange={(event) => setSort(event.target.value)}
+              >
+                <option value="date-asc">Data: mais próxima</option>
+                <option value="date-desc">Data: mais distante</option>
+                <option value="name-asc">Nome: A–Z</option>
+                <option value="name-desc">Nome: Z–A</option>
+                <option value="recent">Editados recentemente</option>
+              </LibrarySelect>
               <div className="custom-name">
                 <label htmlFor="custom-setlist-date-from">Data inicial</label>
                 <input

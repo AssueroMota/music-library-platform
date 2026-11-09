@@ -5,9 +5,11 @@ export function LibrarySelect({
   label,
   className = '',
   children,
+  id: providedId,
   ...props
 }: SelectHTMLAttributes<HTMLSelectElement> & { label: string }) {
-  const id = useId()
+  const generatedId = useId()
+  const id = providedId ?? generatedId
   return (
     <div className={`library-select ${className}`}>
       <label htmlFor={id}>{label}</label>

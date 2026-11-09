@@ -396,3 +396,46 @@ it('combina busca, tipo, situação e período, ordena por data ou nome e limpa 
   await user.selectOptions(screen.getByLabelText('Exibir setlists'), 'all')
   expect(titles()).toHaveLength(5)
 })
+
+it('mostra somente tipos e situações cadastrados nos filtros, mantendo todos os tipos na criação', async () => {
+  const { user } = setup([
+    { id: 'legacy', title: 'Meu repertório', songs: [fix] },
+    {
+      id: 'wedding',
+      title: 'Cerimônia',
+      songs: [fix],
+      type: 'wedding',
+      eventDate: '2099-12-12',
+      status: 'ready',
+    },
+  ])
+  render(<MemberRepertoire data={data} token="member-token" />)
+  await user.click(screen.getByRole('button', { name: 'Meus setlists' }))
+  const types = await screen.findByLabelText('Filtrar por tipo')
+  expect(
+    within(types)
+      .getAllByRole('option')
+      .map((option) => option.textContent),
+  ).toEqual(['Todos os tipos', 'Setlist próprio', 'Casamento — cerimônia'])
+  const statuses = screen.getByLabelText('Exibir setlists')
+  expect(within(statuses).queryByRole('option', { name: 'Rascunhos' })).not.toBeInTheDocument()
+  expect(within(statuses).queryByRole('option', { name: 'Inativos' })).not.toBeInTheDocument()
+  expect(within(statuses).getByRole('option', { name: 'Ativos' })).toBeInTheDocument()
+  expect(within(screen.getByLabelText('Ordenar setlists')).getAllByRole('option')).toHaveLength(5)
+  await user.selectOptions(types, 'wedding')
+  await user.click(screen.getByRole('button', { name: 'Abrir meu setlist Cerimônia' }))
+  await user.click(screen.getByRole('button', { name: 'Excluir setlist' }))
+  await user.click(screen.getByRole('button', { name: 'Confirmar exclusão' }))
+  await screen.findByText('Setlist excluído.')
+  expect(screen.getByLabelText('Filtrar por tipo')).toHaveValue('all')
+  expect(
+    screen.getByRole('button', { name: 'Abrir meu setlist Meu repertório' }),
+  ).toBeInTheDocument()
+  expect(
+    within(screen.getByLabelText('Filtrar por tipo')).queryByRole('option', {
+      name: 'Casamento — cerimônia',
+    }),
+  ).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Criar setlist' }))
+  expect(within(screen.getByLabelText('Tipo do setlist')).getAllByRole('option')).toHaveLength(24)
+})
