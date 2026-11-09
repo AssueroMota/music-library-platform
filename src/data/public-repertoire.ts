@@ -38,6 +38,7 @@ export const publicRepertoire: readonly (readonly [string, string, string, boole
   ['Endless Love', '', 'Pop internacional', true],
   ['Era Uma Vez', 'Kell Smith', 'MPB', true],
   ['Escolhi Te Esperar', 'Marcela Taís', 'Gospel', true],
+  ['Espumas ao Vento', 'Fagner', 'MPB', true],
   ['Eu Sei Que Vou Te Amar', 'Tom Jobim e Vinicius de Moraes', 'MPB', true],
   ['Every Breath You Take', 'The Police', 'Pop internacional', true],
   ['Faded', 'Alan Walker', 'Pop internacional', true],
