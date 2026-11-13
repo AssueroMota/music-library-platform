@@ -5,6 +5,7 @@ import { FreeLibraryDialog } from '../components/FreeLibraryDialog'
 import { PricingSection } from '../components/PricingSection'
 import { MemberRepertoire } from '../components/MemberRepertoire'
 import { HeroSection } from '../components/HeroSection'
+import { SalesHeader } from '../components/SalesHeader'
 import type { MemberLibraryData } from '../../shared/library'
 import { productCatalog } from '../lib/product-catalog'
 
@@ -19,6 +20,7 @@ it('mantém apenas dois cartões e oferece teste grátis pelo header, início e 
   const user = userEvent.setup()
   const { container } = render(
     <>
+      <SalesHeader onFree={onFree} onCheckout={onCheckout} />
       <HeroSection onFree={onFree} />
       <PricingSection onCheckout={onCheckout} onFree={onFree} />
     </>,

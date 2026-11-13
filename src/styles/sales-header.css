@@ -1,0 +1,142 @@
+/* Keep navigation outside the hero's clipping and reserve its real scroll offset. */
+html:has(.sales-header-stack) {
+  scroll-padding-top: calc(var(--sales-header-height, 92px) + 16px);
+}
+.sales-header-stack {
+  position: sticky;
+  top: 0;
+  z-index: 85;
+  width: 100%;
+  background: #090b10fa;
+  border-bottom: 1px solid #ffffff1a;
+  box-shadow: 0 5px 20px #0002;
+  backdrop-filter: blur(12px);
+}
+.sales-header-stack .site-offer-header {
+  position: static;
+}
+.sales-header-stack .sales-nav {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  min-height: 88px;
+  padding: 8px 0;
+  border-bottom: 0;
+}
+.sales-header-stack .logo-image {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+}
+.sales-header-stack .sales-nav nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  min-width: 0;
+  font-size: 13px;
+}
+.sales-header-stack .sales-nav nav a,
+.sales-header-stack .sales-nav nav a:first-child {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 4px 0;
+  white-space: nowrap;
+}
+.sales-header-stack .sales-nav-actions {
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+}
+.sales-header-stack .nav-free {
+  min-height: 44px;
+  padding: 10px 0;
+  font-size: 13px;
+}
+.sales-header-stack .nav-offer {
+  min-height: 44px;
+  padding: 10px 14px;
+  gap: 10px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.sales-header-stack a:focus-visible,
+.sales-header-stack button:focus-visible {
+  outline: 2px solid #ffb47c;
+  outline-offset: 4px;
+}
+@media (max-width: 1000px) {
+  html:has(.sales-header-stack) {
+    scroll-padding-top: calc(var(--sales-header-height, 138px) + 16px);
+  }
+  .sales-header-stack .sales-nav {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0 16px;
+    padding: 6px 0 0;
+  }
+  .sales-header-stack .logo-image {
+    width: 64px;
+    height: 64px;
+  }
+  .sales-header-stack .sales-nav-actions {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+  .sales-header-stack .sales-nav nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    gap: 4px 22px;
+    padding: 3px 0 7px;
+    border-top: 1px solid #ffffff12;
+  }
+}
+@media (max-width: 600px) {
+  .sales-header-stack .container {
+    width: calc(100% - 28px);
+  }
+  .sales-header-stack .sales-nav {
+    gap: 0 10px;
+  }
+  .sales-header-stack .logo-image {
+    width: 56px;
+    height: 56px;
+  }
+  .sales-header-stack .sales-nav-actions {
+    gap: 10px;
+  }
+  .sales-header-stack .nav-free {
+    font-size: 12px;
+  }
+  .sales-header-stack .nav-offer {
+    font-size: 12px;
+    padding: 9px 10px;
+  }
+  .sales-header-stack .nav-offer svg {
+    display: none;
+  }
+  .sales-header-stack .sales-nav nav {
+    justify-content: center;
+    gap: 0 14px;
+    font-size: 12px;
+    padding: 2px 0 5px;
+  }
+  .sales-header-stack .sales-nav nav a {
+    min-height: 36px;
+  }
+}
+@media (max-width: 359px) {
+  .sales-header-stack .nav-offer {
+    max-width: 110px;
+    white-space: normal;
+    text-align: center;
+    justify-content: center;
+  }
+  .sales-header-stack .sales-nav nav {
+    gap: 0 12px;
+    font-size: 11px;
+  }
+}

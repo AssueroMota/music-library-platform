@@ -10,7 +10,7 @@ import { InfoDialog } from './components/InfoDialog'
 import { ScrollProgress } from './components/ScrollProgress'
 import { CheckoutDialog } from './components/CheckoutDialog'
 import { FreeLibraryDialog } from './components/FreeLibraryDialog'
-import { LaunchOfferHeader } from './components/LaunchOfferCountdown'
+import { SalesHeader } from './components/SalesHeader'
 import { ConfidenceSection } from './components/ConversionSections'
 import { VisitPlaylist } from './components/VisitPlaylist'
 import { ContactBubble } from './components/ContactBubble'
@@ -23,6 +23,7 @@ import {
 } from './components/ViolinSalesSections'
 import './styles/violin.css'
 import './styles/typography.css'
+import './styles/sales-header.css'
 
 const CheckoutReturn = lazy(() =>
   import('./components/CheckoutReturn').then((m) => ({ default: m.CheckoutReturn })),
@@ -60,7 +61,7 @@ export default function App() {
   return (
     <MotionConfig reducedMotion="user">
       <ScrollProgress />
-      <LaunchOfferHeader onCheckout={setCheckout} />
+      <SalesHeader onFree={() => setFreeOpen(true)} onCheckout={setCheckout} />
       <a className="skip-link" href="#conteudo">
         Pular para o conteúdo
       </a>

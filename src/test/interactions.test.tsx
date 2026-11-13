@@ -37,6 +37,13 @@ it('monta a página e permite abrir a organização dos materiais', async () => 
   )
   expect(screen.getByRole('main')).toBeInTheDocument()
   expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Seu violino/)
+  const header = container.querySelector('.sales-header-stack')!
+  expect(header).not.toBeNull()
+  expect(header.closest('main')).toBeNull()
+  expect(header.querySelector('nav')?.querySelectorAll('a')).toHaveLength(5)
+  for (const link of header.querySelectorAll<HTMLAnchorElement>('nav a')) {
+    expect(document.getElementById(link.hash.slice(1))).not.toBeNull()
+  }
   expect(screen.queryByText('Saxofone')).not.toBeInTheDocument()
   for (const link of container.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')) {
     expect(

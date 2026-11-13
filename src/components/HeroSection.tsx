@@ -1,6 +1,6 @@
 ﻿import { ArrowDown, Check, Headphones, Play, UtensilsCrossed, Heart, Mic2 } from 'lucide-react'
 import { plans } from '../data/content'
-import { Button, Container, Logo, Reveal } from './ui'
+import { Button, Container, Reveal } from './ui'
 import { guidedScoreCount } from '../../shared/guided-scores'
 import { normalScoreCount, totalScoreCount } from '../../shared/score-catalog'
 
@@ -8,21 +8,6 @@ export function HeroSection({ onFree }: { onFree: () => void }) {
   return (
     <section id="inicio" className="hero violin-hero">
       <Container>
-        <header className="sales-nav">
-          <Logo light />
-          <nav aria-label="Navegação principal">
-            <a href="#ocasioes">Onde sua música chega</a>
-            <a href="#material">O que você recebe</a>
-          </nav>
-          <div className="sales-nav-actions">
-            <button className="nav-free" type="button" onClick={onFree}>
-              Testar de graça ↗
-            </button>
-            <a className="nav-offer" href="#planos">
-              Escolher meu plano <ArrowDown size={14} />
-            </a>
-          </div>
-        </header>
         <div className="hero-grid">
           <Reveal className="hero-copy">
             <h1>
