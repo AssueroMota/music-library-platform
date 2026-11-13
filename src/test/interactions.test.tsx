@@ -145,8 +145,8 @@ it('encaminha a escolha correta de cada plano para o checkout', async () => {
   expect(screen.getAllByText('Acesso vitalício', { exact: true })).toHaveLength(2)
   expect(screen.getByText('10 setlists prontos', { exact: true })).toBeInTheDocument()
   expect(screen.getByText('42 setlists prontos', { exact: true })).toBeInTheDocument()
-  expect(screen.getByRole('heading', { name: '116 partituras' })).toBeInTheDocument()
-  expect(screen.getByRole('heading', { name: '151 partituras+ Playbacks' })).toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'Partituras' })).toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'Partituras+ Playbacks' })).toBeInTheDocument()
   expect(screen.getByText('12,90')).toBeInTheDocument()
   expect(
     screen.getByText(
