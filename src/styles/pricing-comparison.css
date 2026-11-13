@@ -1,7 +1,10 @@
+/* Contrasting plan cards on a light background, with a modest size difference. */
 .violin-sales .pricing-section.pricing-comparison {
-  padding-block: 80px;
+  position: relative;
+  isolation: isolate;
   background: #f4f4f7;
   color: #202737;
+  padding-block: 76px;
 }
 .violin-sales .pricing-comparison .section-heading h2 {
   color: #202737;
@@ -10,320 +13,28 @@
   letter-spacing: -0.04em;
 }
 .pricing-comparison .section-heading h2 em {
-  color: #ff6b2b;
+  color: #ff9453;
   font-style: normal;
 }
 .violin-sales .pricing-comparison .pricing-grid {
-  max-width: 1150px;
-  grid-template-columns: minmax(0, 0.84fr) minmax(0, 1fr) minmax(0, 1.06fr);
-  align-items: stretch;
-  gap: 24px;
-  margin: 48px auto 0;
+  max-width: 920px;
+  grid-template-columns: minmax(0, 0.97fr) minmax(0, 1.03fr);
+  align-items: start;
+  gap: 27px;
+  margin-top: 43px;
 }
-.violin-sales .pricing-comparison .pricing-card {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  margin: 0;
-  padding: 28px;
-  border: 1px solid #dce0e8;
-  border-radius: 18px;
-  background: #fff;
-  color: #202737;
-  text-align: left;
-  box-shadow: 0 8px 24px #20273708;
+.violin-sales .pricing-comparison .pricing-grid-with-free {
+  max-width: 1180px;
+  grid-template-columns: minmax(0, 0.78fr) minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: 22px;
 }
-.violin-sales .pricing-comparison .pricing-card:hover {
-  box-shadow: 0 12px 30px #20273710;
-}
-.violin-sales .pricing-comparison .pricing-featured {
-  position: relative;
-  border: 2px solid #ff7b3f;
-  padding: 27px;
-  background: linear-gradient(145deg, #2b242a, #181922 65%);
-  color: #fff;
-  box-shadow: 0 12px 32px #271c2220;
-}
-.pricing-comparison .pricing-featured::before {
-  display: none;
-}
-.comparison-recommendation {
-  position: absolute;
-  top: -15px;
-  right: 24px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 12px;
-  border-radius: 7px;
-  background: #ff7b3f;
-  color: #25150d;
-  font-size: 10px;
-  line-height: 1.4;
-  font-weight: 850;
-  letter-spacing: 0.04em;
-}
-.pricing-comparison .pricing-card-heading {
-  min-height: 144px;
-}
-.plan-eyebrow {
+.free-plan-label {
   display: block;
-  margin-bottom: 12px;
-  color: #727b8d;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-}
-.pricing-featured .plan-eyebrow {
-  color: #f5b58d;
-}
-.violin-sales .pricing-comparison .pricing-card h3 {
-  margin: 0;
-  min-height: 0;
-  color: inherit;
-  font-size: 28px;
-  line-height: 1.1;
-  font-weight: 850;
-  letter-spacing: -0.04em;
-}
-.pricing-comparison .pricing-card h3 span {
-  display: block;
-  color: #ffb17c;
-}
-.pricing-comparison .pricing-card-heading p {
-  margin-top: 12px;
-  font-size: 13px;
-  line-height: 1.6;
-  color: #647089;
-}
-.pricing-comparison .pricing-featured .pricing-card-heading p {
-  color: #c5c6d1;
-}
-.plan-collection {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  min-height: 136px;
-  padding-block: 12px 18px;
-}
-.plan-collection-count {
-  display: grid;
-  gap: 5px;
-}
-.plan-collection-count strong {
-  color: inherit;
-  font-size: 48px;
-  line-height: 1;
-  font-weight: 850;
-  letter-spacing: -0.05em;
-}
-.plan-collection-count > span {
-  font-size: 12px;
-  color: #53617a;
-}
-.plan-collection-count small {
-  max-width: 155px;
+  margin-bottom: 7px;
+  color: #8b5336;
   font-size: 11px;
-  line-height: 1.5;
-  color: #aeb3c4;
-}
-.pricing-featured .plan-collection-count > span {
-  color: #e2e2ea;
-}
-.pricing-comparison .plan-collection .package-art {
-  flex: 0 0 84px;
-  width: 84px;
-  height: 112px;
-  margin: 0;
-}
-.pricing-comparison .package-book-mockup {
-  filter: drop-shadow(0 5px 6px #0002);
-}
-.violin-sales .pricing-comparison .pricing-benefits {
-  display: grid;
-  gap: 10px;
-  border-top: 1px solid #e9ebf0;
-  padding: 20px 0 24px;
-  margin: 0;
-}
-.violin-sales .pricing-comparison .pricing-benefits li {
-  display: flex;
-  gap: 9px;
-  align-items: flex-start;
-  min-height: 21px;
-  color: #53617a;
-  font-size: 13px;
-  line-height: 1.6;
-}
-.violin-sales .pricing-comparison .pricing-benefits svg {
-  flex-shrink: 0;
-  margin-top: 2px;
-  color: #c26c31;
-}
-.violin-sales .pricing-comparison .pricing-benefits .plan-excluded {
-  color: #98a1b1;
-}
-.violin-sales .pricing-comparison .pricing-featured .pricing-benefits {
-  border-color: #ffffff18;
-}
-.violin-sales .pricing-comparison .pricing-featured .pricing-benefits li {
-  color: #e0dfeb;
-}
-.violin-sales .pricing-comparison .pricing-featured .pricing-benefits svg {
-  color: #ffb17c;
-}
-.pricing-comparison .comparison-purchase {
-  padding-top: 20px;
-  margin-top: auto;
-  border-top: 1px solid #e9ebf0;
-}
-.pricing-comparison .pricing-featured .comparison-purchase {
-  border-color: #ffffff18;
-}
-.comparison-price-anchor {
-  display: flex;
-  gap: 9px;
-  margin-bottom: 10px;
-  color: #c5c6d1;
-  font-size: 11px;
-}
-.comparison-price-anchor s {
-  font-size: 16px;
-}
-.violin-sales .pricing-comparison .pricing-price {
-  display: grid;
-  justify-content: start;
-  gap: 8px;
-  margin: 0;
-  padding: 0 0 20px;
-}
-.comparison-price-kicker {
-  font-size: 9px;
-  letter-spacing: 0.07em;
-  font-weight: 800;
-  color: #727b8d;
-}
-.pricing-featured .comparison-price-kicker {
-  color: #f3b18b;
-}
-.violin-sales .pricing-comparison .pricing-value {
-  display: flex;
-  align-items: baseline;
-  justify-content: start;
-  gap: 5px;
-  color: #202737;
-  font-size: 48px;
-  font-weight: 850;
-  line-height: 1;
-  letter-spacing: -0.045em;
-}
-.violin-sales .pricing-comparison .pricing-featured .pricing-value {
-  color: #ffb17c;
-}
-.violin-sales .pricing-comparison .pricing-value > span {
-  font-size: 18px;
-  letter-spacing: 0;
-}
-.violin-sales .pricing-comparison .pricing-card .button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  min-height: 48px;
-  padding: 12px 10px;
-  border: 1px solid #c9cfda;
-  border-radius: 8px;
-  background: #fff;
-  color: #283448;
-  box-shadow: none;
-  font-size: 11px;
-  font-weight: 800;
-  line-height: 1.4;
-  letter-spacing: 0;
-  text-transform: none;
-}
-.violin-sales .pricing-comparison .pricing-card .button:hover {
-  background: #fff5ee;
-  border-color: #df9c72;
-}
-.violin-sales .pricing-comparison .pricing-featured .button {
-  background: #ed571c;
-  border-color: #f47336;
-  color: #fff;
-}
-.violin-sales .pricing-comparison .pricing-featured .button:hover {
-  background: #d94812;
-}
-.comparison-payment {
-  display: block;
-  margin-top: 12px;
-  text-align: center;
-  font-size: 11px;
-  line-height: 1.5;
-  color: #727b8d;
-}
-.pricing-featured .comparison-payment {
-  color: #b9bdcd;
-}
-.violin-sales .pricing-comparison .pricing-card.pricing-free {
-  align-self: center;
-  padding: 24px;
-  background: #fafbfe;
-  border-color: #e0e4ec;
-}
-.pricing-comparison .pricing-free .pricing-card-heading {
-  min-height: 0;
-}
-.free-plan-samples {
-  display: grid;
-  gap: 11px;
-  padding-block: 24px;
-}
-.free-plan-samples > span {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #53617a;
-  font-size: 13px;
-}
-.free-plan-samples svg {
-  margin-right: 3px;
-  color: #be744c;
-}
-.free-plan-samples strong {
-  color: #202737;
-  font-size: 15px;
-}
-.violin-sales .pricing-comparison .pricing-free .pricing-benefits {
-  padding-block: 18px 0;
-}
-.free-plan-limit {
-  margin: 10px 0 20px;
-  font-size: 11px;
-  line-height: 1.6;
-  color: #727b8d;
-}
-.violin-sales .pricing-comparison .pricing-free .pricing-value {
-  font-size: 40px;
-}
-.violin-sales .pricing-comparison .pricing-trust {
-  margin-top: 28px;
-  gap: 15px 25px;
-  font-size: 12px;
-  color: #647089;
-}
-.pricing-comparison .pricing-trust svg {
-  color: #b85b29;
-}
-.violin-sales .pricing-comparison .pricing-disclaimer {
-  max-width: 800px;
-  margin: 18px auto 0;
-  font-size: 11px;
-  line-height: 1.8;
-  color: #727b8d;
-  text-align: center;
+  font-weight: 750;
+  letter-spacing: 0.06em;
 }
 .member-free-notice p {
   margin: 8px 0 14px;
@@ -331,72 +42,350 @@
 .free-library-dialog .checkout-notice p {
   margin-block: 12px;
 }
-@media (max-width: 1050px) and (min-width: 761px) {
-  .violin-sales .pricing-comparison .pricing-grid {
-    max-width: 820px;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .violin-sales .pricing-comparison .pricing-free {
-    grid-column: 1 / -1;
-  }
-  .violin-sales .pricing-comparison .pricing-card.pricing-free {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    column-gap: 28px;
-    padding: 24px;
-  }
-  .pricing-free .pricing-card-heading {
-    grid-column: 1;
-  }
-  .free-plan-samples {
-    grid-column: 1;
-    padding-block: 18px 0;
-  }
-  .pricing-comparison .pricing-free .pricing-benefits {
-    grid-column: 2;
-    grid-row: 1;
-    border-top: 0;
-    padding-top: 0;
-    align-content: start;
-  }
-  .pricing-free .free-plan-limit {
-    grid-column: 2;
-    grid-row: 2;
-  }
-  .pricing-comparison .pricing-free .comparison-purchase {
-    grid-column: 1 / -1;
-    margin-top: 20px;
+@media (max-width: 1000px) {
+  .violin-sales .pricing-comparison .pricing-grid-with-free {
+    grid-template-columns: 1fr;
+    max-width: 440px;
+    gap: 33px;
   }
 }
+.violin-sales .pricing-comparison .pricing-card {
+  padding: 25px 25px 21px;
+  text-align: left;
+  color: #202737;
+  background: #f8f9fc;
+  border: 1px solid #dce0eb;
+  border-radius: 12px;
+  box-shadow: 0 18px 40px #0003;
+  min-width: 0;
+}
+.violin-sales .pricing-comparison .pricing-card:hover {
+  box-shadow: 0 22px 50px #0005;
+}
+.violin-sales .pricing-comparison .pricing-card:not(.pricing-featured) {
+  margin-top: 16px;
+  padding: 26px 25px 23px;
+}
+.violin-sales .pricing-comparison .pricing-featured {
+  padding: 28px 27px 25px;
+  background: linear-gradient(150deg, #28222a, #191a25 46%, #13151f);
+  border: 2px solid #ff7d3d;
+  color: #fff;
+  box-shadow:
+    0 0 0 5px #ff6f2009,
+    0 20px 50px #0005;
+}
+.pricing-comparison .pricing-featured::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 32px;
+  right: 32px;
+  height: 4px;
+  border-radius: 0 0 4px 4px;
+  background: linear-gradient(90deg, #ff521c, #ffc17a, #ff521c);
+  box-shadow: 0 3px 20px #ff682845;
+}
+.comparison-recommendation {
+  position: absolute;
+  z-index: 2;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  white-space: nowrap;
+  background: #ff722f;
+  color: #23140c;
+  padding: 7px 18px;
+  border: 1px solid #ffb481;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1.4;
+  letter-spacing: 0.025em;
+}
+.violin-sales .pricing-comparison .pricing-card h3 {
+  min-height: 0;
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.13;
+  letter-spacing: -0.04em;
+  color: #202737;
+  font-weight: 850;
+}
+.violin-sales .pricing-comparison .pricing-featured h3 {
+  color: #fff;
+  font-size: 30px;
+}
+.violin-sales .pricing-comparison .pricing-card:not(.pricing-featured) h3 {
+  min-height: 44px;
+}
+.pricing-comparison .pricing-card h3 span {
+  display: block;
+  color: #ffad73;
+}
+.pricing-comparison .package-art {
+  margin: 8px auto 15px;
+  height: 185px;
+  width: 100%;
+}
+.pricing-comparison .pricing-featured .package-art {
+  height: 195px;
+  margin-top: 15px;
+  margin-bottom: 20px;
+}
+.pricing-comparison .package-book-mockup {
+  filter: drop-shadow(0 7px 9px #17243a26);
+}
+.pricing-comparison .pricing-featured .package-book-mockup {
+  filter: drop-shadow(0 8px 12px #0005);
+}
+.pricing-comparison .package-player {
+  right: 7%;
+  bottom: 1px;
+  padding: 9px 12px;
+  border-color: #90634880;
+  background: linear-gradient(115deg, #24202c, #13151f);
+}
+.pricing-comparison .package-player > div > span {
+  font-size: 6px;
+  letter-spacing: 0.06em;
+}
+.pricing-comparison .package-player > svg {
+  width: 18px;
+}
+.pricing-comparison .package-wave {
+  height: 19px;
+}
+.pricing-comparison .package-wave i {
+  max-height: 19px;
+  background: linear-gradient(#ffc17b, #ff6626);
+}
+.violin-sales .pricing-comparison .pricing-benefits {
+  border-top: 1px solid #dce0eb;
+  margin: 0;
+  padding: 15px 0 0;
+  display: grid;
+  gap: 8px;
+}
+.violin-sales .pricing-comparison .pricing-benefits li {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  color: #53617a;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.violin-sales .pricing-comparison .pricing-benefits svg {
+  flex-shrink: 0;
+  color: #a66c31;
+  margin-top: 2px;
+}
+.violin-sales .pricing-comparison .pricing-benefits .plan-excluded {
+  color: #9ca6bc;
+}
+.violin-sales .pricing-comparison .pricing-featured .pricing-benefits {
+  border-color: #ffffff17;
+}
+.violin-sales .pricing-comparison .pricing-featured .pricing-benefits li {
+  color: #d7dbea;
+}
+.violin-sales .pricing-comparison .pricing-featured .pricing-benefits svg {
+  color: #ffb779;
+}
+.comparison-purchase {
+  margin-top: 0;
+  padding-top: 22px;
+}
+.comparison-price-anchor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 9px;
+  color: #b8bed0;
+  font-size: 11px;
+  margin-bottom: 12px;
+}
+.comparison-price-anchor s {
+  color: #c8ccdb;
+  font-size: 18px;
+  text-decoration-color: #ff9453;
+  text-decoration-thickness: 2px;
+}
+.violin-sales .pricing-comparison .pricing-price {
+  display: grid;
+  justify-content: start;
+  margin: 0;
+  padding: 0 0 17px;
+  gap: 7px;
+}
+.comparison-price-kicker {
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  color: #74829b;
+}
+.pricing-featured .comparison-price-kicker {
+  color: #ffab70;
+}
+.violin-sales .pricing-comparison .pricing-value {
+  display: flex;
+  align-items: baseline;
+  justify-content: start;
+  gap: 5px;
+  font-size: 56px;
+  font-weight: 850;
+  line-height: 1;
+  color: #1d2332;
+  letter-spacing: -0.045em;
+}
+.violin-sales .pricing-comparison .pricing-featured .pricing-value {
+  color: #ffb478;
+  font-size: 60px;
+}
+.violin-sales .pricing-comparison .pricing-value > span {
+  font-size: 21px;
+  letter-spacing: -0.02em;
+}
+.comparison-payment {
+  display: block;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.5;
+  margin-top: 12px;
+  color: #63738e;
+}
+.pricing-featured .comparison-payment {
+  color: #bbc4da;
+}
+.violin-sales .pricing-comparison .pricing-card .button {
+  display: flex;
+  width: 100%;
+  min-height: 49px;
+  justify-content: center;
+  gap: 11px;
+  padding: 13px 10px;
+  border-radius: 5px;
+  border: 1px solid #bac4d9;
+  background: #fff;
+  box-shadow: 0 4px 12px #25385306;
+  color: #303b52;
+  font-size: 12px;
+  font-weight: 850;
+  line-height: 1.4;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+.violin-sales .pricing-comparison .pricing-card:not(.pricing-featured) .button:hover {
+  background: #fff4ed;
+  border-color: #e88755;
+  color: #9d3d17;
+}
+.violin-sales .pricing-comparison .pricing-featured .button {
+  min-height: 53px;
+  font-size: 13px;
+  border-color: #ff8249;
+  background: linear-gradient(100deg, #cc390d, #d8450e);
+  color: #fff;
+  box-shadow: 0 7px 24px #ff582026;
+}
+.violin-sales .pricing-comparison .pricing-featured .button:hover {
+  background: linear-gradient(100deg, #b9320b, #c83a0c);
+  box-shadow: 0 9px 28px #ff58203b;
+}
+.violin-sales .pricing-comparison .pricing-trust {
+  font-size: 12px;
+  color: #647089;
+  margin-top: 30px;
+  gap: 15px 25px;
+}
+.pricing-comparison .pricing-trust svg {
+  color: #b85b29;
+}
+.violin-sales .pricing-comparison .pricing-disclaimer {
+  max-width: 720px;
+  margin: 20px auto 0;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.8;
+  color: #707b8e;
+}
 @media (max-width: 760px) {
+  .violin-sales .pricing-comparison .pricing-grid {
+    grid-template-columns: 1fr;
+    max-width: 440px;
+    gap: 33px;
+  }
+  .violin-sales .pricing-comparison .pricing-card h3 {
+    min-height: 0;
+  }
+  .violin-sales .pricing-comparison .pricing-card:not(.pricing-featured) {
+    width: 97%;
+    justify-self: center;
+    margin-top: 0;
+  }
+}
+@media (max-width: 600px) {
   .violin-sales .pricing-section.pricing-comparison {
     padding-block: 56px;
   }
-  .violin-sales .pricing-comparison .pricing-grid {
-    max-width: 420px;
-    grid-template-columns: 1fr;
-    gap: 28px;
-    margin-top: 34px;
-  }
   .violin-sales .pricing-comparison .pricing-card {
-    width: 100%;
-    padding: 24px;
-  }
-  .violin-sales .pricing-comparison .pricing-card.pricing-free {
-    width: calc(100% - 24px);
-    justify-self: center;
-    padding: 22px;
-  }
-  .pricing-comparison .pricing-card-heading {
-    min-height: 0;
-  }
-  .plan-collection {
-    margin-top: 14px;
-  }
-  .pricing-comparison .pricing-featured {
-    margin-top: 8px;
+    padding: 25px 22px 21px;
   }
   .violin-sales .pricing-comparison .pricing-card h3 {
-    font-size: 27px;
+    font-size: 28px;
   }
+  .violin-sales .pricing-comparison .pricing-trust {
+    gap: 13px;
+  }
+}
+
+.violin-sales .pricing-comparison .pricing-card.pricing-free {
+  width: 100%;
+  max-width: 286px;
+  align-self: center;
+  justify-self: center;
+  padding: 20px;
+  background: #fff;
+  box-shadow: 0 10px 26px #20273712;
+}
+.violin-sales .pricing-comparison .pricing-free h3 {
+  min-height: 0;
+  font-size: 26px;
+}
+.pricing-comparison .pricing-free .package-art {
+  height: 100px;
+  margin: 8px auto 14px;
+}
+.violin-sales .pricing-comparison .pricing-free .pricing-benefits {
+  padding-top: 12px;
+  gap: 6px;
+}
+.pricing-free .comparison-purchase {
+  padding-top: 16px;
+}
+.violin-sales .pricing-comparison .pricing-free .pricing-value {
+  font-size: 40px;
+}
+.violin-sales .pricing-comparison .pricing-basic {
+  background: linear-gradient(155deg, #fff8f1, #f9e6d6);
+  border-color: #e4c9b1;
+}
+.violin-sales .pricing-comparison .pricing-basic .pricing-benefits {
+  border-color: #e6cfbb;
+}
+.violin-sales .pricing-comparison .pricing-basic .pricing-benefits li {
+  color: #5c4a3e;
+}
+.violin-sales .pricing-comparison .pricing-basic .comparison-price-kicker,
+.pricing-comparison .pricing-basic .comparison-payment {
+  color: #796452;
+}
+.violin-sales .pricing-comparison .pricing-basic .button {
+  border-color: #ccac90;
+  background: #fffaf6;
+  color: #573c27;
 }

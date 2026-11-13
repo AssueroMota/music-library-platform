@@ -1,4 +1,4 @@
-import { Check, FileMusic, LockKeyhole, Mail, Sparkles, X, Headphones, Video } from 'lucide-react'
+import { Check, FileMusic, LockKeyhole, Mail, Sparkles, X } from 'lucide-react'
 import { plans } from '../data/content'
 import type { Plan } from '../types'
 import { Button, Container, SectionHeading } from './ui'
@@ -25,7 +25,7 @@ function PricingCard({
   return (
     <article
       id={`plano-${plan.id}`}
-      className={`pricing-card ${plan.featured ? 'pricing-featured' : ''}`}
+      className={`pricing-card ${plan.featured ? 'pricing-featured' : 'pricing-basic'}`}
       aria-label={plan.name}
       tabIndex={-1}
     >
@@ -35,44 +35,29 @@ function PricingCard({
         </div>
       )}
       <header className="pricing-card-heading">
-        <span className="plan-eyebrow">{plan.featured ? 'PLANO COMPLETO' : 'PLANO BÁSICO'}</span>
         <h3>
-          Partituras
+          {plan.featured ? totalScoreCount : normalScoreCount} partituras
           {plan.featured && <span>+ Playbacks</span>}
         </h3>
-        <p>
-          {plan.featured
-            ? 'Para estudar e tocar com acompanhamento.'
-            : 'Seu repertório, sempre à mão.'}
-        </p>
       </header>
-      <div className="plan-collection">
-        <div className="plan-collection-count">
-          <strong>{plan.featured ? totalScoreCount : normalScoreCount}</strong>
-          <span>partituras para violino</span>
-          {plan.featured && (
-            <small>
-              {normalScoreCount} partituras + {guidedScoreCount} guiadas
-            </small>
-          )}
-        </div>
-        <ProductArtwork kind="basic" />
-      </div>
+      <ProductArtwork kind={plan.featured ? 'complete' : 'basic'} />
       <ul className="pricing-benefits">
         {(plan.featured
           ? [
+              `${normalScoreCount} partituras + ${guidedScoreCount} guiadas em vídeo`,
               `${playbackCount} playbacks para tocar junto`,
               '42 setlists prontos',
-              'Coleções organizadas por estilo',
+              `${guidedScoreCount} guiadas incluídas no total de ${totalScoreCount}`,
+              '4 coleções bônus por estilo',
               'Acesso vitalício',
               'Link pessoal por e-mail',
             ]
           : [
+              `${normalScoreCount} partituras para violino`,
               '10 setlists prontos',
-              'Partituras por música e artista',
               'Acesso vitalício',
               'Link pessoal por e-mail',
-              'Sem playbacks e vídeos',
+              'Sem playbacks',
             ]
         ).map((benefit) => (
           <li key={benefit}>
@@ -94,7 +79,7 @@ function PricingCard({
         )}
         <div className="pricing-price">
           <span className="comparison-price-kicker">
-            {plan.featured && launchActive ? 'NO LANÇAMENTO' : 'PAGAMENTO ÚNICO'}
+            {plan.featured && launchActive ? 'NO LANÇAMENTO, POR' : 'POR APENAS'}
           </span>
           <strong className="pricing-value">
             <span>R$</span>
@@ -140,33 +125,28 @@ export function PricingSection({
             tabIndex={-1}
           >
             <header className="pricing-card-heading">
-              <span className="plan-eyebrow">EXPERIMENTE A BIBLIOTECA</span>
+              <span className="free-plan-label">VERSÃO DE TESTE</span>
               <h3>Grátis</h3>
-              <p>Conheça por dentro antes de escolher.</p>
             </header>
-            <div className="free-plan-samples" aria-label="Materiais do teste grátis">
-              <span>
-                <FileMusic size={18} />
-                <strong>{freeLibrary.scoreCount}</strong> partituras
-              </span>
-              <span>
-                <Headphones size={18} />
-                <strong>{freeLibrary.scoreCount}</strong> playbacks
-              </span>
-              <span>
-                <Video size={18} />
-                <strong>{freeLibrary.guidedScoreCount}</strong> guiadas
-              </span>
-            </div>
+            <ProductArtwork kind="basic" />
             <ul className="pricing-benefits">
-              {['Link pessoal por e-mail', 'Acesso pelo celular ou computador'].map((benefit) => (
+              {[
+                `${freeLibrary.scoreCount} partituras para violino`,
+                `${freeLibrary.scoreCount} playbacks para experimentar`,
+                `${freeLibrary.guidedScoreCount} partituras guiadas em vídeo`,
+                'Link pessoal por e-mail',
+                'Sem setlists prontos ou personalizados',
+              ].map((benefit) => (
                 <li key={benefit}>
-                  <Check size={17} aria-hidden="true" />
+                  {benefit.startsWith('Sem setlists') ? (
+                    <X size={17} className="plan-excluded" aria-hidden="true" />
+                  ) : (
+                    <Check size={17} aria-hidden="true" />
+                  )}
                   <span>{benefit}</span>
                 </li>
               ))}
             </ul>
-            <p className="free-plan-limit">Sem setlists prontos ou personalizados.</p>
             <div className="comparison-purchase">
               <div className="pricing-price">
                 <span className="comparison-price-kicker">PARA EXPERIMENTAR</span>
