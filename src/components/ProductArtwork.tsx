@@ -10,7 +10,7 @@ const covers: Record<ArtworkKind, string> = {
   mpb: 'mpb-26',
   international: 'international-56',
   classics: 'classics-10',
-  guided: 'guided-35',
+  guided: 'main-v2',
 }
 
 export function ProductArtwork({ kind }: { kind: ArtworkKind }) {

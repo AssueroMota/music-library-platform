@@ -4,6 +4,7 @@ export const guidedScores = [
   ['Autumn Leaves', 'Joseph Kosma', 'Jazz'],
   ['Bésame Mucho', 'Consuelo Velázquez', 'Bolero'],
   ['Bondade de Deus', '', 'Gospel'],
+  ['Careless Whisper', 'George Michael', 'Pop internacional'],
   ['Bênçãos Que Não Têm Fim', 'Isadora Pompeo', 'Gospel'],
   ['Con te partirò', 'Andrea Bocelli', 'Clássicos & Trilhas'],
   ['Endless Love', 'Diana Ross e Lionel Richie', 'Pop internacional'],

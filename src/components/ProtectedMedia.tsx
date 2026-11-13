@@ -2,6 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { BookOpen, LoaderCircle, RefreshCw } from 'lucide-react'
 import type { MemberAsset } from '../../shared/library'
 import { mediaAccessUrl } from '../lib/media-access'
+import { GuidedVideo } from './GuidedVideo'
 const ScorePdf = lazy(() => import('./ScorePdf').then((module) => ({ default: module.ScorePdf })))
 
 export function ProtectedMedia({
@@ -201,9 +202,8 @@ export function ProtectedMedia({
           }}
         />
       ) : asset.kind === 'video' ? (
-        <video
-          ref={videoRef}
-          controls
+        <GuidedVideo
+          videoRef={videoRef}
           playsInline
           preload="metadata"
           src={mediaUrl}

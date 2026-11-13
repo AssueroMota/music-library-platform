@@ -65,7 +65,8 @@ it('separa vídeos das partituras e dos setlists, busca sem acentos e abre somen
       'https://storage.example.test/video.mp4',
     ),
   )
-  expect(container.querySelector('video')).toHaveAttribute('controls')
+  expect(screen.getByRole('group', { name: 'Controles do vídeo' })).toBeInTheDocument()
+  expect(screen.getByRole('slider', { name: 'Progresso do vídeo' })).toBeInTheDocument()
   expect(container.querySelector('video')).toHaveAttribute('playsinline')
   expect(screen.getByRole('dialog', { name: 'Vídeo de Bênçãos Que Não Têm Fim' })).toHaveAttribute(
     'open',
@@ -206,7 +207,9 @@ it('abre o vídeo em modal pela música, preserva a reprodução ao renovar a se
   expect(workspace).toHaveAttribute('open')
   expect(document.body.style.overflow).toBe('hidden')
   expect(within(workspace).getByRole('heading', { name: 'My Way' })).toHaveFocus()
-  expect(within(workspace).queryByRole('combobox')).toBeNull()
+  expect(within(workspace).getAllByRole('combobox')).toEqual([
+    within(workspace).getByRole('combobox', { name: 'Velocidade do vídeo' }),
+  ])
   await waitFor(() => expect(container.querySelector('video')).not.toBeNull())
   const video = container.querySelector('video')!
   expect(vi.mocked(HTMLMediaElement.prototype.play).mock.contexts).toContain(video)

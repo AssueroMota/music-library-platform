@@ -996,6 +996,126 @@ html:has(.checkout-page.member-page) {
   aspect-ratio: auto;
   object-fit: contain;
 }
+.guided-video-player {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: #10151d;
+  border-radius: 8px;
+}
+.guided-video-player > video {
+  display: block;
+  width: 100%;
+  flex: 1 1 0;
+  min-height: 0;
+  object-fit: contain;
+}
+.guided-video-player:fullscreen,
+.guided-video-player.is-expanded {
+  width: 100%;
+  height: 100dvh;
+  border-radius: 0;
+}
+.guided-video-player.is-expanded {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+}
+.guided-video-controls {
+  flex: 0 0 auto;
+  padding: 8px 14px max(8px, env(safe-area-inset-bottom));
+  border-top: 1px solid #ffffff20;
+  background: #18212d;
+  color: #f4f7fb;
+  font-size: 13px;
+}
+.guided-video-controls input[type='range'] {
+  display: block;
+  min-width: 0;
+  height: 22px;
+  margin: 0;
+  padding: 0;
+  accent-color: #ff853f;
+  cursor: pointer;
+}
+.guided-video-controls .guided-video-progress {
+  width: 100%;
+}
+.guided-video-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.guided-video-controls button {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.guided-video-controls button:hover {
+  background: #ffffff18;
+}
+.guided-video-controls :is(button, input, select):focus-visible {
+  outline: 2px solid #ff9d66;
+  outline-offset: 3px;
+}
+.guided-video-time,
+.guided-video-remaining {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.guided-video-remaining {
+  margin-right: auto;
+  color: #bdcbdc;
+}
+.guided-video-volume {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.guided-video-volume input {
+  width: 70px;
+}
+.guided-video-controls select {
+  min-height: 36px;
+  padding: 4px 6px;
+  border: 1px solid #ffffff30;
+  border-radius: 6px;
+  background: #18212d;
+  color: inherit;
+  font: inherit;
+}
+.guided-video-error {
+  margin: 6px 0;
+  color: #ffcfb2;
+}
+@media (max-width: 600px) {
+  .guided-video-controls {
+    padding-inline: 8px;
+    font-size: 11px;
+  }
+  .guided-video-toolbar {
+    flex-wrap: wrap;
+    gap: 2px 6px;
+  }
+  .guided-video-remaining {
+    flex: 1;
+    text-align: right;
+  }
+  .guided-video-volume input {
+    display: none;
+  }
+}
 .repertoire-audio-only {
   display: flex;
   flex: 1;
