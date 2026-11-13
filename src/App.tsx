@@ -65,7 +65,7 @@ export default function App() {
         Pular para o conteúdo
       </a>
       <main id="conteudo" className="violin-sales">
-        <HeroSection />
+        <HeroSection onFree={() => setFreeOpen(true)} />
         <StoriesSection />
         <VideoSection />
         <PreparationSection />

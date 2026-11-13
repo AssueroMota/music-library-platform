@@ -4,7 +4,7 @@ import { Button, Container, Logo, Reveal } from './ui'
 import { guidedScoreCount } from '../../shared/guided-scores'
 import { normalScoreCount, totalScoreCount } from '../../shared/score-catalog'
 
-export function HeroSection() {
+export function HeroSection({ onFree }: { onFree: () => void }) {
   return (
     <section id="inicio" className="hero violin-hero">
       <Container>
@@ -13,11 +13,15 @@ export function HeroSection() {
           <nav aria-label="Navegação principal">
             <a href="#ocasioes">Onde sua música chega</a>
             <a href="#material">O que você recebe</a>
-            <a href="/biblioteca">Já sou cliente ↗</a>
           </nav>
-          <a className="nav-offer" href="#planos">
-            Escolher meu plano <ArrowDown size={14} />
-          </a>
+          <div className="sales-nav-actions">
+            <button className="nav-free" type="button" onClick={onFree}>
+              Testar de graça ↗
+            </button>
+            <a className="nav-offer" href="#planos">
+              Escolher meu plano <ArrowDown size={14} />
+            </a>
+          </div>
         </header>
         <div className="hero-grid">
           <Reveal className="hero-copy">
@@ -37,6 +41,9 @@ export function HeroSection() {
             </p>
             <div className="hero-actions">
               <Button href="#planos">Quero preparar meu próximo repertório</Button>
+              <button className="hero-free-button" type="button" onClick={onFree}>
+                Testar a biblioteca de graça <ArrowDown size={16} />
+              </button>
               <a className="hero-listen" href="#demonstracao">
                 <Play size={15} fill="currentColor" /> Ouvir demonstração
               </a>

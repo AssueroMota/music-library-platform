@@ -1,6 +1,6 @@
 # Biblioteca grátis
 
-O cartão Grátis abre um formulário próprio, sem checkout, cartão ou cobrança. `POST /api/library/free` recebe somente um e-mail, normalizado e validado, com limite de três solicitações por minuto por IP. A resposta confirma a solicitação e não revela tokens, links pessoais ou a existência de uma conta paga.
+Os botões “Testar de graça” no header, na primeira seção da página e abaixo dos dois planos pagos abrem um formulário próprio, sem checkout, cartão ou cobrança. A opção grátis não ocupa um cartão de preço. `POST /api/library/free` recebe somente um e-mail, normalizado e validado, com limite de três solicitações por minuto por IP. A resposta confirma a solicitação e não revela tokens, links pessoais ou a existência de uma conta paga.
 
 A versão de teste é limitada por conteúdo, sem prazo de expiração:
 

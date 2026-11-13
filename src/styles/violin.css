@@ -112,6 +112,51 @@
 .sales-nav nav a:hover {
   color: #ffad71;
 }
+.sales-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.nav-free {
+  padding: 12px 0;
+  color: #ffc18f;
+  font-size: 13px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+.nav-free:hover {
+  color: #fff;
+}
+.violin-sales .hero-free-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 12px 20px;
+  border: 1px solid #c38c63;
+  border-radius: 6px;
+  color: #ffd0aa;
+  background: #ffad7110;
+  font-size: 14px;
+  font-weight: 700;
+}
+.violin-sales .hero-free-button:hover {
+  background: #ffad7120;
+  border-color: #ffc18f;
+}
+@media (max-width: 600px) {
+  .sales-nav-actions {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+  .nav-free {
+    min-height: 40px;
+    padding: 8px 0;
+    font-size: 13px;
+  }
+}
 .nav-offer {
   display: inline-flex;
   align-items: center;

@@ -117,47 +117,7 @@ export function PricingSection({
             </>
           }
         />
-        <div className="pricing-grid pricing-grid-with-free">
-          <article
-            id="plano-free"
-            className="pricing-card pricing-free"
-            aria-label="Plano Grátis"
-            tabIndex={-1}
-          >
-            <header className="pricing-card-heading">
-              <span className="free-plan-label">VERSÃO DE TESTE</span>
-              <h3>Grátis</h3>
-            </header>
-            <ProductArtwork kind="basic" />
-            <ul className="pricing-benefits">
-              {[
-                `${freeLibrary.scoreCount} partituras para violino`,
-                `${freeLibrary.scoreCount} playbacks para experimentar`,
-                `${freeLibrary.guidedScoreCount} partituras guiadas em vídeo`,
-                'Link pessoal por e-mail',
-                'Sem setlists prontos ou personalizados',
-              ].map((benefit) => (
-                <li key={benefit}>
-                  {benefit.startsWith('Sem setlists') ? (
-                    <X size={17} className="plan-excluded" aria-hidden="true" />
-                  ) : (
-                    <Check size={17} aria-hidden="true" />
-                  )}
-                  <span>{benefit}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="comparison-purchase">
-              <div className="pricing-price">
-                <span className="comparison-price-kicker">PARA EXPERIMENTAR</span>
-                <strong className="pricing-value">
-                  <span>R$</span>0,00
-                </strong>
-              </div>
-              <Button onClick={onFree}>Quero testar de graça</Button>
-              <span className="comparison-payment">Sem pagamento ou cartão</span>
-            </div>
-          </article>
+        <div className="pricing-grid">
           {currentPlans.map((plan) => (
             <PricingCard
               key={plan.id}
@@ -166,6 +126,13 @@ export function PricingSection({
               launchActive={launchActive}
             />
           ))}
+        </div>
+        <div className="pricing-free-access">
+          <p>Quer conhecer a biblioteca primeiro?</p>
+          <button type="button" onClick={onFree}>
+            Testar de graça ↗
+          </button>
+          <span>2 partituras + 2 guiadas, com acesso por e-mail.</span>
         </div>
         <div className="pricing-trust">
           <span>

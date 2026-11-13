@@ -4,6 +4,7 @@ import { afterEach, expect, it, vi } from 'vitest'
 import { FreeLibraryDialog } from '../components/FreeLibraryDialog'
 import { PricingSection } from '../components/PricingSection'
 import { MemberRepertoire } from '../components/MemberRepertoire'
+import { HeroSection } from '../components/HeroSection'
 import type { MemberLibraryData } from '../../shared/library'
 import { productCatalog } from '../lib/product-catalog'
 
@@ -12,17 +13,26 @@ afterEach(() => {
   productCatalog.invalidate()
 })
 
-it('oferece a opção Grátis antes dos planos e abre o cadastro sem iniciar checkout', async () => {
+it('mantém apenas dois cartões e oferece teste grátis pelo header, início e planos', async () => {
   const onFree = vi.fn(),
     onCheckout = vi.fn()
   const user = userEvent.setup()
-  render(<PricingSection onCheckout={onCheckout} onFree={onFree} />)
-  const free = screen.getByRole('article', { name: 'Plano Grátis' })
-  expect(within(free).getByText('2 partituras para violino')).toBeInTheDocument()
-  expect(within(free).getByText('2 partituras guiadas em vídeo')).toBeInTheDocument()
-  expect(within(free).getByText('Sem setlists prontos ou personalizados')).toBeInTheDocument()
-  await user.click(within(free).getByRole('button', { name: 'Quero testar de graça' }))
-  expect(onFree).toHaveBeenCalledOnce()
+  const { container } = render(
+    <>
+      <HeroSection onFree={onFree} />
+      <PricingSection onCheckout={onCheckout} onFree={onFree} />
+    </>,
+  )
+  expect(container.querySelectorAll('.pricing-grid > article')).toHaveLength(2)
+  expect(screen.queryByRole('article', { name: 'Plano Grátis' })).not.toBeInTheDocument()
+  expect(
+    within(screen.getByRole('navigation', { name: 'Navegação principal' })).queryByRole('link', {
+      name: /Já sou cliente/,
+    }),
+  ).not.toBeInTheDocument()
+  for (const button of screen.getAllByRole('button', { name: /Testar.*graça/ }))
+    await user.click(button)
+  expect(onFree).toHaveBeenCalledTimes(3)
   expect(onCheckout).not.toHaveBeenCalled()
 })
 

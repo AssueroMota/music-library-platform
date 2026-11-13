@@ -23,31 +23,12 @@
   gap: 27px;
   margin-top: 43px;
 }
-.violin-sales .pricing-comparison .pricing-grid-with-free {
-  max-width: 1180px;
-  grid-template-columns: minmax(0, 0.78fr) minmax(0, 1fr) minmax(0, 1.05fr);
-  gap: 22px;
-}
-.free-plan-label {
-  display: block;
-  margin-bottom: 7px;
-  color: #8b5336;
-  font-size: 11px;
-  font-weight: 750;
-  letter-spacing: 0.06em;
-}
+
 .member-free-notice p {
   margin: 8px 0 14px;
 }
 .free-library-dialog .checkout-notice p {
   margin-block: 12px;
-}
-@media (max-width: 1000px) {
-  .violin-sales .pricing-comparison .pricing-grid-with-free {
-    grid-template-columns: 1fr;
-    max-width: 440px;
-    gap: 33px;
-  }
 }
 .violin-sales .pricing-comparison .pricing-card {
   padding: 25px 25px 21px;
@@ -343,33 +324,6 @@
   }
 }
 
-.violin-sales .pricing-comparison .pricing-card.pricing-free {
-  width: 100%;
-  max-width: 286px;
-  align-self: center;
-  justify-self: center;
-  padding: 20px;
-  background: #fff;
-  box-shadow: 0 10px 26px #20273712;
-}
-.violin-sales .pricing-comparison .pricing-free h3 {
-  min-height: 0;
-  font-size: 26px;
-}
-.pricing-comparison .pricing-free .package-art {
-  height: 100px;
-  margin: 8px auto 14px;
-}
-.violin-sales .pricing-comparison .pricing-free .pricing-benefits {
-  padding-top: 12px;
-  gap: 6px;
-}
-.pricing-free .comparison-purchase {
-  padding-top: 16px;
-}
-.violin-sales .pricing-comparison .pricing-free .pricing-value {
-  font-size: 40px;
-}
 .violin-sales .pricing-comparison .pricing-basic {
   background: linear-gradient(155deg, #fff8f1, #f9e6d6);
   border-color: #e4c9b1;
@@ -388,4 +342,34 @@
   border-color: #ccac90;
   background: #fffaf6;
   color: #573c27;
+}
+.pricing-free-access {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 16px;
+  margin: 28px auto 0;
+  text-align: center;
+  color: #53617a;
+}
+.pricing-free-access p {
+  font-size: 14px;
+}
+.pricing-free-access button {
+  min-height: 44px;
+  padding: 10px 18px;
+  border: 1px solid #c98960;
+  border-radius: 6px;
+  color: #7d3c18;
+  background: #fff7f0;
+  font-size: 14px;
+  font-weight: 750;
+}
+.pricing-free-access button:hover {
+  background: #ffe9d9;
+}
+.pricing-free-access > span {
+  flex-basis: 100%;
+  font-size: 12px;
 }
