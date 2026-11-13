@@ -3,26 +3,32 @@ import { Container } from './ui'
 import { ProductArtwork, type ArtworkKind } from './ProductArtwork'
 import '../styles/offer-contents.css'
 import { guidedScoreCount } from '../../shared/guided-scores'
+import {
+  normalScoreCount,
+  totalScoreCount,
+  playbackCount,
+  scoreCountForStyles,
+} from '../../shared/score-catalog'
 
 const bonusCollections: { kind: ArtworkKind; title: string; text: string }[] = [
   {
     kind: 'gospel',
-    title: '18 partituras Gospel',
+    title: `${scoreCountForStyles('Gospel')} partituras Gospel`,
     text: 'Canções de fé e adoração para tocar em igrejas, cerimônias e celebrações especiais.',
   },
   {
     kind: 'mpb',
-    title: '13 partituras MPB',
+    title: `${scoreCountForStyles('MPB')} partituras MPB`,
     text: 'A música brasileira no seu violino: de Tom Jobim e Toquinho a Alceu Valença e Tribalistas.',
   },
   {
     kind: 'international',
-    title: '56 partituras de Pop Internacional',
+    title: `${scoreCountForStyles('Pop internacional')} partituras de Pop Internacional`,
     text: 'Melodias de artistas como Coldplay, Ed Sheeran e Elvis Presley para ampliar o seu repertório.',
   },
   {
     kind: 'classics',
-    title: '10 partituras de Clássicos & Trilhas',
+    title: `${scoreCountForStyles('Clássico', 'Trilha sonora')} partituras de Clássicos & Trilhas`,
     text: 'De Canon in D a Cinema Paradiso: clássicos e temas marcantes do cinema para emocionar.',
   },
 ]
@@ -47,8 +53,8 @@ export function OfferContents() {
           <div className="contents-package">
             <img
               className="contents-bundle"
-              src="/images/collections/violin-complete-bundle-guided.webp"
-              alt={`Pacote digital Music Library: acervo de 100 partituras para violino, quatro coleções por estilo, ${guidedScoreCount} partituras guiadas em vídeo e playbacks`}
+              src="/images/collections/violin-complete-bundle-151.webp"
+              alt={`Pacote digital Music Library: ${totalScoreCount} partituras para violino no total, sendo ${normalScoreCount} normais e ${guidedScoreCount} guiadas em vídeo, com playbacks`}
               width="1536"
               height="1024"
               loading="lazy"
@@ -66,11 +72,11 @@ export function OfferContents() {
             </h3>
             <ul>
               {[
-                'Coleção em expansão para 100 partituras de violino',
-                'Playbacks para acompanhar sua interpretação',
+                `${totalScoreCount} partituras no total: ${normalScoreCount} normais + ${guidedScoreCount} guiadas em vídeo`,
+                `${playbackCount} playbacks para acompanhar sua interpretação`,
                 '42 setlists organizados para diferentes ocasiões',
-                `Bônus: ${guidedScoreCount} partituras guiadas em vídeo`,
-                'Coleções bônus: Gospel, MPB, Internacional e Clássicos & Trilhas',
+                `${guidedScoreCount} guiadas já incluídas nas ${totalScoreCount} partituras`,
+                'Coleções por estilo: Gospel, MPB, Internacional e Clássicos & Trilhas',
                 'Partituras e acompanhamentos na mesma biblioteca',
                 'Acesso vitalício, com pagamento único',
                 'Link pessoal de acesso enviado por e-mail',
@@ -133,8 +139,10 @@ export function OfferContents() {
             ))}
           </div>
           <p className="contents-note">
-            Apresentação ilustrativa do material digital. A coleção está em expansão; os setlists
-            utilizam as músicas disponíveis na biblioteca.
+            As coleções por estilo fazem parte das {normalScoreCount} partituras normais. Jazz,
+            Natal, rock e chanson também estão no acervo. As {guidedScoreCount} guiadas completam o
+            total de {totalScoreCount} partituras do Completo. Páginas extras e playbacks não
+            aumentam essa contagem.
           </p>
         </div>
       </Container>

@@ -7,6 +7,7 @@ import { useOfferPricing } from '../lib/use-offer-pricing'
 import { formatBRL } from '../../shared/products'
 import { violinLaunch } from '../../shared/violin-launch'
 import { guidedScoreCount } from '../../shared/guided-scores'
+import { normalScoreCount, totalScoreCount, playbackCount } from '../../shared/score-catalog'
 import '../styles/pricing-offer.css'
 import '../styles/offer-contents.css'
 import '../styles/pricing-comparison.css'
@@ -33,22 +34,25 @@ function PricingCard({
         </div>
       )}
       <header className="pricing-card-heading">
-        <h3>100 partituras{plan.featured && <span>+ Playbacks</span>}</h3>
+        <h3>
+          {plan.featured ? totalScoreCount : normalScoreCount} partituras
+          {plan.featured && <span>+ Playbacks</span>}
+        </h3>
       </header>
       <ProductArtwork kind={plan.featured ? 'complete' : 'basic'} />
       <ul className="pricing-benefits">
         {(plan.featured
           ? [
-              'Partituras para violino',
-              'Playbacks para tocar junto',
+              `${normalScoreCount} partituras normais + ${guidedScoreCount} guiadas em vídeo`,
+              `${playbackCount} playbacks para tocar junto`,
               '42 setlists prontos',
-              `Bônus: ${guidedScoreCount} partituras guiadas em vídeo`,
+              `${guidedScoreCount} guiadas incluídas no total de ${totalScoreCount}`,
               '4 coleções bônus por estilo',
               'Acesso vitalício',
               'Link pessoal por e-mail',
             ]
           : [
-              'Partituras para violino',
+              `${normalScoreCount} partituras normais para violino`,
               '10 setlists prontos',
               'Acesso vitalício',
               'Link pessoal por e-mail',
@@ -128,8 +132,10 @@ export function PricingSection({ onCheckout }: { onCheckout: (plan: string) => v
           </span>
         </div>
         <p className="pricing-disclaimer">
-          Coleção em expansão para 100 partituras. Os setlists usam os materiais já disponíveis na
-          biblioteca. Confira o repertório e o valor final no checkout.
+          Completo: {normalScoreCount} partituras normais + {guidedScoreCount} guiadas ={' '}
+          {totalScoreCount} partituras. Básico: {normalScoreCount} partituras normais. Páginas
+          extras e playbacks não entram nessa soma. Confira o repertório e o valor final no
+          checkout.
         </p>
       </Container>
     </section>

@@ -2,12 +2,12 @@
 
 A página pública oferece dois planos com pagamento único:
 
-| Produto                    | Preço                                                 | Permissão                                                                          |
-| -------------------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `library-violin-scores`    | R$ 12,90                                              | Coleção de 100 partituras de violino, sem áudios, 10 setlists e acesso vitalício   |
-| `library-violin-playbacks` | R$ 27,90 na promoção; R$ 49,90 a partir de 05/11/2026 | Coleção de 100 partituras de violino com playbacks, 42 setlists e acesso vitalício |
+| Produto                    | Preço                                                 | Permissão                                                                                |
+| -------------------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `library-violin-scores`    | R$ 12,90                                              | 116 partituras normais, sem áudios ou guiadas, 10 setlists e acesso vitalício            |
+| `library-violin-playbacks` | R$ 27,90 na promoção; R$ 49,90 a partir de 05/11/2026 | 151 partituras (116 normais + 35 guiadas), 116 playbacks, 42 setlists e acesso vitalício |
 
-A coleção está em expansão. A contagem da biblioteca reflete apenas os arquivos publicados, sem inventar materiais para completar a oferta. A migração `202610270001_violin_lifetime_collection` atualiza somente as descrições dos planos; não altera preços, disponibilidade, pedidos ou permissões.
+A contagem foi conferida com o catálogo publicado em 13/11/2026. Uma partitura normal conta uma vez por música e artista, mesmo com várias páginas ou versões; áudios não contam como partituras. As 35 guiadas são um formato adicional, já incluído no total de 151 do Completo. `shared/score-catalog.ts` deriva os totais e as coleções por estilo dos catálogos compartilhados, que devem acompanhar as importações. MPB tem 26 partituras normais, Gospel 18, Pop internacional 56 e Clássicos & Trilhas 10; outros estilos completam as 116 normais. A migração `202611130001_published_score_counts` atualiza somente as descrições dos planos, preservando preços, disponibilidade, pedidos e permissões.
 
 ## Setlists por plano
 
@@ -94,11 +94,9 @@ O preço de R$ 49,90 aparece riscado sobre o valor promocional de R$ 27,90, acom
 
 A trilha tenta iniciar a 20% do volume ao entrar. Se o navegador recusar com `NotAllowedError`, uma interação de clique/toque ou Enter/Espaço na página tenta novamente. Essa espera não é reativada depois de uma pausa voluntária, falha de arquivo ou escolha de outra mídia. Os controles de áudio/vídeo e os campos de formulário não disparam essa retomada. A pausa escolhida continua válida na mesma sessão. Navegadores podem impedir áudio com som sem interação; não se promete contornar essa restrição.
 
-
 ### Partituras guiadas (02/11/2026)
 
 O Plano Completo inclui o bônus exclusivo de 35 partituras guiadas em vídeo, em uma aba própria ao lado de Partituras e Setlists. O catálogo não mistura vídeos com os PDFs ou com os áudios. Os MP4 ficam no bucket privado; listagem, visualização e download verificam o acesso ativo ao Completo. O Básico não lista nem autoriza vídeos. A demonstração pública do Completo exibe os títulos, mas não libera os vídeos. A visualização do Básico não mostra a aba de vídeos. `shared/guided-scores.ts` mantém o catálogo público e a quantidade do bônus. O karaokê de Making Love Out of Nothing at All foi excluído por não mostrar partitura.
-
 
 ### Tabela de partituras guiadas
 

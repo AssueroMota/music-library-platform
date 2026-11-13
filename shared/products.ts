@@ -1,4 +1,5 @@
 import { guidedScoreCount } from './guided-scores.js'
+import { normalScoreCount, totalScoreCount, playbackCount } from './score-catalog.js'
 
 // Seed/base catalog. Checkout reads PostgreSQL and applies the shared launch schedule.
 export const catalog = [
@@ -65,8 +66,7 @@ export const violinOffers = [
     instrument: 'violin',
     accessType: 'SCORES',
     priceCents: 1290,
-    description:
-      'Coleção de 100 partituras para violino, em expansão. 10 setlists prontos e acesso vitalício. Não inclui playbacks.',
+    description: `${normalScoreCount} partituras normais para violino, 10 setlists prontos e acesso vitalício. Não inclui playbacks nem partituras guiadas.`,
   },
   {
     id: 'library-violin-playbacks',
@@ -75,7 +75,6 @@ export const violinOffers = [
     instrument: 'violin',
     accessType: 'INSTRUMENT',
     priceCents: 2790,
-    description:
-      `Coleção de 100 partituras para violino com playbacks, em expansão. 42 setlists, bônus de ${guidedScoreCount} partituras guiadas em vídeo e acesso vitalício.`,
+    description: `${totalScoreCount} partituras para violino: ${normalScoreCount} normais + ${guidedScoreCount} guiadas em vídeo. Inclui ${playbackCount} playbacks, 42 setlists e acesso vitalício.`,
   },
 ] as const

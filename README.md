@@ -29,7 +29,7 @@ O Vite encaminha `/api` para `http://127.0.0.1:3001`. A landing page pode ser ex
 
 ## Compra e entrega
 
-1. O visitante escolhe a coleção de 100 partituras para violino, sem ou com playbacks, consultando preço e disponibilidade atuais. Os dois planos têm acesso vitalício. O Básico tem 10 setlists; o Completo tem 42 setlists e o bônus exclusivo de 35 partituras guiadas em vídeo. A coleção está em expansão.
+1. O visitante escolhe o Básico com 116 partituras normais ou o Completo com 151 partituras no total (116 normais + 35 guiadas em vídeo), consultando preço e disponibilidade atuais. Os dois planos têm acesso vitalício. O Básico tem 10 setlists; o Completo tem 42 setlists e 116 playbacks.
 2. O navegador envia `productId`, e-mail de entrega e `expectedPriceCents` no corpo de `POST /api/checkout`. Cabeçalhos identificam a tentativa e protegem a consulta de status.
 3. O servidor lê o produto no PostgreSQL, aplica a regra compartilhada de lançamento, verifica o total esperado, grava o pedido e cria uma order pelo SDK oficial, retornando `checkout_url`.
 4. O comprador informa dados e paga no ambiente do Mercado Pago.
@@ -41,7 +41,7 @@ As páginas `/checkout/success`, `/checkout/pending` e `/checkout/failure` consu
 
 ## Catálogo e arquivos
 
-`shared/products.ts` define os dois produtos atuais para violino: coleção de 100 partituras sem playback por R$ 12,90 e com playbacks por R$ 27,90 no lançamento. O Básico inclui 10 setlists e o Completo, 42; ambos têm acesso vitalício. As 35 partituras guiadas em vídeo são exclusivas do Completo. O site informa que o acervo está em expansão; a biblioteca conta somente os arquivos efetivamente publicados. `shared/violin-launch.ts` define o prazo fixo até 04/11/2026 às 23h59 (Brasília) e o preço de R$ 49,90 do Completo a partir de 05/11/2026. O backend aplica a mesma regra no catálogo público e na criação da cobrança. O resumo consulta a API antes de pagar e pede uma nova confirmação se o valor mudar. Os produtos antigos permanecem no banco para preservar compras e acessos anteriores; a migração retira suas ofertas de venda. Consulte [docs/violin-offer.md](docs/violin-offer.md).
+`shared/products.ts` define os dois produtos atuais para violino: Básico com 116 partituras normais por R$ 12,90 e Completo com 151 partituras (116 normais + 35 guiadas em vídeo) e 116 playbacks. O Básico inclui 10 setlists e o Completo, 42; ambos têm acesso vitalício. `shared/score-catalog.ts` calcula as quantidades a partir dos catálogos públicos compartilhados. A contagem considera uma partitura normal por música e artista, sem somar páginas alternativas ou áudios; as guiadas são um formato adicional no total do Completo. A migração `202611130001_published_score_counts` corrige somente as descrições dos planos no banco. `shared/violin-launch.ts` define o prazo fixo de lançamento por R$ 27,90 até 04/11/2026 às 23h59 (Brasília) e o preço de R$ 49,90 do Completo a partir de 05/11/2026. O backend aplica a mesma regra no catálogo público e na criação da cobrança. O resumo consulta a API antes de pagar e pede uma nova confirmação se o valor mudar. Os produtos antigos permanecem no banco para preservar compras e acessos anteriores. Consulte [docs/violin-offer.md](docs/violin-offer.md).
 
 Os estudos em `public/` são demonstrações; consulte [docs/assets.md](docs/assets.md). Os materiais comerciais precisam ser importados em bucket privado antes do lançamento, com `npm run library:import -- caminho/do/manifesto.json`.
 
@@ -80,7 +80,6 @@ A API precisa de um processo Node persistente para executar a fila. Sirva `dist/
 No Render, use `npm start` como comando de início para executar também o `prestart` com `prisma migrate deploy`. A migração `202610240005_violin_offers` cria os planos atuais com os preços e permissões correspondentes. Se o serviço usar diretamente `node dist-server/server/index.js`, configure `npm run db:migrate` como comando de pré-deploy. Publique frontend e API da mesma revisão. O envio ao GitHub não confirma por si só que ambos os serviços concluíram o deploy.
 
 Para publicar o frontend na Vercel, use o `vercel.json` e siga [docs/vercel.md](docs/vercel.md). A configuração do frontend não publica automaticamente a API ou o processamento da fila.
-
 
 ### Setlists personalizados
 

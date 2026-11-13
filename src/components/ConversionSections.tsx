@@ -5,6 +5,8 @@ import { activeLaunchCampaign } from '../lib/launch-campaign'
 import { Button, Container, Reveal, SectionHeading } from './ui'
 import { useOfferPricing } from '../lib/use-offer-pricing'
 import { formatBRL } from '../../shared/products'
+import { normalScoreCount, totalScoreCount } from '../../shared/score-catalog'
+import { guidedScoreCount } from '../../shared/guided-scores'
 
 export function CreatorSection() {
   const creator = violinCreator
@@ -82,9 +84,10 @@ export function ConfidenceSection() {
               <span>02 · ESCOLHA COM SEGURANÇA</span>
               <h3>O plano é claro.</h3>
               <p>
-                {formatBRL(prices[0])} pela coleção de 100 partituras. {formatBRL(prices[1])} com
-                playbacks. São 10 setlists no Básico e 42 no Completo, com acesso vitalício. Coleção
-                em expansão, com compra única e valor confirmado antes do pagamento.
+                {formatBRL(prices[0])} por {normalScoreCount} partituras normais no Básico.{' '}
+                {formatBRL(prices[1])} por {totalScoreCount} partituras no Completo: as{' '}
+                {normalScoreCount} normais + {guidedScoreCount} guiadas, com playbacks. São 10
+                setlists no Básico e 42 no Completo, com acesso vitalício e compra única.
               </p>
               <a href="#planos">
                 Comparar os dois planos <span aria-hidden="true">↗</span>

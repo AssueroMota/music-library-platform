@@ -2,6 +2,7 @@ import { Clock3 } from 'lucide-react'
 import { formatBRL } from '../../shared/products'
 import { launchTimeRemaining, violinLaunch } from '../../shared/violin-launch'
 import { useOfferPricing } from '../lib/use-offer-pricing'
+import { totalScoreCount } from '../../shared/score-catalog'
 
 export function LaunchOfferHeader({ onCheckout }: { onCheckout: (plan: string) => void }) {
   const { now, launchActive } = useOfferPricing()
@@ -17,7 +18,7 @@ export function LaunchOfferHeader({ onCheckout }: { onCheckout: (plan: string) =
     <header className="site-offer-header" aria-label="Oferta de lançamento">
       <div className="site-offer-header-inner">
         <div className="site-offer-header-copy">
-          <span>100 PARTITURAS + PLAYBACKS</span>
+          <span>{totalScoreCount} PARTITURAS + PLAYBACKS</span>
           <strong>
             {formatBRL(violinLaunch.launchPriceCents)}{' '}
             <small>até {violinLaunch.deadlineLabel}</small>
@@ -65,7 +66,10 @@ export function LaunchOfferCountdown({ now, active }: { now: number; active: boo
         <span>
           <Clock3 size={15} /> LANÇAMENTO · PLANO COMPLETO
         </span>
-        <strong>Leve 100 partituras + playbacks por {formatBRL(violinLaunch.launchPriceCents)}.</strong>
+        <strong>
+          Leve {totalScoreCount} partituras + playbacks por{' '}
+          {formatBRL(violinLaunch.launchPriceCents)}.
+        </strong>
         <p>
           Até {violinLaunch.deadlineLabel}. Em {violinLaunch.regularFromLabel}, o valor passa para{' '}
           <b>{formatBRL(violinLaunch.regularPriceCents)}</b>.

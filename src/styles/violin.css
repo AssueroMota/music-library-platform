@@ -218,6 +218,10 @@
   color: #b4b4c0;
   font-size: 12px;
 }
+.violin-sales .hero-offer-price .hero-catalog-total,
+.violin-sales .hero-offer-price .hero-catalog-breakdown {
+  flex-basis: 100%;
+}
 .violin-sales .hero-offer-price strong {
   color: #fff;
   font-size: 18px;

@@ -1,5 +1,6 @@
 import { violinLaunch } from '../../shared/violin-launch'
 import { guidedScoreCount } from '../../shared/guided-scores'
+import { normalScoreCount, totalScoreCount, playbackCount } from '../../shared/score-catalog'
 
 export const salesFaqs = [
   [
@@ -8,7 +9,7 @@ export const salesFaqs = [
   ],
   [
     'Qual é a diferença entre os dois planos?',
-    `Os dois planos oferecem a coleção de 100 partituras para violino, em expansão, e acesso vitalício. O Básico inclui partituras e 10 setlists; o Completo inclui também playbacks em áudio, 42 setlists e o bônus de ${guidedScoreCount} partituras guiadas em vídeo. Consulte os materiais já publicados. A compra é única, sem assinatura.`,
+    `O Básico inclui ${normalScoreCount} partituras normais e 10 setlists. O Completo reúne ${totalScoreCount} partituras no total: as ${normalScoreCount} normais + ${guidedScoreCount} guiadas em vídeo, além de ${playbackCount} playbacks e 42 setlists. Os dois planos têm acesso vitalício, com compra única e sem assinatura.`,
   ],
   [
     'O que são as partituras guiadas?',
@@ -24,7 +25,7 @@ export const salesFaqs = [
   ],
   [
     'Quais músicas estão incluídas?',
-    'O acervo está em preparação. As amostras desta página demonstram a organização e não representam a lista final de músicas. Confira o repertório disponível antes de comprar.',
+    `O acervo publicado tem ${normalScoreCount} partituras normais e ${guidedScoreCount} guiadas em vídeo, somando ${totalScoreCount} partituras no Completo. Explore o catálogo nesta página e confira títulos, artistas e estilos antes de comprar. Cada partitura normal é contada uma vez por música e artista; páginas extras e playbacks não aumentam o total. As versões guiadas são contadas separadamente, mesmo quando a música também tem partitura normal.`,
   ],
   [
     'Como funciona o valor de lançamento?',

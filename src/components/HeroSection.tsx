@@ -2,6 +2,7 @@
 import { plans } from '../data/content'
 import { Button, Container, Logo, Reveal } from './ui'
 import { guidedScoreCount } from '../../shared/guided-scores'
+import { normalScoreCount, totalScoreCount } from '../../shared/score-catalog'
 
 export function HeroSection() {
   return (
@@ -41,8 +42,14 @@ export function HeroSection() {
               </a>
             </div>
             <div className="hero-offer-price">
+              <span className="hero-catalog-total">
+                <strong>{totalScoreCount} partituras para violino</strong> no Plano Completo
+              </span>
+              <span className="hero-catalog-breakdown">
+                {normalScoreCount} normais + {guidedScoreCount} guiadas em vídeo
+              </span>
               <span>
-                Coleção de 100 partituras por{' '}
+                Básico com {normalScoreCount} partituras por{' '}
                 <strong>
                   {plans[0].price?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                 </strong>
@@ -51,8 +58,8 @@ export function HeroSection() {
                 Acesso vitalício. Compra única, sem mensalidade.
               </span>
               <a className="hero-guided-bonus" href="#partituras-guiadas">
-                <Play size={15} /> Bônus no Completo: {guidedScoreCount} partituras guiadas em
-                vídeo ↗
+                <Play size={15} /> Bônus no Completo: {guidedScoreCount} partituras guiadas em vídeo
+                ↗
               </a>
             </div>
             <div className="hero-assurances">
@@ -81,8 +88,8 @@ export function HeroSection() {
             <div className="hero-kit">
               <img
                 className="kit-cover"
-                src="/images/collections/violin-main.webp"
-                alt="Livro Music Library: acervo com 100 partituras para violino"
+                src="/images/collections/violin-main-v2.webp"
+                alt="Livro Music Library: partituras para violino"
                 width="1086"
                 height="1448"
                 decoding="async"

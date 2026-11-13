@@ -45,8 +45,8 @@ export function MaterialsSection() {
           <Reveal className="material-showcase">
             <img
               className="material-book"
-              src="/images/collections/violin-main.webp"
-              alt="Livro Music Library: acervo com 100 partituras para violino"
+              src="/images/collections/violin-main-v2.webp"
+              alt="Livro Music Library: partituras para violino"
               width="1086"
               height="1448"
               loading="lazy"
@@ -98,7 +98,8 @@ export function MaterialsSection() {
             </li>
           </ol>
           <small>
-            Seu acesso é preparado após a confirmação do pagamento. O acervo está em preparação.
+            Seu acesso é liberado após a confirmação do pagamento, com os materiais do plano
+            escolhido.
           </small>
         </div>
         <details

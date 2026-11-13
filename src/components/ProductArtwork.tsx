@@ -4,13 +4,13 @@ export type ArtworkKind =
   'basic' | 'complete' | 'gospel' | 'mpb' | 'international' | 'classics' | 'guided'
 
 const covers: Record<ArtworkKind, string> = {
-  basic: 'main',
-  complete: 'main',
+  basic: 'main-v2',
+  complete: 'main-v2',
   gospel: 'gospel-18',
-  mpb: 'mpb-13',
+  mpb: 'mpb-26',
   international: 'international-56',
   classics: 'classics-10',
-  guided: 'guided-23',
+  guided: 'guided-35',
 }
 
 export function ProductArtwork({ kind }: { kind: ArtworkKind }) {

@@ -102,8 +102,8 @@ export function PublicLibraryPreview() {
         previewMedia={previewMedia}
       />
       <p className="public-library-preview-caption">
-        Prévia do catálogo. As quantidades acima representam esta demonstração; a área do aluno
-        mostra os arquivos e versões liberados para sua conta.
+        Catálogo dos materiais publicados. A área do aluno libera os arquivos conforme o plano
+        adquirido; somente A Thousand Years tem partitura e áudio de demonstração nesta página.
       </p>
     </section>
   )
