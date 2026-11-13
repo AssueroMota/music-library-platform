@@ -10,7 +10,9 @@ export interface MemberAsset {
 }
 
 export interface MemberLibraryData {
-  setlistLimit?: 10 | 42
+  setlistLimit?: 0 | 10 | 42
+  freeAccess?: boolean
+  accessMode?: 'free' | 'basic' | 'complete'
   products: { id: string; name: string }[]
   assets: MemberAsset[]
   previewAccess?: { instrument: string; expiresAt: string }[]

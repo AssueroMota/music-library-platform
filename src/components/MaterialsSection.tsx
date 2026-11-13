@@ -91,15 +91,15 @@ export function MaterialsSection() {
               <span>01</span>Escolha o plano
             </li>
             <li>
-              <span>02</span>Confirme a compra
+              <span>02</span>Confirme sua escolha
             </li>
             <li>
               <span>03</span>Receba o acesso por e-mail
             </li>
           </ol>
           <small>
-            Seu acesso é liberado após a confirmação do pagamento, com os materiais do plano
-            escolhido.
+            No Grátis, solicite seu link por e-mail. Nos planos pagos, o acesso é liberado após a
+            confirmação do pagamento, com os materiais do plano escolhido.
           </small>
         </div>
         <details

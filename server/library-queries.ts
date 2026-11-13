@@ -5,6 +5,7 @@ export type StoredLibraryLink = { id: string; secretCiphertext: string }
 type LibrarySnapshot = {
   products: Pick<Product, 'id' | 'name' | 'accessType' | 'instrument'>[]
   previews: { instrument: string; expiresAt: string }[]
+  freeAccess: boolean
   assets: LibraryAsset[]
   link: StoredLibraryLink | null
 }
@@ -24,6 +25,10 @@ function accessScope(userId: string, now: Date) {
       SELECT instrument, "expiresAt"
       FROM library_preview_access
       WHERE "userId" = ${userId}::uuid AND "revokedAt" IS NULL AND "expiresAt" > ${now}
+    ),
+    active_free_access AS (
+      SELECT id FROM library_free_access
+      WHERE "userId" = ${userId}::uuid AND "revokedAt" IS NULL
     )`
 }
 
@@ -35,7 +40,9 @@ const assetAccess = Prisma.sql`
       OR (p.instrument = a.instrument AND (
         p."accessType" = 'INSTRUMENT' OR (p."accessType" = 'SCORES' AND a.kind = 'score')
       ))
-  ) OR EXISTS (SELECT 1 FROM active_previews v WHERE v.instrument = a.instrument)`
+  ) OR EXISTS (SELECT 1 FROM active_previews v WHERE v.instrument = a.instrument)
+    OR (EXISTS (SELECT 1 FROM active_free_access)
+      AND EXISTS (SELECT 1 FROM library_free_samples s WHERE s."assetId" = a.id))`
 
 export async function librarySnapshot(db: LibraryDb, userId: string) {
   const [snapshot] = await db.$queryRaw<LibrarySnapshot[]>(Prisma.sql`
@@ -43,6 +50,7 @@ export async function librarySnapshot(db: LibraryDb, userId: string) {
     SELECT
       COALESCE((SELECT jsonb_agg(to_jsonb(p)) FROM active_products p), '[]'::jsonb) AS products,
       COALESCE((SELECT jsonb_agg(to_jsonb(v)) FROM active_previews v), '[]'::jsonb) AS previews,
+      EXISTS (SELECT 1 FROM active_free_access) AS "freeAccess",
       COALESCE((
         SELECT jsonb_agg(jsonb_build_object(
           'id', a.id, 'title', a.title, 'songTitle', a."songTitle",
@@ -85,10 +93,25 @@ export async function personalAccessRecord(db: LibraryDb, linkId: string) {
       ) OR EXISTS (
         SELECT 1 FROM library_preview_access v
         WHERE v."userId" = l."userId" AND v."revokedAt" IS NULL AND v."expiresAt" > ${new Date()}
+      ) OR EXISTS (
+        SELECT 1 FROM library_free_access f
+        WHERE f."userId" = l."userId" AND f."revokedAt" IS NULL
       )
     ) AS "hasAccess"
     FROM library_access_links l JOIN users u ON u.id = l."userId"
     WHERE l.id = ${linkId}::uuid
   `
   return link
+}
+
+export async function freeOnlySetlistAccess(db: LibraryDb, userId: string) {
+  const [access] = await db.$queryRaw<{ denied: boolean }[]>(Prisma.sql`
+    WITH ${accessScope(userId, new Date())}
+    SELECT (
+      EXISTS (SELECT 1 FROM library_free_access WHERE "userId" = ${userId}::uuid)
+      AND NOT EXISTS (SELECT 1 FROM active_products)
+      AND NOT EXISTS (SELECT 1 FROM active_previews)
+    ) AS denied
+  `)
+  return access.denied
 }

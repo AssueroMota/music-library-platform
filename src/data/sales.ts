@@ -1,8 +1,13 @@
 import { violinLaunch } from '../../shared/violin-launch'
 import { guidedScoreCount } from '../../shared/guided-scores'
 import { normalScoreCount, totalScoreCount, playbackCount } from '../../shared/score-catalog'
+import { freeLibrary } from '../../shared/free-library'
 
 export const salesFaqs = [
+  [
+    'Como funciona o acesso grátis?',
+    `Informe seu e-mail na opção Grátis para receber seu link pessoal. A versão de teste libera ${freeLibrary.scoreCount} partituras com playback (${freeLibrary.scores.join(' e ')}) e ${freeLibrary.guidedScoreCount} guiadas em vídeo (${freeLibrary.guidedScores.join(' e ')}). Não inclui setlists prontos ou personalizados. Não pede pagamento nem cartão. Os demais materiais fazem parte dos planos pagos.`,
+  ],
   [
     'O material é só para violino?',
     'Sim. Esta coleção é dedicada ao violino. A oferta atual não inclui bibliotecas de outros instrumentos.',
@@ -13,7 +18,7 @@ export const salesFaqs = [
   ],
   [
     'O que são as partituras guiadas?',
-    `São ${guidedScoreCount} vídeos em que você acompanha a partitura passando na tela enquanto a música toca. Eles estão incluídos como bônus exclusivo do Plano Completo, em uma aba própria da biblioteca. Você pode pausar, voltar e ajustar a velocidade no player para estudar no seu ritmo. Os playbacks em áudio separados continuam exclusivos do Completo.`,
+    `São vídeos em que você acompanha a partitura passando na tela enquanto a música toca. O Plano Completo inclui a coleção de ${guidedScoreCount} guiadas em uma aba própria; o Grátis libera ${freeLibrary.guidedScoreCount} delas para experimentar. Você pode pausar, voltar e ajustar a velocidade no player para estudar no seu ritmo.`,
   ],
   [
     'O acesso é vitalício nos dois planos?',
@@ -21,7 +26,7 @@ export const salesFaqs = [
   ],
   [
     'Como funcionam os setlists?',
-    'São 10 sequências no Básico e 42 no Completo, organizadas por ocasião, como casamentos, jantares, eventos e louvor. Na biblioteca, abra Setlists prontos, escolha a seleção e avance pelas partituras na ordem sugerida. Uma música pode fazer parte de mais de um setlist. Os playbacks estão incluídos somente no Completo.',
+    'São 10 sequências no Básico e 42 no Completo, organizadas por ocasião, como casamentos, jantares, eventos e louvor. Na biblioteca, abra Setlists prontos, escolha a seleção e avance pelas partituras na ordem sugerida. Uma música pode fazer parte de mais de um setlist. A versão Grátis não tem setlists prontos nem personalizados.',
   ],
   [
     'Quais músicas estão incluídas?',
@@ -33,11 +38,11 @@ export const salesFaqs = [
   ],
   [
     'O que é um playback?',
-    'É o acompanhamento que você reproduz enquanto toca a melodia no violino. Os playbacks fazem parte apenas do Plano Completo. Você pode ouvir uma demonstração nesta página.',
+    `É o acompanhamento que você reproduz enquanto toca a melodia no violino. O Completo inclui a coleção de playbacks; o Grátis libera ${freeLibrary.scoreCount} acompanhamentos para experimentar. O Básico não inclui playbacks.`,
   ],
   [
     'Como recebo meu acesso?',
-    'A entrega é digital. Após a confirmação do pagamento pelo Mercado Pago, preparamos seu acesso e enviamos o link pessoal ao e-mail informado na compra. Guarde esse link para voltar à biblioteca.',
+    'A entrega é digital. No Grátis, basta informar seu e-mail para receber o link pessoal. Nos planos pagos, o acesso é liberado após a confirmação do pagamento pelo Mercado Pago. Guarde seu link para voltar à biblioteca.',
   ],
   [
     'Posso usar no celular ou tablet?',

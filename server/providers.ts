@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import { z } from 'zod'
 import type { Config } from './config.js'
-import { confirmationEmail, loginEmail } from './email.js'
+import { confirmationEmail, loginEmail, freeAccessEmail } from './email.js'
 
 export const remoteOrderSchema = z.object({
   id: z.string(),
@@ -57,7 +57,7 @@ export interface Providers {
   getOrder(id: string): Promise<RemoteOrder>
   createLogin(email: string): Promise<{ userId: string; email: string; link: string }>
   sendConfirmation(email: string, productName: string, link: string, key: string): Promise<void>
-  sendLogin(email: string, link: string, key: string): Promise<void>
+  sendLogin(email: string, link: string, key: string, free?: boolean): Promise<void>
   authenticate(token: string): Promise<{ id: string; email: string } | null>
   signedDownload(storageKey: string): Promise<string>
   signedView(storageKey: string): Promise<string>
@@ -157,14 +157,18 @@ export function createProviders(config: Config): Providers {
         ? null
         : { id: data.user.id, email: data.user.email.toLowerCase() }
     },
-    async sendLogin(email, link, key) {
+    async sendLogin(email, link, key, free = false) {
       const { data, error } = await resend.emails.send(
         {
           from: config.EMAIL_FROM,
           to: email,
           replyTo: config.SUPPORT_EMAIL,
-          subject: 'Seu link de acesso à Music Library',
-          ...loginEmail(link, config.SUPPORT_EMAIL),
+          subject: free
+            ? 'Seu acesso grátis à Music Library está pronto!'
+            : 'Seu link de acesso à Music Library',
+          ...(free
+            ? freeAccessEmail(link, config.SUPPORT_EMAIL)
+            : loginEmail(link, config.SUPPORT_EMAIL)),
         },
         { idempotencyKey: key, signal: AbortSignal.timeout(10000) },
       )

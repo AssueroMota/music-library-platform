@@ -19,6 +19,7 @@ enum OrderStatus {
 enum JobKind {
   RECONCILE
   FULFILL
+  FREE_ACCESS_EMAIL
 }
 
 model User {
@@ -30,6 +31,7 @@ model User {
   previewAccess LibraryPreviewAccess[]
   libraryLink LibraryAccessLink?
   setlists CustomSetlist[]
+  freeAccess LibraryFreeAccess?
   @@map("users")
 }
 
@@ -138,8 +140,26 @@ model LibraryAsset {
   instrument String
   kind       String
   storageKey String @unique
+  freeSample LibraryFreeSample?
   @@index([instrument])
   @@map("library_assets")
+}
+
+model LibraryFreeSample {
+  assetId String @id @db.Uuid
+  asset LibraryAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  @@map("library_free_samples")
+}
+
+model LibraryFreeAccess {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @unique @db.Uuid
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  revokedAt DateTime? @db.Timestamptz(3)
+  emailSentAt DateTime? @db.Timestamptz(3)
+  emailLinkCiphertext String
+  @@map("library_free_access")
 }
 
 model CustomSetlist {

@@ -7,7 +7,7 @@ import { CheckoutService } from './service.js'
 import { createApp } from './app.js'
 import type { Config } from './config.js'
 import type { Providers, RemoteOrder } from './providers.js'
-import { confirmationEmail } from './email.js'
+import { confirmationEmail, freeAccessEmail } from './email.js'
 import { personalLibraryLink } from './library-access.js'
 import { MAX_SETLIST_SONGS } from '../shared/custom-setlists.js'
 
@@ -142,6 +142,246 @@ async function notify(resourceId: string, requestId = randomUUID(), invalid = fa
     payload: { type: 'order', data: { id: resourceId }, status: 'processed' },
   })
 }
+
+describe('biblioteca grátis com acesso limitado', () => {
+  const headers = { authorization: 'Bearer valid-test-session' }
+  let freeRequest = 0
+  async function prepareFree() {
+    const assets = []
+    for (const [songTitle, artist, kind] of [
+      ['A Thousand Years', 'Christina Perri', 'score'],
+      ['A Thousand Years', 'Christina Perri', 'audio'],
+      ['Perfect', 'Ed Sheeran', 'score'],
+      ['Perfect', 'Ed Sheeran', 'audio'],
+      ['My Way', 'Frank Sinatra', 'video'],
+      ['Bondade de Deus', '', 'video'],
+    ]) {
+      const asset = await db.libraryAsset.create({
+        data: {
+          title: songTitle!,
+          songTitle: songTitle!,
+          artist,
+          kind: kind!,
+          style: 'Pop',
+          instrument: 'violin',
+          storageKey: `free/${randomUUID()}.${kind === 'video' ? 'mp4' : kind === 'audio' ? 'mp3' : 'pdf'}`,
+        },
+      })
+      await db.libraryFreeSample.create({ data: { assetId: asset.id } })
+      assets.push(asset)
+    }
+    const locked = await db.libraryAsset.create({
+      data: {
+        title: 'Partitura paga',
+        songTitle: 'Partitura paga',
+        instrument: 'violin',
+        kind: 'score',
+        storageKey: `paid/${randomUUID()}.pdf`,
+      },
+    })
+    return { assets, locked }
+  }
+  async function signup(payload: unknown = { email: buyerEmail }) {
+    return app.inject({
+      method: 'POST',
+      url: '/api/library/free',
+      payload,
+      remoteAddress: `203.0.113.${++freeRequest}`,
+    })
+  }
+  it('cadastra sem pagamento, envia o link pessoal pela fila e libera só os seis arquivos selecionados', async () => {
+    const { assets, locked } = await prepareFree()
+    config.CHECKOUT_ENABLED = false
+    const response = await signup({ email: ' Buyer@Example.Test ' })
+    expect(response.statusCode).toBe(202)
+    expect(response.json()).not.toHaveProperty('personalLink')
+    expect(providers.sendLogin).not.toHaveBeenCalled()
+    expect(await db.order.count()).toBe(0)
+    expect(await db.entitlement.count()).toBe(0)
+    expect(providers.createOrder).not.toHaveBeenCalled()
+    await service.runJobs()
+    const access = await db.libraryFreeAccess.findUniqueOrThrow({ where: { userId } })
+    expect(access.emailSentAt).not.toBeNull()
+    expect(providers.sendLogin).toHaveBeenCalledWith(
+      buyerEmail,
+      expect.stringContaining('/biblioteca#id='),
+      `free-access/${access.id}`,
+      true,
+    )
+    const library = (await app.inject({ url: '/api/library', headers })).json()
+    expect(library).toMatchObject({
+      freeAccess: true,
+      accessMode: 'free',
+      setlistLimit: 0,
+      products: [],
+    })
+    expect(library.assets.map((asset: { id: string }) => asset.id).sort()).toEqual(
+      assets.map((asset) => asset.id).sort(),
+    )
+    const params = new URLSearchParams(new URL(library.personalLink).hash.slice(1))
+    expect(
+      (
+        await app.inject({
+          method: 'POST',
+          url: '/api/auth/access',
+          headers,
+          payload: { id: params.get('id'), token: params.get('acesso') },
+        })
+      ).json(),
+    ).toEqual({ authenticated: true })
+    for (const asset of assets) {
+      expect(
+        (await app.inject({ url: `/api/library/assets/${asset.id}/view`, headers })).statusCode,
+      ).toBe(200)
+      expect(
+        (await app.inject({ url: `/api/library/assets/${asset.id}/download`, headers })).statusCode,
+      ).toBe(200)
+    }
+    expect(
+      (await app.inject({ url: `/api/library/assets/${locked.id}/view`, headers })).statusCode,
+    ).toBe(403)
+    expect(
+      (await app.inject({ url: `/api/library/assets/${locked.id}/download`, headers })).statusCode,
+    ).toBe(403)
+    const duplicate = await db.libraryAsset.create({
+      data: {
+        ...locked,
+        id: randomUUID(),
+        title: 'Outra versão de Perfect',
+        songTitle: 'Perfect',
+        artist: 'Ed Sheeran',
+        storageKey: `private/${randomUUID()}.pdf`,
+      },
+    })
+    expect(
+      (await app.inject({ url: `/api/library/assets/${duplicate.id}/view`, headers })).statusCode,
+    ).toBe(403)
+  })
+  it('bloqueia todas as operações de setlist, inclusive rascunhos vazios', async () => {
+    await prepareFree()
+    await signup()
+    for (const method of ['GET', 'POST', 'PUT', 'DELETE'] as const) {
+      const response = await app.inject({
+        method,
+        url: `/api/library/setlists${method === 'PUT' || method === 'DELETE' ? `/${randomUUID()}` : ''}`,
+        headers,
+        ...(['POST', 'PUT'].includes(method)
+          ? { payload: { title: '', songs: [], status: 'draft' } }
+          : {}),
+      })
+      expect(response.statusCode).toBe(403)
+      expect(response.json().code).toBe('SETLISTS_NOT_INCLUDED')
+    }
+    expect(await db.customSetlist.count()).toBe(0)
+  })
+  it('repete o cadastro sem duplicar acesso, fila ou link e permite reenviar pelo login', async () => {
+    await prepareFree()
+    await Promise.all([signup(), signup()])
+    expect(await db.libraryFreeAccess.count()).toBe(1)
+    expect(await db.libraryAccessLink.count()).toBe(1)
+    expect(await db.job.count({ where: { kind: 'FREE_ACCESS_EMAIL' } })).toBe(1)
+    await service.runJobs()
+    const personal = (await app.inject({ url: '/api/library', headers })).json().personalLink
+    await signup()
+    expect(providers.sendLogin).toHaveBeenLastCalledWith(
+      buyerEmail,
+      personal,
+      expect.stringContaining('free-resend/'),
+      true,
+    )
+    expect(
+      (await app.inject({ method: 'POST', url: '/api/auth/link', payload: { email: buyerEmail } }))
+        .statusCode,
+    ).toBe(202)
+    expect(providers.sendLogin).toHaveBeenLastCalledWith(
+      buyerEmail,
+      personal,
+      expect.stringContaining('login/'),
+      true,
+    )
+  })
+  it('preserva o acesso quando o envio falha e repete a entrega com a mesma chave', async () => {
+    await prepareFree()
+    await signup()
+    vi.mocked(providers.sendLogin).mockRejectedValueOnce(new Error('Email unavailable'))
+    await service.runJobs()
+    const access = await db.libraryFreeAccess.findUniqueOrThrow({ where: { userId } })
+    expect(access.emailSentAt).toBeNull()
+    expect((await app.inject({ url: '/api/library', headers })).json().assets).toHaveLength(6)
+    await db.job.updateMany({
+      where: { kind: 'FREE_ACCESS_EMAIL' },
+      data: { availableAt: new Date(0) },
+    })
+    await service.runJobs()
+    expect(providers.sendLogin).toHaveBeenCalledTimes(2)
+    expect(vi.mocked(providers.sendLogin).mock.calls[0]).toEqual(
+      vi.mocked(providers.sendLogin).mock.calls[1],
+    )
+    expect(
+      (await db.libraryFreeAccess.findUniqueOrThrow({ where: { userId } })).emailSentAt,
+    ).not.toBeNull()
+  })
+  it('não amplia direitos de outra conta e não reativa o teste revogado', async () => {
+    const { assets } = await prepareFree()
+    await signup()
+    const other = { id: randomUUID(), email: 'another@example.test' }
+    await db.user.create({ data: other })
+    vi.mocked(providers.authenticate).mockResolvedValueOnce(other)
+    expect(
+      (await app.inject({ url: `/api/library/assets/${assets[0]!.id}/view`, headers })).statusCode,
+    ).toBe(403)
+    const personal = (await app.inject({ url: '/api/library', headers })).json().personalLink
+    await db.libraryFreeAccess.update({ where: { userId }, data: { revokedAt: new Date() } })
+    await signup()
+    await service.runJobs()
+    expect(providers.sendLogin).not.toHaveBeenCalled()
+    expect((await app.inject({ url: '/api/library', headers })).json().assets).toHaveLength(0)
+    const params = new URLSearchParams(new URL(personal).hash.slice(1))
+    expect(
+      (
+        await app.inject({
+          method: 'POST',
+          url: '/api/auth/access',
+          payload: { id: params.get('id'), token: params.get('acesso') },
+        })
+      ).statusCode,
+    ).toBe(403)
+  })
+  it('mantém os direitos de quem já possui um plano pago', async () => {
+    const { locked } = await prepareFree()
+    const { order } = await checkout('library-violin-scores')
+    vi.mocked(providers.getOrder).mockResolvedValue(remote(order!))
+    await service.reconcile(order!.providerOrderId!)
+    await service.runJobs()
+    await signup()
+    await service.runJobs()
+    const library = (await app.inject({ url: '/api/library', headers })).json()
+    expect(library).toMatchObject({ freeAccess: false, accessMode: 'basic', setlistLimit: 10 })
+    expect(library.assets.some((asset: { id: string }) => asset.id === locked.id)).toBe(true)
+    expect((await app.inject({ url: '/api/library/setlists', headers })).statusCode).toBe(200)
+  })
+  it('recusa dados extras ou e-mail inválido e não promete um teste sem os materiais configurados', async () => {
+    for (const payload of [
+      { email: 'invalid' },
+      { email: buyerEmail, productId: 'library-complete' },
+      { email: buyerEmail, assets: [] },
+    ])
+      expect((await signup(payload)).statusCode).toBe(400)
+    expect(await db.libraryFreeAccess.count()).toBe(0)
+    expect((await signup()).statusCode).toBe(503)
+    expect(await db.libraryFreeAccess.count()).toBe(0)
+  })
+  it('o e-mail do teste explica o limite sem informar uma compra ou cobrança', () => {
+    const message = freeAccessEmail(
+      'https://example.test/biblioteca#personal',
+      'support@example.test',
+    )
+    expect(message.text).toContain('2 partituras com playback')
+    expect(message.text).toContain('2 guiadas')
+    expect(message.html).toContain('Seu acesso grátis está pronto.')
+    expect(message.text).not.toMatch(/compra confirmada/i)
+  })
+})
 
 describe('checkout e persistência real em PostgreSQL', () => {
   it('exige e-mail de entrega válido antes de criar a cobrança', async () => {

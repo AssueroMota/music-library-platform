@@ -3,11 +3,23 @@ import { randomUUID } from 'node:crypto'
 import cors from '@fastify/cors'
 import rateLimit from '@fastify/rate-limit'
 import { z, ZodError } from 'zod'
-import { CheckoutService, checkoutSchema, tokenSchema, uuidSchema } from './service.js'
+import {
+  CheckoutService,
+  checkoutSchema,
+  tokenSchema,
+  uuidSchema,
+  deliveryEmailSchema,
+} from './service.js'
 import { AppError, checkToken, hashToken, validateSignature } from './security.js'
 import { libraryFileFormat } from '../shared/library.js'
 import { personalLibraryLink, storedPersonalLibraryLink } from './library-access.js'
-import { libraryAssetAccess, librarySnapshot, personalAccessRecord } from './library-queries.js'
+import {
+  libraryAssetAccess,
+  librarySnapshot,
+  personalAccessRecord,
+  freeOnlySetlistAccess,
+} from './library-queries.js'
+import { requestFreeLibrary } from './free-library.js'
 import { RequestTiming } from './timing.js'
 import { SignedViewCache } from './signed-view-cache.js'
 import { violinOffers } from '../shared/products.js'
@@ -166,6 +178,20 @@ export function createApp(service: CheckoutService, logging = true) {
     },
   )
   app.post(
+    '/api/library/free',
+    { config: { rateLimit: { max: 3, timeWindow: '1 minute' } } },
+    async (request, reply) => {
+      const { email } = z.object({ email: deliveryEmailSchema }).strict().parse(request.body)
+      await requestFreeLibrary(service, email)
+      return reply
+        .code(202)
+        .send({
+          message:
+            'Solicitação recebida! Confira sua caixa de entrada e a pasta de spam para acessar a versão grátis.',
+        })
+    },
+  )
+  app.post(
     '/api/auth/link',
     { config: { rateLimit: { max: 3, timeWindow: '1 minute' } } },
     async (request, reply) => {
@@ -178,16 +204,29 @@ export function createApp(service: CheckoutService, logging = true) {
         include: {
           entitlements: { where: { revokedAt: null, order: { status: 'APPROVED' } }, take: 1 },
           previewAccess: { where: { revokedAt: null, expiresAt: { gt: new Date() } }, take: 1 },
+          freeAccess: true,
         },
       })
-      if (user && (user.entitlements.length || user.previewAccess.length)) {
+      if (
+        user &&
+        (user.entitlements.length ||
+          user.previewAccess.length ||
+          (user.freeAccess && !user.freeAccess.revokedAt))
+      ) {
         const link = await personalLibraryLink(
           service.db,
           user.id,
           service.config.FRONTEND_URL,
           service.config.EMAIL_LINK_ENCRYPTION_KEY,
         )
-        await service.providers.sendLogin(email, link, `login/${randomUUID()}`)
+        if (
+          user.freeAccess &&
+          !user.freeAccess.revokedAt &&
+          !user.entitlements.length &&
+          !user.previewAccess.length
+        )
+          await service.providers.sendLogin(email, link, `login/${randomUUID()}`, true)
+        else await service.providers.sendLogin(email, link, `login/${randomUUID()}`)
       }
       return reply.code(202).send({
         message: 'Se houver acesso liberado para este e-mail, você receberá um link de acesso.',
@@ -227,9 +266,9 @@ export function createApp(service: CheckoutService, logging = true) {
   app.get('/api/library', async (request, reply) => {
     const timing = new RequestTiming(reply)
     const user = await timing.measure('auth', () => authenticate(request.headers.authorization))
-    const { products, previews, assets, link } = await timing.measure('database', () =>
-      librarySnapshot(service.db, user.id),
-    )
+    const snapshot = await timing.measure('database', () => librarySnapshot(service.db, user.id))
+    const { products, previews, assets, link } = snapshot
+    const freeAccess = snapshot.freeAccess && !products.length && !previews.length
     const complete = products.some((product) => product.accessType === 'COMPLETE')
     const instruments = [
       ...new Set([
@@ -238,7 +277,7 @@ export function createApp(service: CheckoutService, logging = true) {
       ]),
     ]
     const personalLink =
-      complete || instruments.length
+      complete || instruments.length || freeAccess
         ? link
           ? storedPersonalLibraryLink(
               link,
@@ -255,8 +294,17 @@ export function createApp(service: CheckoutService, logging = true) {
             )
         : null
     return {
-      setlistLimit:
-        products.some((product) => product.accessType !== 'SCORES') || previews.length ? 42 : 10,
+      accessMode: freeAccess
+        ? 'free'
+        : products.some((product) => product.accessType !== 'SCORES') || previews.length
+          ? 'complete'
+          : 'basic',
+      setlistLimit: freeAccess
+        ? 0
+        : products.some((product) => product.accessType !== 'SCORES') || previews.length
+          ? 42
+          : 10,
+      freeAccess,
       products: products.map(({ id, name }) => ({ id, name })),
       assets: assets.map(({ storageKey, ...asset }) => ({
         ...asset,
@@ -269,8 +317,13 @@ export function createApp(service: CheckoutService, logging = true) {
       personalLink,
     }
   })
+  async function requireSetlists(userId: string) {
+    if (await freeOnlySetlistAccess(service.db, userId))
+      throw new AppError(403, 'SETLISTS_NOT_INCLUDED', 'A versão grátis não inclui setlists.')
+  }
   app.get('/api/library/setlists', async (request) => {
     const user = await authenticate(request.headers.authorization)
+    await requireSetlists(user.id)
     const records = await service.db.customSetlist.findMany({
       where: { userId: user.id },
       orderBy: [{ updatedAt: 'desc' }, { id: 'asc' }],
@@ -279,6 +332,7 @@ export function createApp(service: CheckoutService, logging = true) {
   })
   app.post('/api/library/setlists', { bodyLimit: 262144 }, async (request, reply) => {
     const user = await authenticate(request.headers.authorization)
+    await requireSetlists(user.id)
     const data = await validateSetlist(service.db, user.id, request.body)
     // A client UUID makes automatic-save retries safe after a lost response.
     const { id } = z.object({ id: uuidSchema.optional() }).parse(request.body)
@@ -297,6 +351,7 @@ export function createApp(service: CheckoutService, logging = true) {
   })
   app.put('/api/library/setlists/:id', { bodyLimit: 262144 }, async (request) => {
     const user = await authenticate(request.headers.authorization)
+    await requireSetlists(user.id)
     const { id } = z.object({ id: uuidSchema }).parse(request.params)
     const existing = await service.db.customSetlist.findFirst({ where: { id, userId: user.id } })
     if (!existing) throw setlistNotFound()
@@ -310,6 +365,7 @@ export function createApp(service: CheckoutService, logging = true) {
   })
   app.delete('/api/library/setlists/:id', async (request) => {
     const user = await authenticate(request.headers.authorization)
+    await requireSetlists(user.id)
     const { id } = z.object({ id: uuidSchema }).parse(request.params)
     const result = await service.db.customSetlist.deleteMany({ where: { id, userId: user.id } })
     if (!result.count) throw setlistNotFound()

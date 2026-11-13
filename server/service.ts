@@ -7,6 +7,7 @@ import { personalLibraryLink } from './library-access.js'
 import { violinPriceCents } from '../shared/violin-launch.js'
 import { upgradeOffer } from './upgrade.js'
 import type { UpgradeQuote } from '../shared/upgrade.js'
+import { deliverFreeLibraryEmail } from './free-library.js'
 import {
   AppError,
   checkToken,
@@ -455,6 +456,8 @@ export class CheckoutService {
       if (!job) break
       try {
         if (job.kind === 'RECONCILE') await this.reconcile(job.resourceId)
+        else if (job.kind === 'FREE_ACCESS_EMAIL')
+          await deliverFreeLibraryEmail(this, job.resourceId)
         else await this.fulfill(job.resourceId)
         await this.db.job.updateMany({
           where: { id: job.id, leaseToken: lease },

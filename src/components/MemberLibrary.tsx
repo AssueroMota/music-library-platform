@@ -80,10 +80,14 @@ function MemberLibraryContent({
   const [linkCopied, setLinkCopied] = useState(false)
   const [upgradeOpen, setUpgradeOpen] = useState(false)
   const completeAccess = Boolean(
-    data && (data.setlistLimit === 42 || data.assets.some((asset) => asset.kind === 'audio')),
+    data &&
+    (data.accessMode
+      ? data.accessMode === 'complete'
+      : !data.freeAccess &&
+        (data.setlistLimit === 42 || data.assets.some((asset) => asset.kind === 'audio'))),
   )
   const showUpgrade = Boolean(
-    session && data && (basicPreview || !completeAccess) && data.assets.length,
+    session && data && !data.freeAccess && (basicPreview || !completeAccess) && data.assets.length,
   )
   function refreshUpgrade() {
     setUpgradeOpen(false)
@@ -108,7 +112,7 @@ function MemberLibraryContent({
   // This view only removes materials; authorization remains enforced by the API.
   const repertoireData = useMemo<MemberLibraryData | null>(
     () =>
-      data && basicPreview
+      data && basicPreview && !data.freeAccess
         ? {
             ...data,
             setlistLimit: 10,
@@ -263,7 +267,7 @@ function MemberLibraryContent({
                       'Link copiado. Guarde nos favoritos e não compartilhe seu acesso pessoal.',
                     )
                   } catch {
-                    setNotice('Não foi possível copiar. Seu link também está no e-mail da compra.')
+                    setNotice('Não foi possível copiar. Seu link também está no e-mail de acesso.')
                   }
                 }}
               >
@@ -278,12 +282,12 @@ function MemberLibraryContent({
         ) : !session ? (
           <>
             <p>
-              Informe o mesmo e-mail usado na compra. Enviaremos seu link pessoal para acessar seus
-              materiais.
+              Informe o e-mail usado na compra ou no cadastro grátis. Enviaremos seu link pessoal
+              para acessar seus materiais.
             </p>
             <p className="checkout-notice" id="member-email-help">
               <strong>Utilize um e-mail Gmail (@gmail.com).</strong> Informe o mesmo endereço na
-              compra e no acesso à biblioteca para receber seu link pessoal.
+              cadastro e no acesso à biblioteca para receber seu link pessoal.
             </p>
             <form onSubmit={login} className="member-login">
               <label htmlFor="member-email">Seu e-mail</label>
@@ -318,6 +322,17 @@ function MemberLibraryContent({
           <>
             {data && (
               <>
+                {data.freeAccess && (
+                  <div className="checkout-notice member-free-notice">
+                    <strong>Versão grátis</strong>
+                    <p>
+                      2 partituras com playback e 2 guiadas em vídeo para experimentar a biblioteca.
+                    </p>
+                    <a href="/#planos" className="button button-outline">
+                      Conhecer os planos completos
+                    </a>
+                  </div>
+                )}
                 {Boolean(data.previewAccess?.length) && (
                   <p className="checkout-notice">
                     O acesso de teste está ativo. Você pode ouvir e visualizar os materiais

@@ -9,6 +9,7 @@ import { FAQSection, Footer } from './components/ClosingSections'
 import { InfoDialog } from './components/InfoDialog'
 import { ScrollProgress } from './components/ScrollProgress'
 import { CheckoutDialog } from './components/CheckoutDialog'
+import { FreeLibraryDialog } from './components/FreeLibraryDialog'
 import { LaunchOfferHeader } from './components/LaunchOfferCountdown'
 import { ConfidenceSection } from './components/ConversionSections'
 import { VisitPlaylist } from './components/VisitPlaylist'
@@ -33,6 +34,7 @@ const MemberLibrary = lazy(() =>
 export default function App() {
   const [info, setInfo] = useState<{ title: string; text: string } | null>(null)
   const [checkout, setCheckout] = useState<string | null>(null)
+  const [freeOpen, setFreeOpen] = useState(false)
   const [contactOpen, setContactOpen] = useState(false)
   useEffect(() => {
     if (
@@ -71,7 +73,7 @@ export default function App() {
         <AudioComparison />
         <ConfidenceSection />
         <OfferContents />
-        <PricingSection onCheckout={setCheckout} />
+        <PricingSection onCheckout={setCheckout} onFree={() => setFreeOpen(true)} />
         <FAQSection />
         <FinalInvitation />
       </main>
@@ -80,6 +82,7 @@ export default function App() {
       <ContactBubble open={contactOpen} onOpenChange={setContactOpen} />
       <InfoDialog info={info} onClose={() => setInfo(null)} />
       <CheckoutDialog plan={checkout} onClose={() => setCheckout(null)} />
+      <FreeLibraryDialog open={freeOpen} onClose={() => setFreeOpen(false)} />
     </MotionConfig>
   )
 }

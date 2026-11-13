@@ -76,7 +76,11 @@ export function MemberRepertoire({
     }
     return [...grouped.values()].sort((a, b) => a.title.localeCompare(b.title, 'pt-BR'))
   }, [data.assets, setlistLimit])
-  const setlists = useMemo(() => resolveSetlists(songs, setlistLimit), [songs, setlistLimit])
+  const setlistsEnabled = setlistLimit !== 0 && !data.freeAccess
+  const setlists = useMemo(
+    () => (setlistLimit === 0 ? [] : resolveSetlists(songs, setlistLimit)),
+    [songs, setlistLimit],
+  )
   const activeSetlist =
     view === 'setlists' ? setlists.find((item) => item.id === setlistId) : undefined
   useEffect(() => {
@@ -89,8 +93,11 @@ export function MemberRepertoire({
   ].sort((a, b) => a.localeCompare(b, 'pt-BR'))
   const availableInstruments = [...new Set(songs.map((song) => song.instrument))]
   const videos = useMemo(
-    () => (setlistLimit === 42 ? data.assets.filter((asset) => asset.kind === 'video') : []),
-    [data.assets, setlistLimit],
+    () =>
+      setlistLimit === 42 || data.freeAccess
+        ? data.assets.filter((asset) => asset.kind === 'video')
+        : [],
+    [data.assets, setlistLimit, data.freeAccess],
   )
   const filtered = collection
     .filter(
@@ -133,29 +140,32 @@ export function MemberRepertoire({
       {(songs.length > 0 || videos.length > 0) && (
         <nav className="library-collection-nav" aria-label="Explorar biblioteca">
           <button aria-pressed={view === 'songs'} onClick={() => changeView('songs')}>
-            <FileMusic size={18} /> {setlistLimit === 42 ? 'Partituras + Playbacks' : 'Partituras'}{' '}
+            <FileMusic size={18} />{' '}
+            {setlistLimit === 42 || data.freeAccess ? 'Partituras + Playbacks' : 'Partituras'}{' '}
             <span>{songs.length}</span>
           </button>
-          <button aria-pressed={view === 'setlists'} onClick={() => changeView('setlists')}>
-            <ListMusic size={18} /> Setlists prontos <span>{setlists.length}</span>
-          </button>
-          {token && !previewMedia && (
+          {setlistsEnabled && (
+            <button aria-pressed={view === 'setlists'} onClick={() => changeView('setlists')}>
+              <ListMusic size={18} /> Setlists prontos <span>{setlists.length}</span>
+            </button>
+          )}
+          {setlistsEnabled && token && !previewMedia && (
             <button aria-pressed={view === 'custom'} onClick={() => changeView('custom')}>
               <ListMusic size={18} /> Meus setlists
             </button>
           )}
-          {setlistLimit === 42 && (
+          {(setlistLimit === 42 || data.freeAccess) && (
             <button aria-pressed={view === 'guided'} onClick={() => changeView('guided')}>
               <Video size={18} /> Partituras guiadas <span>{videos.length}</span>
             </button>
           )}
         </nav>
       )}
-      {view === 'custom' ? (
+      {view === 'custom' && setlistsEnabled ? (
         <CustomSetlists key={token} songs={songs} token={token} onOpenSong={openSong} />
       ) : view === 'guided' ? (
         <LibraryGuidedScores videos={videos} token={token} previewMedia={previewMedia} />
-      ) : view === 'setlists' && !activeSetlist ? (
+      ) : view === 'setlists' && setlistsEnabled && !activeSetlist ? (
         <LibrarySetlists setlists={setlists} onOpen={openSetlist} />
       ) : (
         <>

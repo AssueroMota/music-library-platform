@@ -41,6 +41,8 @@ As páginas `/checkout/success`, `/checkout/pending` e `/checkout/failure` consu
 
 ## Catálogo e arquivos
 
+A opção **Grátis** permite solicitar acesso por e-mail a duas partituras com playback e duas guiadas, sem cobrança ou setlists. O cadastro usa o mesmo link pessoal da biblioteca e uma fila de entrega com repetição de e-mail. Consulte [docs/free-library.md](docs/free-library.md) para seleção, permissões e implantação.
+
 `shared/products.ts` define os dois produtos atuais para violino: Básico com 116 partituras normais por R$ 12,90 e Completo com 151 partituras (116 normais + 35 guiadas em vídeo) e 116 playbacks. O Básico inclui 10 setlists e o Completo, 42; ambos têm acesso vitalício. `shared/score-catalog.ts` calcula as quantidades a partir dos catálogos públicos compartilhados. A contagem considera uma partitura normal por música e artista, sem somar páginas alternativas ou áudios; as guiadas são um formato adicional no total do Completo. A migração `202611130001_published_score_counts` corrige somente as descrições dos planos no banco. `shared/violin-launch.ts` define o prazo fixo de lançamento por R$ 27,90 até 04/11/2026 às 23h59 (Brasília) e o preço de R$ 49,90 do Completo a partir de 05/11/2026. O backend aplica a mesma regra no catálogo público e na criação da cobrança. O resumo consulta a API antes de pagar e pede uma nova confirmação se o valor mudar. Os produtos antigos permanecem no banco para preservar compras e acessos anteriores. Consulte [docs/violin-offer.md](docs/violin-offer.md).
 
 Os estudos em `public/` são demonstrações; consulte [docs/assets.md](docs/assets.md). Os materiais comerciais precisam ser importados em bucket privado antes do lançamento, com `npm run library:import -- caminho/do/manifesto.json`.

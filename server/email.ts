@@ -17,3 +17,16 @@ export function loginEmail(link: string, support: string) {
     html: `<!doctype html><html lang="pt-BR"><body style="font-family:Arial,sans-serif;color:#14263f;background:#faf8f3;padding:24px"><main style="max-width:560px;margin:auto;background:#fff;padding:30px;border-radius:12px"><h1 style="font-size:24px">Sua biblioteca, sempre no mesmo endereço.</h1><p style="line-height:1.7">Use seu link pessoal para ouvir os áudios e abrir as partituras liberadas para sua conta.</p><p style="margin:28px 0"><a href="${escape(link)}" style="display:inline-block;padding:16px 24px;background:#24c45d;color:#072812;border-radius:6px;text-decoration:none;font-weight:bold">Acessar minha biblioteca</a></p><p style="font-size:13px;line-height:1.7">Guarde este endereço nos favoritos e não compartilhe seu link pessoal.</p><p style="font-size:13px">Se você não solicitou este acesso, ignore esta mensagem.</p><p style="font-size:13px">Suporte: <a href="mailto:${escape(support)}">${escape(support)}</a></p></main></body></html>`,
   }
 }
+
+export function freeAccessEmail(link: string, support: string) {
+  const email = loginEmail(link, support)
+  return {
+    text: `Seu acesso grátis à Music Library está pronto!\n\nVocê tem 2 partituras com playback: A Thousand Years e Perfect; e 2 guiadas em vídeo: My Way e Bondade de Deus. A versão grátis não inclui setlists. Não há pagamento ou cartão.\n\n${email.text}`,
+    html: email.html
+      .replace('Sua biblioteca, sempre no mesmo endereço.', 'Seu acesso grátis está pronto.')
+      .replace(
+        'Use seu link pessoal para ouvir os áudios e abrir as partituras liberadas para sua conta.',
+        'Experimente 2 partituras com playback: <strong>A Thousand Years</strong> e <strong>Perfect</strong>, e 2 guiadas em vídeo: <strong>My Way</strong> e <strong>Bondade de Deus</strong>. A versão grátis não inclui setlists. Sem pagamento ou cartão. Use seu link pessoal abaixo para entrar.',
+      ),
+  }
+}
