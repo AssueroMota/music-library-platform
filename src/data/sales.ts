@@ -14,7 +14,7 @@ export const salesFaqs = [
   ],
   [
     'Qual é a diferença entre os dois planos?',
-    `O Básico inclui ${normalScoreCount} partituras normais e 10 setlists. O Completo reúne ${totalScoreCount} partituras no total: as ${normalScoreCount} normais + ${guidedScoreCount} guiadas em vídeo, além de ${playbackCount} playbacks e 42 setlists. Os dois planos têm acesso vitalício, com compra única e sem assinatura.`,
+    `O Básico inclui ${normalScoreCount} partituras e 10 setlists. O Completo reúne ${totalScoreCount} partituras no total: as ${normalScoreCount} partituras + ${guidedScoreCount} guiadas em vídeo, além de ${playbackCount} playbacks e 42 setlists. Os dois planos têm acesso vitalício, com compra única e sem assinatura.`,
   ],
   [
     'O que são as partituras guiadas?',
@@ -30,7 +30,7 @@ export const salesFaqs = [
   ],
   [
     'Quais músicas estão incluídas?',
-    `O acervo publicado tem ${normalScoreCount} partituras normais e ${guidedScoreCount} guiadas em vídeo, somando ${totalScoreCount} partituras no Completo. Explore o catálogo nesta página e confira títulos, artistas e estilos antes de comprar. Cada partitura normal é contada uma vez por música e artista; páginas extras e playbacks não aumentam o total. As versões guiadas são contadas separadamente, mesmo quando a música também tem partitura normal.`,
+    `O acervo publicado tem ${normalScoreCount} partituras e ${guidedScoreCount} guiadas em vídeo, somando ${totalScoreCount} partituras no Completo. Explore o catálogo nesta página e confira títulos, artistas e estilos antes de comprar. Cada partitura é contada uma vez por música e artista; páginas extras e playbacks não aumentam o total. As versões guiadas são contadas separadamente, mesmo quando a música também tem partitura.`,
   ],
   [
     'Como funciona o valor de lançamento?',

@@ -46,7 +46,7 @@ export function HeroSection() {
                 <strong>{totalScoreCount} partituras para violino</strong> no Plano Completo
               </span>
               <span className="hero-catalog-breakdown">
-                {normalScoreCount} normais + {guidedScoreCount} guiadas em vídeo
+                {normalScoreCount} partituras + {guidedScoreCount} guiadas em vídeo
               </span>
               <span>
                 Básico com {normalScoreCount} partituras por{' '}

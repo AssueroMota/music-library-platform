@@ -25,7 +25,7 @@
 }
 .violin-sales .pricing-comparison .pricing-grid-with-free {
   max-width: 1180px;
-  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1fr) minmax(0, 1.05fr);
+  grid-template-columns: minmax(0, 0.78fr) minmax(0, 1fr) minmax(0, 1.05fr);
   gap: 22px;
 }
 .free-plan-label {
@@ -341,4 +341,29 @@
   .violin-sales .pricing-comparison .pricing-trust {
     gap: 13px;
   }
+}
+
+.violin-sales .pricing-comparison .pricing-card.pricing-free {
+  width: 100%;
+  max-width: 320px;
+  justify-self: center;
+  padding: 20px;
+}
+.violin-sales .pricing-comparison .pricing-free h3 {
+  min-height: 0;
+  font-size: 26px;
+}
+.pricing-comparison .pricing-free .package-art {
+  height: 128px;
+  margin: 6px auto 12px;
+}
+.violin-sales .pricing-comparison .pricing-free .pricing-benefits {
+  padding-top: 12px;
+  gap: 6px;
+}
+.pricing-free .comparison-purchase {
+  padding-top: 16px;
+}
+.violin-sales .pricing-comparison .pricing-free .pricing-value {
+  font-size: 44px;
 }

@@ -54,7 +54,7 @@ export function OfferContents() {
             <img
               className="contents-bundle"
               src="/images/collections/violin-complete-bundle-151.webp"
-              alt={`Pacote digital Music Library: ${totalScoreCount} partituras para violino no total, sendo ${normalScoreCount} normais e ${guidedScoreCount} guiadas em vídeo, com playbacks`}
+              alt={`Pacote digital Music Library: ${totalScoreCount} partituras para violino no total, sendo ${normalScoreCount} partituras e ${guidedScoreCount} guiadas em vídeo, com playbacks`}
               width="1536"
               height="1024"
               loading="lazy"
@@ -72,7 +72,7 @@ export function OfferContents() {
             </h3>
             <ul>
               {[
-                `${totalScoreCount} partituras no total: ${normalScoreCount} normais + ${guidedScoreCount} guiadas em vídeo`,
+                `${totalScoreCount} partituras no total: ${normalScoreCount} partituras + ${guidedScoreCount} guiadas em vídeo`,
                 `${playbackCount} playbacks para acompanhar sua interpretação`,
                 '42 setlists organizados para diferentes ocasiões',
                 `${guidedScoreCount} guiadas já incluídas nas ${totalScoreCount} partituras`,
@@ -139,10 +139,10 @@ export function OfferContents() {
             ))}
           </div>
           <p className="contents-note">
-            As coleções por estilo fazem parte das {normalScoreCount} partituras normais. Jazz,
-            Natal, rock e chanson também estão no acervo. As {guidedScoreCount} guiadas completam o
-            total de {totalScoreCount} partituras do Completo. Páginas extras e playbacks não
-            aumentam essa contagem.
+            As coleções por estilo fazem parte das {normalScoreCount} partituras. Jazz, Natal, rock
+            e chanson também estão no acervo. As {guidedScoreCount} guiadas completam o total de{' '}
+            {totalScoreCount} partituras do Completo. Páginas extras e playbacks não aumentam essa
+            contagem.
           </p>
         </div>
       </Container>

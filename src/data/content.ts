@@ -99,7 +99,7 @@ export const plans: Plan[] = [
     description: 'Para ter a partitura em mãos e estudar no seu ritmo.',
     accessMode: 'Violino · somente partituras',
     benefits: [
-      `${normalScoreCount} partituras normais exclusivamente para violino`,
+      `${normalScoreCount} partituras exclusivamente para violino`,
       '10 setlists prontos para diferentes ocasiões',
       'Acesso vitalício, sem mensalidade',
       'Arquivos digitais organizados por música',
@@ -115,7 +115,7 @@ export const plans: Plan[] = [
     accessMode: 'Violino · partituras + playbacks',
     featured: true,
     benefits: [
-      `${totalScoreCount} partituras para violino: ${normalScoreCount} normais + ${guidedScoreCount} guiadas`,
+      `${totalScoreCount} partituras para violino: ${normalScoreCount} partituras + ${guidedScoreCount} guiadas`,
       '42 setlists prontos para diferentes ocasiões',
       `${guidedScoreCount} partituras guiadas em vídeo incluídas no total`,
       'Acesso vitalício, sem mensalidade',

@@ -66,7 +66,7 @@ export const violinOffers = [
     instrument: 'violin',
     accessType: 'SCORES',
     priceCents: 1290,
-    description: `${normalScoreCount} partituras normais para violino, 10 setlists prontos e acesso vitalício. Não inclui playbacks nem partituras guiadas.`,
+    description: `${normalScoreCount} partituras para violino, 10 setlists prontos e acesso vitalício. Não inclui playbacks nem partituras guiadas.`,
   },
   {
     id: 'library-violin-playbacks',
@@ -75,6 +75,6 @@ export const violinOffers = [
     instrument: 'violin',
     accessType: 'INSTRUMENT',
     priceCents: 2790,
-    description: `${totalScoreCount} partituras para violino: ${normalScoreCount} normais + ${guidedScoreCount} guiadas em vídeo. Inclui ${playbackCount} playbacks, 42 setlists e acesso vitalício.`,
+    description: `${totalScoreCount} partituras para violino: ${normalScoreCount} partituras + ${guidedScoreCount} guiadas em vídeo. Inclui ${playbackCount} playbacks, 42 setlists e acesso vitalício.`,
   },
 ] as const

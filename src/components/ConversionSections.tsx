@@ -84,9 +84,9 @@ export function ConfidenceSection() {
               <span>02 · ESCOLHA COM SEGURANÇA</span>
               <h3>O plano é claro.</h3>
               <p>
-                {formatBRL(prices[0])} por {normalScoreCount} partituras normais no Básico.{' '}
+                {formatBRL(prices[0])} por {normalScoreCount} partituras no Básico.{' '}
                 {formatBRL(prices[1])} por {totalScoreCount} partituras no Completo: as{' '}
-                {normalScoreCount} normais + {guidedScoreCount} guiadas, com playbacks. São 10
+                {normalScoreCount} partituras + {guidedScoreCount} guiadas, com playbacks. São 10
                 setlists no Básico e 42 no Completo, com acesso vitalício e compra única.
               </p>
               <a href="#planos">

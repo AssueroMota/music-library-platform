@@ -44,7 +44,7 @@ function PricingCard({
       <ul className="pricing-benefits">
         {(plan.featured
           ? [
-              `${normalScoreCount} partituras normais + ${guidedScoreCount} guiadas em vídeo`,
+              `${normalScoreCount} partituras + ${guidedScoreCount} guiadas em vídeo`,
               `${playbackCount} playbacks para tocar junto`,
               '42 setlists prontos',
               `${guidedScoreCount} guiadas incluídas no total de ${totalScoreCount}`,
@@ -53,7 +53,7 @@ function PricingCard({
               'Link pessoal por e-mail',
             ]
           : [
-              `${normalScoreCount} partituras normais para violino`,
+              `${normalScoreCount} partituras para violino`,
               '10 setlists prontos',
               'Acesso vitalício',
               'Link pessoal por e-mail',
@@ -180,11 +180,11 @@ export function PricingSection({
           </span>
         </div>
         <p className="pricing-disclaimer">
-          Grátis: {freeLibrary.scoreCount} partituras normais + {freeLibrary.guidedScoreCount}{' '}
-          guiadas para experimentar, sem setlists. Completo: {normalScoreCount} partituras normais +{' '}
-          {guidedScoreCount} guiadas = {totalScoreCount} partituras. Básico: {normalScoreCount}{' '}
-          partituras normais. Páginas extras e playbacks não entram nessa soma. Confira o repertório
-          e o valor final no checkout.
+          Grátis: {freeLibrary.scoreCount} partituras + {freeLibrary.guidedScoreCount} guiadas para
+          experimentar, sem setlists. Completo: {normalScoreCount} partituras + {guidedScoreCount}{' '}
+          guiadas = {totalScoreCount} partituras. Básico: {normalScoreCount} partituras. Páginas
+          extras e playbacks não entram nessa soma. Confira o repertório e o valor final no
+          checkout.
         </p>
       </Container>
     </section>
