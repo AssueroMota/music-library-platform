@@ -51,15 +51,7 @@ export function OfferContents() {
         </header>
         <div className="contents-summary">
           <div className="contents-package">
-            <img
-              className="contents-bundle"
-              src="/images/collections/violin-complete-bundle-151.webp"
-              alt={`Pacote digital Music Library: ${totalScoreCount} partituras para violino no total, sendo ${normalScoreCount} partituras e ${guidedScoreCount} guiadas em vídeo, com playbacks`}
-              width="1536"
-              height="1024"
-              loading="lazy"
-              decoding="async"
-            />
+            <ProductArtwork kind="complete" />
           </div>
           <div className="contents-summary-card">
             <span className="contents-card-label">NO PLANO COMPLETO</span>
@@ -107,6 +99,11 @@ export function OfferContents() {
               precisam de atenção, volte quantas vezes quiser e estude no seu ritmo.
             </p>
             <p>Uma aba só para suas partituras guiadas, ao lado de Partituras e Setlists.</p>
+            <p>
+              <a className="contents-guide-link" href="/partituras-guiadas-para-violino">
+                Veja como estudar com partituras guiadas
+              </a>
+            </p>
             <a href="#planos">
               Quero esse bônus na minha biblioteca <ArrowDown size={16} />
             </a>
@@ -143,6 +140,11 @@ export function OfferContents() {
             e chanson também estão no acervo. As {guidedScoreCount} guiadas completam o total de{' '}
             {totalScoreCount} partituras do Completo. Páginas extras e playbacks não aumentam essa
             contagem.
+          </p>
+          <p className="contents-note">
+            <a className="contents-guide-link" href="/repertorio-para-violino">
+              Como montar seu repertório para violino
+            </a>
           </p>
         </div>
       </Container>

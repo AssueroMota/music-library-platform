@@ -77,7 +77,7 @@ npm run preview          # Preview estático; configure VITE_API_URL para API em
 
 Os testes substituem os serviços externos por doubles controlados. Não acessam contas reais nem comprovam compra no sandbox oficial. Essa validação requer credenciais e segue o roteiro de [docs/checkout.md](docs/checkout.md).
 
-A API precisa de um processo Node persistente para executar a fila. Sirva `dist/` por HTTPS com fallback para `index.html` nas rotas do frontend e proxy de `/api` para a API. Não exponha a pasta do repositório ou `.env`. Configure `VITE_PUBLIC_SITE_URL` para canonical/Open Graph.
+A API precisa de um processo Node persistente para executar a fila. Sirva `dist/` por HTTPS e replique os caminhos de `vercel.json` para a biblioteca, os retornos do checkout e os guias públicos. Encaminhe `/api` à API quando ela compartilhar a mesma origem. Sirva apenas o diretório de saída. O HTML público usa URLs canônicas absolutas do domínio `www.partiturasebases.com.br`.
 
 No Render, use `npm start` como comando de início para executar também o `prestart` com `prisma migrate deploy`. A migração `202610240005_violin_offers` cria os planos atuais com os preços e permissões correspondentes. Se o serviço usar diretamente `node dist-server/server/index.js`, configure `npm run db:migrate` como comando de pré-deploy. Publique frontend e API da mesma revisão. O envio ao GitHub não confirma por si só que ambos os serviços concluíram o deploy.
 

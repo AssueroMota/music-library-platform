@@ -8,8 +8,8 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && npm run build:server",
-    "build:web": "tsc -b && vite build",
+    "build": "npm run build:web && npm run build:server",
+    "build:web": "tsc -b && node scripts/build-web.mjs",
     "lint": "oxlint",
     "preview": "vite preview",
     "assets:audio": "node scripts/generate-demo-audio.mjs",

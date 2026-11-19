@@ -3,11 +3,17 @@
   "framework": "vite",
   "buildCommand": "npm run build:web",
   "outputDirectory": "dist",
+  "redirects": [{ "source": "/index.html", "destination": "/", "permanent": true }],
   "rewrites": [
-    { "source": "/biblioteca", "destination": "/index.html" },
-    { "source": "/checkout/success", "destination": "/index.html" },
-    { "source": "/checkout/pending", "destination": "/index.html" },
-    { "source": "/checkout/failure", "destination": "/index.html" }
+    { "source": "/biblioteca", "destination": "/app.html" },
+    { "source": "/checkout/success", "destination": "/app.html" },
+    { "source": "/checkout/pending", "destination": "/app.html" },
+    { "source": "/checkout/failure", "destination": "/app.html" },
+    { "source": "/repertorio-para-violino", "destination": "/repertorio-para-violino.html" },
+    {
+      "source": "/partituras-guiadas-para-violino",
+      "destination": "/partituras-guiadas-para-violino.html"
+    }
   ],
   "headers": [
     {

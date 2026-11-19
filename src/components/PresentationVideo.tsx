@@ -140,7 +140,7 @@ export function PresentationVideo({ src, poster }: { src: string; poster: string
         controls
         playsInline
         muted={false}
-        preload="metadata"
+        preload="none"
         width={720}
         height={1280}
         poster={poster}

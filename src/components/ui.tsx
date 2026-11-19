@@ -58,6 +58,7 @@ export function SectionHeading({
   return (
     <motion.div
       className={`section-heading ${light ? 'heading-light' : ''} ${center ? 'heading-center' : ''}`}
+      suppressHydrationWarning
       initial={reducedMotion ? false : { opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.15 }}
@@ -87,7 +88,8 @@ export function Reveal({
   const reduce = useReducedMotion()
   return (
     <motion.div
-      className={className}
+      className={`entrance-reveal ${className}`}
+      suppressHydrationWarning
       initial={reduce ? false : { opacity: 0, y: 32, scale: 0.98 }}
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true, amount: 0.08 }}

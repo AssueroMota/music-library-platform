@@ -1,6 +1,6 @@
 ﻿import { ArrowDown, Check, Headphones, Play, UtensilsCrossed, Heart, Mic2 } from 'lucide-react'
 import { plans } from '../data/content'
-import { Button, Container, Reveal } from './ui'
+import { Button, Container } from './ui'
 import { guidedScoreCount } from '../../shared/guided-scores'
 import { normalScoreCount, totalScoreCount } from '../../shared/score-catalog'
 
@@ -9,20 +9,15 @@ export function HeroSection({ onFree }: { onFree: () => void }) {
     <section id="inicio" className="hero violin-hero">
       <Container>
         <div className="hero-grid">
-          <Reveal className="hero-copy">
+          <div className="hero-copy">
             <h1>
-              Seu violino.
-              <br />O som dos
+              Partituras{' '}
               <br />
-              <span>
-                grandes
-                <br className="hero-mobile-break" /> momentos.
-              </span>
+              <span>para violino.</span>
             </h1>
             <p>
-              Na entrada da noiva. No jantar especial. Na apresentação que fica na memória. Prepare
-              suas interpretações com{' '}
-              <strong>partituras para violino e a opção com playbacks.</strong>
+              Monte seu repertório para casamentos, jantares e eventos. No Plano Completo, ensaie com{' '}
+              <strong>playbacks e partituras guiadas em vídeo.</strong>
             </p>
             <div className="hero-actions">
               <Button href="#planos">Quero preparar meu próximo repertório</Button>
@@ -65,16 +60,17 @@ export function HeroSection({ onFree }: { onFree: () => void }) {
                 <Check size={14} /> Acesso por e-mail
               </span>
             </div>
-          </Reveal>
-          <Reveal className="hero-stage" delay={0.1}>
+          </div>
+          <div className="hero-stage">
             <div className="hero-stage-orbit" aria-hidden="true" />
             <figure className="hero-event-photo">
               <img
-                src="/images/violin-event.jpg"
+                src="/images/violin-event.webp"
                 alt="Violinista de traje social tocando em uma celebração com decoração de flores"
-                width="1400"
-                height="2100"
+                width="1200"
+                height="1800"
                 fetchPriority="high"
+                decoding="async"
               />
             </figure>
             <div className="hero-kit">
@@ -105,7 +101,7 @@ export function HeroSection({ onFree }: { onFree: () => void }) {
                 </small>
               </div>
             </div>
-          </Reveal>
+          </div>
         </div>
       </Container>
       <div className="occasion-strip">

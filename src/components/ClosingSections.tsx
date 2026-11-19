@@ -34,10 +34,16 @@ export function FAQSection() {
 export function Footer({
   onInfo,
   onContact,
+  renderedAt,
 }: {
   onInfo: (title: string, text: string) => void
   onContact: () => void
+  renderedAt?: number
 }) {
+  const year = new Intl.DateTimeFormat('pt-BR', {
+    year: 'numeric',
+    timeZone: 'America/Sao_Paulo',
+  }).format(renderedAt)
   return (
     <footer className="footer">
       <Container>
@@ -52,7 +58,9 @@ export function Footer({
               onClick={() =>
                 onInfo(
                   'Termos de uso',
-                  'As vendas ainda não estão abertas. Os termos de acesso e de uso dos materiais serão publicados antes do lançamento.',
+                  'Os planos pagos estão disponíveis para compra com pagamento único, sem mensalidade. ' +
+                    'Confira os materiais incluídos no seu plano e o valor final no checkout. ' +
+                    'O Mercado Pago processa o pagamento. Após a confirmação, enviamos o link de acesso à biblioteca para o e-mail informado no checkout.',
                 )
               }
             >
@@ -62,7 +70,8 @@ export function Footer({
               onClick={() =>
                 onInfo(
                   'Privacidade',
-                  'O pagamento é realizado no Mercado Pago. Quando confirmado, o e-mail informado na compra é usado para criar ou localizar seu acesso e enviar orientações. Os favoritos da prévia ficam apenas na memória da página. A política completa será publicada antes da abertura das vendas.',
+                  'Usamos o e-mail informado no teste grátis ou no checkout para criar ou localizar seu acesso à biblioteca e enviar o link e as orientações. ' +
+                    'Nas compras, também enviamos o e-mail ao Mercado Pago para processar o pedido. Enviamos o link de acesso após a confirmação do pagamento.',
                 )
               }
             >
@@ -71,7 +80,7 @@ export function Footer({
           </nav>
         </div>
         <p className="footer-copyright">
-          © {new Date().getFullYear()} Music Library. Todos os direitos reservados.
+          © {year} Music Library. Todos os direitos reservados.
         </p>
       </Container>
     </footer>

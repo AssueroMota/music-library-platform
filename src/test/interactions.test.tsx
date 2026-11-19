@@ -36,7 +36,7 @@ it('monta a página e permite abrir a organização dos materiais', async () => 
     expect.objectContaining({ signal: expect.any(AbortSignal) }),
   )
   expect(screen.getByRole('main')).toBeInTheDocument()
-  expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Seu violino/)
+  expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Partituras para violino/)
   const header = container.querySelector('.sales-header-stack')!
   expect(header).not.toBeNull()
   expect(header.closest('main')).toBeNull()

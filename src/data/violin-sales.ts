@@ -42,7 +42,7 @@ export interface ViolinLaunchCampaign {
 export const violinLaunchCampaign: ViolinLaunchCampaign | null = null
 export const violinMoments = [
   {
-    photo: '/images/violin-event.jpg',
+    photo: '/images/violin-event.webp',
     alt: 'Violinista de traje social tocando em uma celebração decorada com flores',
     label: 'A EMOÇÃO DE UM SIM',
     title: 'Casamentos',

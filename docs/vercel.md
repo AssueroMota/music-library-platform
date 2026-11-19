@@ -1,10 +1,10 @@
 # Frontend na Vercel
 
-Endereço do site informado pelo proprietário:
+Domínio canônico do site
 
-`https://music-library-platform-six.vercel.app`
+`https://www.partiturasebases.com.br/`
 
-O `vercel.json` usa Vite, executa `npm run build:web`, publica somente `dist/` e encaminha as rotas da biblioteca e do retorno do checkout para o React. Rotas `/api/*` não são tratadas como páginas HTML. Esse deploy publica o frontend; a API e a execução da fila precisam de hospedagem própria ou de uma adaptação para Vercel Functions com execução durável da fila.
+O `vercel.json` usa Vite, executa `npm run build:web` e publica `dist/`. O build pré-renderiza a home, mantém os guias em HTML estático e encaminha a biblioteca e os retornos do checkout para `app.html`, com `noindex`. O sitemap, o robots.txt e o arquivo de verificação são servidos como arquivos estáticos. A API e a fila rodam em hospedagem própria.
 
 ## Variáveis do projeto frontend
 
@@ -12,7 +12,6 @@ Configure em **Vercel → projeto → Settings → Environment Variables**:
 
 | Nome                     | Valor                                                                 |
 | ------------------------ | --------------------------------------------------------------------- |
-| `VITE_PUBLIC_SITE_URL`   | `https://music-library-platform-six.vercel.app`                       |
 | `VITE_SUPABASE_URL`      | URL pública do projeto Supabase, já configurada no `.env` local       |
 | `VITE_SUPABASE_ANON_KEY` | Publishable key do Supabase, já configurada no `.env` local           |
 | `VITE_API_URL`           | Origem HTTPS da API quando ela estiver publicada, sem `/api` no final |
@@ -39,7 +38,7 @@ Na API hospedada, `FRONTEND_URL` precisa ser `https://music-library-platform-six
 
 ## Validação depois do deploy
 
-Confira `/`, `/biblioteca` e as três rotas `/checkout/success`, `/checkout/pending` e `/checkout/failure`. Sem um pedido válido, o retorno deve orientar o usuário e nunca exibir pagamento aprovado.
+Confira `/`, `/repertorio-para-violino`, `/partituras-guiadas-para-violino`, `/sitemap.xml` e `/robots.txt`. Verifique também `/biblioteca` e as três rotas de retorno `/checkout/success`, `/checkout/pending` e `/checkout/failure`. Sem um pedido válido, o retorno deve orientar o usuário e nunca exibir pagamento aprovado.
 
 Quando a API estiver publicada, confira o health check e a consulta de produtos antes de habilitar checkout de teste. O webhook exige URL HTTPS da API; o domínio do frontend sozinho não fornece esse endpoint.
 

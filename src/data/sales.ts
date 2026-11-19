@@ -1,4 +1,3 @@
-import { violinLaunch } from '../../shared/violin-launch'
 import { guidedScoreCount } from '../../shared/guided-scores'
 import { normalScoreCount, totalScoreCount, playbackCount } from '../../shared/score-catalog'
 import { freeLibrary } from '../../shared/free-library'
@@ -33,8 +32,8 @@ export const salesFaqs = [
     `O acervo publicado tem ${normalScoreCount} partituras e ${guidedScoreCount} guiadas em vídeo, somando ${totalScoreCount} partituras no Completo. Explore o catálogo nesta página e confira títulos, artistas e estilos antes de comprar. Cada partitura é contada uma vez por música e artista; páginas extras e playbacks não aumentam o total. As versões guiadas são contadas separadamente, mesmo quando a música também tem partitura.`,
   ],
   [
-    'Como funciona o valor de lançamento?',
-    `O Plano Completo tem valor de lançamento de R$ 27,90 para pedidos iniciados até ${violinLaunch.deadlineLabel}, no horário de Brasília. A partir de ${violinLaunch.regularFromLabel}, novos pedidos custam R$ 49,90. O contador acompanha esse prazo fixo e não reinicia ao atualizar a página. Um pedido já iniciado mantém o total registrado e segue o prazo de pagamento do checkout.`,
+    'Onde confirmo o valor do meu plano?',
+    'Compare os valores na seção Planos e confira o total antes de pagar. Um pedido já iniciado mantém o valor registrado e segue o prazo de pagamento indicado no checkout.',
   ],
   [
     'O que é um playback?',
