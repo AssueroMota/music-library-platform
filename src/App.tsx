@@ -17,7 +17,6 @@ import { ContactBubble } from './components/ContactBubble'
 import { productCatalog } from './lib/product-catalog'
 import { OfferRenderTime } from './lib/use-offer-pricing'
 import {
-  VideoSection,
   StoriesSection,
   PreparationSection,
   FinalInvitation,
@@ -25,6 +24,7 @@ import {
 import './styles/violin.css'
 import './styles/typography.css'
 import './styles/sales-header.css'
+import './styles/hero.css'
 
 const CheckoutReturn = lazy(() =>
   import('./components/CheckoutReturn').then((m) => ({ default: m.CheckoutReturn })),
@@ -75,9 +75,8 @@ export default function App({ renderedAt }: { renderedAt?: number } = {}) {
         <main id="conteudo" className="violin-sales">
           <HeroSection onFree={() => setFreeOpen(true)} />
           <StoriesSection />
-          <VideoSection />
-          <PreparationSection />
           <MaterialsSection />
+          <PreparationSection />
           <AudioComparison />
           <ConfidenceSection />
           <OfferContents />

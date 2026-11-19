@@ -36,10 +36,13 @@ function shuffledPlaylist() {
 }
 
 function startsMinimized() {
+  const compact =
+    typeof window !== 'undefined' && (window.matchMedia?.('(max-width: 600px)').matches ?? false)
   try {
-    return sessionStorage.getItem(minimizedKey) === 'true'
+    const preference = sessionStorage.getItem(minimizedKey)
+    return preference === null ? compact : preference === 'true'
   } catch {
-    return false
+    return compact
   }
 }
 function startsPlaying() {
@@ -144,9 +147,12 @@ export function VisitPlaylist() {
       // A media control must keep ownership of its own playback. Typing in
       // forms and an explicit pause must not start the background soundtrack.
       if (
-        event.target instanceof Element &&
-        event.target.closest(
-          '.visit-playlist, .audio-player, audio, video, input, textarea, select, [contenteditable="true"]',
+        event.composedPath().some(
+          (target) =>
+            target instanceof Element &&
+            target.matches(
+              '.visit-playlist, .audio-player, .presentation-player, audio, video, input, textarea, select, [contenteditable="true"]',
+            ),
         )
       )
         return

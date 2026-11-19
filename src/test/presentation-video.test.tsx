@@ -1,39 +1,46 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+﻿import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { PresentationVideo } from '../components/PresentationVideo'
 import { VisitPlaylist } from '../components/VisitPlaylist'
 
 let enter: (visible: boolean) => void
+let playing: WeakSet<HTMLMediaElement>
 const disconnect = vi.fn()
+const source = '/videos/music-library-agorassss.mp4'
+
 beforeEach(() => {
+  playing = new WeakSet()
   sessionStorage.clear()
   vi.stubGlobal(
     'IntersectionObserver',
     class {
-      target?: Element
       constructor(callback: IntersectionObserverCallback) {
         enter = (visible) =>
           callback(
-            [
-              {
-                target: this.target,
-                isIntersecting: visible,
-                intersectionRatio: visible ? 0.75 : 0,
-              } as IntersectionObserverEntry,
-            ],
+            [{ isIntersecting: visible } as IntersectionObserverEntry],
             this as unknown as IntersectionObserver,
           )
       }
-      observe = (target: Element) => {
-        this.target = target
-      }
+      observe() {}
       disconnect = disconnect
     },
   )
+  vi.spyOn(HTMLMediaElement.prototype, 'paused', 'get').mockImplementation(function (
+    this: HTMLMediaElement,
+  ) {
+    return !playing.has(this)
+  })
   vi.spyOn(HTMLMediaElement.prototype, 'play').mockImplementation(async function (
     this: HTMLMediaElement,
   ) {
+    playing.add(this)
     this.dispatchEvent(new Event('play'))
+  })
+  vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(function (
+    this: HTMLMediaElement,
+  ) {
+    playing.delete(this)
+    this.dispatchEvent(new Event('pause'))
   })
   disconnect.mockClear()
 })
@@ -41,101 +48,76 @@ afterEach(() => {
   vi.restoreAllMocks()
   vi.unstubAllGlobals()
 })
-const player = (
-  <PresentationVideo
-    src="/videos/music-library-agorassss.mp4"
-    poster="/videos/music-library-agorassss.jpg"
-  />
-)
 
-it('toca com áudio somente ao entrar na área e pausa ao sair, retomando do mesmo ponto', async () => {
+const player = <PresentationVideo src={source} poster="/videos/music-library-hero-poster.webp" />
+const start = () => screen.getByRole('link', { name: 'Assistir à apresentação' })
+
+it('reserva a capa e oferece um link para o vídeo sem carregar o MP4 antes do play', async () => {
   const { container } = render(player)
   const video = container.querySelector('video')!
-  expect(video.querySelector('source')).toHaveAttribute(
-    'src',
-    '/videos/music-library-agorassss.mp4',
-  )
-  expect(video.muted).toBe(false)
+  expect(video).toHaveAttribute('preload', 'none')
+  expect(video).toHaveAttribute('poster', '/videos/music-library-hero-poster.webp')
+  expect(video).not.toHaveAttribute('src')
   expect(video).not.toHaveAttribute('autoplay')
+  expect(video.controls).toBe(false)
+  expect(start()).toHaveAttribute('href', source)
+  act(() => enter(true))
+  fireEvent.click(document.body)
+  fireEvent.keyDown(document.body, { key: 'Enter' })
   expect(video.play).not.toHaveBeenCalled()
-  await act(async () => enter(true))
-  expect(video.play).toHaveBeenCalledTimes(1)
-  video.currentTime = 12
-  const paused = vi.mocked(video.pause).mock.calls.length
-  act(() => enter(false))
-  expect(video.pause).toHaveBeenCalledTimes(paused + 1)
-  expect(video.currentTime).toBe(12)
-  await act(async () => enter(true))
-  expect(video.play).toHaveBeenCalledTimes(2)
-  expect(video.currentTime).toBe(12)
+  expect(video).not.toHaveAttribute('src')
+
+  fireEvent.click(start())
+  await waitFor(() => expect(video).toHaveAttribute('src', source))
+  expect(video.play).toHaveBeenCalledOnce()
+  expect(video.controls).toBe(true)
+  expect(video.muted).toBe(false)
+  expect(video).toHaveFocus()
 })
 
-it('oferece play com som quando o navegador bloqueia autoplay, sem silenciar o vídeo', async () => {
-  vi.mocked(HTMLMediaElement.prototype.play).mockRejectedValueOnce(
-    new DOMException('Blocked', 'NotAllowedError'),
-  )
-  const { container } = render(player)
-  await act(async () => enter(true))
-  const button = await screen.findByRole('button', { name: 'Assistir com som' })
-  expect(container.querySelector('video')!.muted).toBe(false)
-  fireEvent.click(button)
-  await waitFor(() => expect(screen.queryByRole('button', { name: 'Assistir com som' })).toBeNull())
-  expect(HTMLMediaElement.prototype.play).toHaveBeenCalledTimes(2)
-})
-
-it('não tenta reproduzir por interação fora da área nem retoma depois de uma pausa manual', async () => {
-  vi.mocked(HTMLMediaElement.prototype.play).mockRejectedValueOnce(
-    new DOMException('Blocked', 'NotAllowedError'),
-  )
-  const { container } = render(player)
-  await act(async () => enter(true))
-  act(() => enter(false))
-  fireEvent.click(document.body)
-  expect(HTMLMediaElement.prototype.play).toHaveBeenCalledTimes(1)
-  await act(async () => enter(true))
-  fireEvent.pause(container.querySelector('video')!)
-  await act(async () => enter(true))
-  fireEvent.click(document.body)
-  expect(HTMLMediaElement.prototype.play).toHaveBeenCalledTimes(2)
-})
-
-it('cancela reprodução pendente ao sair e não deixa o áudio começar depois de carregar', async () => {
-  let resolvePlay!: () => void
-  vi.mocked(HTMLMediaElement.prototype.play).mockImplementationOnce(
-    () =>
-      new Promise<void>((resolve) => {
-        resolvePlay = resolve
-      }),
-  )
+it('pausa ao sair da área e segue pausado ao voltar, mantendo a posição', () => {
   const { container } = render(player)
   const video = container.querySelector('video')!
-  act(() => enter(true))
+  fireEvent.click(start())
+  video.currentTime = 12
   act(() => enter(false))
-  const paused = vi.mocked(video.pause).mock.calls.length
-  await act(async () => resolvePlay())
-  expect(video.pause).toHaveBeenCalledTimes(paused + 1)
-  expect(screen.queryByRole('button', { name: 'Assistir com som' })).toBeNull()
+  expect(video.paused).toBe(true)
+  expect(video.currentTime).toBe(12)
+  act(() => enter(true))
+  expect(video.play).toHaveBeenCalledOnce()
 })
 
-it('pausa ao esconder a aba e só retoma se o visitante não pausou manualmente', async () => {
+it('pausa quando a aba é ocultada e deixa a retomada a cargo do visitante', () => {
   const visibility = vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible')
   const { container } = render(player)
   const video = container.querySelector('video')!
-  await act(async () => enter(true))
+  fireEvent.click(start())
   visibility.mockReturnValue('hidden')
   fireEvent(document, new Event('visibilitychange'))
+  expect(video.paused).toBe(true)
   visibility.mockReturnValue('visible')
-  await act(async () => fireEvent(document, new Event('visibilitychange')))
-  expect(video.play).toHaveBeenCalledTimes(2)
-  fireEvent.pause(video)
-  visibility.mockReturnValue('hidden')
   fireEvent(document, new Event('visibilitychange'))
-  visibility.mockReturnValue('visible')
-  await act(async () => fireEvent(document, new Event('visibilitychange')))
-  expect(video.play).toHaveBeenCalledTimes(2)
+  expect(video.play).toHaveBeenCalledOnce()
 })
 
-it('coordena o áudio com a playlist da visita e libera o observador ao desmontar', async () => {
+it('oferece nova tentativa e um link direto quando a reprodução falha', async () => {
+  vi.mocked(HTMLMediaElement.prototype.play).mockRejectedValueOnce(
+    new DOMException('Playback failed', 'NotSupportedError'),
+  )
+  const { container } = render(player)
+  fireEvent.click(start())
+  const retry = await screen.findByRole('link', { name: 'Tentar reproduzir' })
+  expect(screen.getByRole('alert')).toHaveTextContent('O vídeo falhou ao carregar.')
+  expect(screen.getByRole('link', { name: 'Abrir o arquivo de vídeo' })).toHaveAttribute(
+    'href',
+    source,
+  )
+  fireEvent.click(retry)
+  expect(container.querySelector('video')!.controls).toBe(true)
+  expect(screen.queryByRole('alert')).toBeNull()
+})
+
+it('coordena o áudio com a playlist da visita e desliga o observador ao desmontar', async () => {
   const { container, unmount } = render(
     <>
       {player}
@@ -143,16 +125,14 @@ it('coordena o áudio com a playlist da visita e libera o observador ao desmonta
     </>,
   )
   await screen.findByRole('button', { name: 'Pausar música da visita' })
-  await act(async () => enter(true))
+  fireEvent.click(start())
   expect(screen.getByRole('button', { name: 'Reproduzir música da visita' })).toBeInTheDocument()
   const video = container.querySelector('video')!
-  const paused = vi.mocked(video.pause).mock.contexts.filter((media) => media === video).length
+  expect(video.paused).toBe(false)
   window.dispatchEvent(
     new CustomEvent('music-library-play', { detail: container.querySelector('audio') }),
   )
-  expect(
-    vi.mocked(video.pause).mock.contexts.filter((media) => media === video).length,
-  ).toBeGreaterThan(paused)
+  expect(video.paused).toBe(true)
   unmount()
   expect(disconnect).toHaveBeenCalled()
 })

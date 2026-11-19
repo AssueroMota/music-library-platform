@@ -1,0 +1,221 @@
+.violin-sales .violin-hero {
+  background: radial-gradient(ellipse at 50% 45%, #48231588 0%, transparent 67%), #090b10;
+}
+
+.violin-sales .hero-intro {
+  display: grid;
+  justify-items: center;
+  gap: clamp(16px, 1.5vw, 21px);
+  padding-block: clamp(26px, 2.65vw, 38px) 36px;
+  text-align: center;
+}
+
+.violin-hero h1 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(2.1rem, 5.4vw, 4.25rem);
+  font-weight: 850;
+  line-height: 1.04;
+  letter-spacing: -0.061em;
+  text-wrap: balance;
+}
+
+.violin-hero h1 span {
+  display: inline-block;
+  color: #ffab76;
+  background: linear-gradient(105deg, #ff773e, #ffcd95);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.presentation-player {
+  position: relative;
+  isolation: isolate;
+  width: min(100%, 940px);
+  margin: 0;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid #d47649;
+  border-radius: clamp(12px, 2vw, 22px);
+  background: #141016;
+  box-shadow:
+    0 0 0 5px #ff9a5110,
+    0 28px 65px #0008;
+}
+
+.presentation-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 45%;
+  transform: scale(1.09);
+  filter: blur(24px) brightness(0.42);
+  opacity: 0.65;
+  pointer-events: none;
+}
+
+.presentation-player video {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.presentation-video-start,
+.presentation-unavailable {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  width: max-content;
+  max-width: calc(100% - 24px);
+  color: #fff;
+}
+
+.presentation-video-start {
+  display: grid;
+  justify-items: center;
+  gap: 9px;
+  border-radius: 12px;
+}
+
+.presentation-play-icon {
+  display: grid;
+  width: clamp(52px, 6vw, 77px);
+  aspect-ratio: 1;
+  place-items: center;
+  padding-left: 4px;
+  border: 1px solid #ffb08b;
+  border-radius: 50%;
+  background: #ff4b18;
+  box-shadow:
+    0 0 0 7px #ff9a6336,
+    0 9px 25px #0008;
+  transition:
+    background 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.presentation-play-icon svg {
+  width: 41%;
+  height: auto;
+}
+
+.presentation-video-start:hover .presentation-play-icon {
+  background: #d13609;
+  box-shadow:
+    0 0 0 7px #ff9a6350,
+    0 9px 25px #0008;
+}
+
+.presentation-video-start > span:last-child,
+.presentation-unavailable,
+.presentation-error {
+  padding: 4px 12px;
+  border: 1px solid #ffffff32;
+  border-radius: 20px;
+  background: #100d13f5;
+  font-size: clamp(12px, 1.05vw, 14px);
+  font-weight: 700;
+}
+
+.presentation-error {
+  position: absolute;
+  right: 10px;
+  bottom: 9px;
+  left: 10px;
+  margin: 0;
+  color: #fff;
+}
+
+.presentation-error a,
+.hero-description a {
+  color: #ffc492;
+  text-decoration: underline;
+  text-underline-offset: 0.22em;
+}
+
+.violin-hero :is(a, button, video):focus-visible {
+  outline: 3px solid #ffca93;
+  outline-offset: 4px;
+}
+
+.presentation-player video:focus-visible {
+  outline-offset: -5px;
+}
+
+.hero-description {
+  max-width: 72ch;
+  margin: 0;
+  color: #e0dce2;
+  font-size: clamp(1rem, 1.45vw, 1.15rem);
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+.hero-cta .button {
+  min-width: min(232px, 100%);
+  min-height: 51px;
+  justify-content: center;
+  gap: 12px;
+  padding-inline: 22px;
+  border-color: #ff7849;
+  border-radius: 9px;
+  background: #ff7849;
+  color: #190f0a;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.hero-cta .button:hover {
+  border-color: #ff956e;
+  background: #ff956e;
+  color: #190f0a;
+}
+
+.hero-cta > p {
+  margin: 7px 0 0;
+  color: #c4bbc5;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+.hero-shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0 20px;
+  margin-top: -9px;
+  color: #e3dde5;
+  font-size: 0.875rem;
+}
+
+.hero-shortcuts :is(a, button) {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 4px;
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+.hero-shortcuts svg {
+  flex: none;
+  color: #ffad78;
+}
+
+@media (max-width: 600px) {
+  .presentation-backdrop {
+    filter: blur(13px) brightness(0.42);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .presentation-play-icon {
+    transition: none;
+  }
+}

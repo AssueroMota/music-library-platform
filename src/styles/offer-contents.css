@@ -323,18 +323,6 @@ a.contents-guide-link {
   text-decoration: underline;
   text-underline-offset: 0.22em;
 }
-.hero-guided-bonus {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 6px;
-  color: #f6bc87;
-  font-size: 13px;
-  line-height: 1.6;
-}
-.hero-guided-bonus svg {
-  flex-shrink: 0;
-}
 @media (max-width: 600px) {
   .contents-guided-bonus {
     grid-template-columns: 1fr;

@@ -12,7 +12,6 @@
   line-height: 1.7;
   --copy: #51596b;
 }
-.violin-sales .hero-copy > p,
 .violin-sales .section-heading > p,
 .violin-sales .preparation-copy > p,
 .violin-sales .delivery-materials p,
@@ -21,10 +20,6 @@
 .violin-sales .final-invitation p {
   font-size: var(--text-body);
   line-height: 1.75;
-}
-.violin-sales .hero-copy > p {
-  max-width: 540px;
-  color: #c3c7d4;
 }
 .violin-sales .preparation-copy > p,
 .violin-sales .final-invitation p {
@@ -43,11 +38,6 @@
   line-height: 1.13;
   letter-spacing: -0.035em;
 }
-.violin-sales .hero h1 {
-  font-weight: 850;
-  letter-spacing: -0.04em;
-  line-height: 1.05;
-}
 .violin-sales .eyebrow,
 .violin-sales .section-heading .eyebrow {
   font-size: var(--text-label);
@@ -55,7 +45,6 @@
   letter-spacing: 0.09em;
 }
 .violin-sales .button,
-.violin-sales .hero-actions .button,
 .violin-sales .text-link,
 .violin-sales .nav-offer {
   font-size: var(--text-action);
@@ -69,28 +58,16 @@
   font-size: var(--text-small);
   gap: 22px;
 }
-.violin-sales .hero-listen,
-.violin-sales .hero-offer-price > span,
-.violin-sales .hero-assurances > span,
 .violin-sales .occasion-strip .container > span,
 .violin-sales .occasion-strip a {
   font-size: var(--text-small);
   line-height: 1.6;
-}
-.violin-sales .hero-offer-price strong {
-  font-size: 2.25rem;
-}
-.violin-sales .hero-offer-price .hero-payment-note {
-  font-size: var(--text-small);
-  line-height: 1.6;
-  color: #bcc2d2;
 }
 .violin-sales .violin-moment {
   min-height: 520px;
 }
 .violin-sales .violin-moment figcaption > span,
 .violin-sales .board-kicker,
-.violin-sales .video-status,
 .violin-sales .confidence-grid article > span {
   font-size: var(--text-label);
   letter-spacing: 0.06em;
@@ -100,7 +77,6 @@
   line-height: 1.15;
 }
 .violin-sales .violin-moment p,
-.violin-sales .video-talking-points li,
 .violin-sales .preparation-board li p,
 .violin-sales .demo-listening-guide li {
   font-size: 1rem;
@@ -116,14 +92,6 @@
   font-size: 0.8125rem;
   line-height: 1.7;
   color: #576178;
-}
-.violin-sales .video-placeholder-content > p {
-  font-size: var(--text-small);
-  line-height: 1.6;
-}
-.violin-sales .video-placeholder-footer {
-  font-size: var(--text-label);
-  letter-spacing: 0.04em;
 }
 .violin-sales .preparation-board li strong {
   font-size: 1.125rem;
@@ -414,14 +382,9 @@ body:has(.visit-playlist) .footer {
   .violin-sales .container {
     width: calc(100% - 40px);
   }
-  .violin-sales .hero-actions .button,
   .violin-sales .final-invitation .button {
     width: 100%;
     min-width: 0;
-  }
-  .violin-sales .hero-assurances {
-    flex-wrap: wrap;
-    gap: 10px 16px;
   }
   .violin-sales .occasion-strip .container {
     flex-wrap: wrap;
@@ -431,22 +394,6 @@ body:has(.visit-playlist) .footer {
   .violin-sales .violin-moment figcaption {
     left: 22px;
     right: 22px;
-  }
-  .violin-sales .video-placeholder {
-    aspect-ratio: auto;
-    min-height: 390px;
-  }
-  .violin-sales .video-placeholder > img {
-    position: absolute;
-    inset: 0;
-  }
-  .violin-sales .video-placeholder-content {
-    padding: 25px 18px 68px;
-  }
-  .violin-sales .video-placeholder-footer {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 5px 12px;
   }
   .violin-sales .preparation-board {
     padding: 26px 20px;
