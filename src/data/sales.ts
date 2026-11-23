@@ -1,11 +1,8 @@
 import { guidedScoreCount } from '../../shared/guided-scores.js'
 import { normalScoreCount, totalScoreCount, playbackCount } from '../../shared/score-catalog.js'
 import { freeLibrary } from '../../shared/free-library.js'
-import { violinDemonstration } from './demonstration.js'
 
-const repertoireGoal = 300
-
-export const homeSearchDescription = `Qual será sua próxima música no violino? Toque ${violinDemonstration.title} com partitura e playback grátis. São ${totalScoreCount} partituras no Plano Completo${totalScoreCount < repertoireGoal ? `, rumo a ${repertoireGoal}` : ''}.`
+export const homeSearchDescription = `Temos ${totalScoreCount} partituras para violino e ${playbackCount} playbacks. Procure sua música favorita e experimente agora uma partitura com playback grátis!`
 
 export const salesFaqs = [
   [
