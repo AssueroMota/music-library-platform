@@ -1,8 +1,11 @@
 import { guidedScoreCount } from '../../shared/guided-scores.js'
 import { normalScoreCount, totalScoreCount, playbackCount } from '../../shared/score-catalog.js'
 import { freeLibrary } from '../../shared/free-library.js'
+import { violinDemonstration } from './demonstration.js'
 
-export const homeSearchDescription = `${totalScoreCount} partituras para violino (${guidedScoreCount} guiadas em vídeo), ${playbackCount} playbacks e 42 setlists prontos no Plano Completo. Acesso vitalício, sem mensalidade. Teste grátis.`
+const repertoireGoal = 300
+
+export const homeSearchDescription = `Qual será sua próxima música no violino? Toque ${violinDemonstration.title} com partitura e playback grátis. São ${totalScoreCount} partituras no Plano Completo${totalScoreCount < repertoireGoal ? `, rumo a ${repertoireGoal}` : ''}.`
 
 export const salesFaqs = [
   [

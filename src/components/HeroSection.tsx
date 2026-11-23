@@ -1,6 +1,7 @@
 import { ArrowDown, Heart, Mic2, Play, UtensilsCrossed } from 'lucide-react'
 import { guidedScoreCount } from '../../shared/guided-scores'
 import { normalScoreCount, playbackCount } from '../../shared/score-catalog'
+import { violinDemonstration } from '../data/demonstration'
 import { violinPresentation } from '../data/violin-sales'
 import { PresentationVideo } from './PresentationVideo'
 import { Button, Container } from './ui'
@@ -41,7 +42,7 @@ export function HeroSection({ onFree }: { onFree: () => void }) {
             Testar a biblioteca de graça <ArrowDown size={15} aria-hidden="true" />
           </button>
           <a href="#demonstracao">
-            <Play size={14} aria-hidden="true" /> Ouvir demonstração
+            <Play size={14} aria-hidden="true" /> Experimentar {violinDemonstration.title}
           </a>
         </div>
       </Container>
