@@ -3,6 +3,7 @@ import { basename } from 'node:path'
 import react from '@vitejs/plugin-react'
 import { defineConfig, loadEnv, type Connect, type HtmlTagDescriptor } from 'vite'
 import tailwindcss from '@tailwindcss/vite'
+import { homeSearchDescription } from './src/data/sales.ts'
 import { publicEnv } from './src/lib/public-env.ts'
 
 const { redirects, rewrites } = JSON.parse(
@@ -103,12 +104,27 @@ export default defineConfig(({ mode, isSsrBuild }) => {
           server.middlewares.use(routeHtml)
         },
         transformIndexHtml(_html, { filename }): HtmlTagDescriptor[] {
-          if (!['index.html', 'app.html'].includes(basename(filename))) return []
-          return connectionOrigins.map((origin) => ({
+          const page = basename(filename)
+          if (!['index.html', 'app.html'].includes(page)) return []
+          const tags: HtmlTagDescriptor[] = connectionOrigins.map((origin) => ({
             tag: 'link',
             attrs: { rel: 'preconnect', href: origin, crossorigin: '' },
             injectTo: 'head',
           }))
+          if (page === 'index.html') {
+            tags.push(
+              { tag: 'meta', attrs: { name: 'description', content: homeSearchDescription } },
+              {
+                tag: 'meta',
+                attrs: { property: 'og:description', content: homeSearchDescription },
+              },
+              {
+                tag: 'meta',
+                attrs: { name: 'twitter:description', content: homeSearchDescription },
+              },
+            )
+          }
+          return tags
         },
       },
     ],

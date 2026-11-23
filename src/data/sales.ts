@@ -1,6 +1,8 @@
-import { guidedScoreCount } from '../../shared/guided-scores'
-import { normalScoreCount, totalScoreCount, playbackCount } from '../../shared/score-catalog'
-import { freeLibrary } from '../../shared/free-library'
+import { guidedScoreCount } from '../../shared/guided-scores.js'
+import { normalScoreCount, totalScoreCount, playbackCount } from '../../shared/score-catalog.js'
+import { freeLibrary } from '../../shared/free-library.js'
+
+export const homeSearchDescription = `${totalScoreCount} partituras para violino (${guidedScoreCount} guiadas em vídeo), ${playbackCount} playbacks e 42 setlists prontos no Plano Completo. Acesso vitalício, sem mensalidade. Teste grátis.`
 
 export const salesFaqs = [
   [

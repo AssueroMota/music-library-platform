@@ -1,4 +1,6 @@
 import { ArrowDown, Heart, Mic2, Play, UtensilsCrossed } from 'lucide-react'
+import { guidedScoreCount } from '../../shared/guided-scores'
+import { normalScoreCount, playbackCount } from '../../shared/score-catalog'
 import { violinPresentation } from '../data/violin-sales'
 import { PresentationVideo } from './PresentationVideo'
 import { Button, Container } from './ui'
@@ -25,12 +27,14 @@ export function HeroSection({ onFree }: { onFree: () => void }) {
         )}
 
         <p className="hero-description">
-          Monte seu repertório. O Plano Completo inclui playbacks e{' '}
-          <a href="#partituras-guiadas">partituras guiadas em vídeo</a>.
+          Monte seu repertório para casamentos, eventos e apresentações. O Plano Completo reúne{' '}
+          {normalScoreCount} partituras para violino, {playbackCount} playbacks para ensaiar,{' '}
+          <a href="#partituras-guiadas">{guidedScoreCount} partituras guiadas em vídeo</a> e 42
+          setlists prontos por ocasião.
         </p>
         <div className="hero-cta">
           <Button href="#planos">Conhecer os planos</Button>
-          <p>Pagamento único · Acesso por e-mail</p>
+          <p>Acesso vitalício · Pagamento único · Link por e-mail</p>
         </div>
         <div className="hero-shortcuts">
           <button type="button" onClick={onFree}>
