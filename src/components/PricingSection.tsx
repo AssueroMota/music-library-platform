@@ -127,7 +127,7 @@ export function PricingSection({
             />
           ))}
         </div>
-        <div className="pricing-free-access">
+        <div id="teste-gratis" className="pricing-free-access">
           <p>Quer conhecer a biblioteca primeiro?</p>
           <button type="button" onClick={onFree}>
             Testar de graça ↗

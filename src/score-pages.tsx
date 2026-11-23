@@ -1,6 +1,7 @@
 /* oxlint-disable react/only-export-components -- These components render static HTML on the server. */
 import type { ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { freeLibrary } from '../shared/free-library'
 import { violinDemonstration as demo } from './data/demonstration'
 import { scorePages, type ScorePage } from './data/score-pages'
 
@@ -29,7 +30,8 @@ function ScoreLinks({ scores }: { scores: readonly ScorePage[] }) {
             <a href={songPath(score)}>{score.title}</a>
           </h3>
           <p>
-            {score.artist} · {score.style}
+            {score.artist ? `${score.artist} · ` : ''}
+            {score.style}
           </p>
           <p className="score-formats">{availableFormats(score).join(' · ')}</p>
         </li>
@@ -39,6 +41,9 @@ function ScoreLinks({ scores }: { scores: readonly ScorePage[] }) {
 }
 
 function Catalog() {
+  const alphabeticalScores = [...scorePages].sort((first, second) =>
+    first.title.localeCompare(second.title, 'pt-BR'),
+  )
   return (
     <article>
       <header className="intro">
@@ -50,7 +55,7 @@ function Catalog() {
       </header>
       <section aria-labelledby="musicas">
         <h2 id="musicas">Músicas do acervo</h2>
-        <ScoreLinks scores={scorePages} />
+        <ScoreLinks scores={alphabeticalScores} />
       </section>
       <section className="next" aria-labelledby="biblioteca-completa">
         <h2 id="biblioteca-completa">Explore a biblioteca</h2>
@@ -101,6 +106,12 @@ function PublicSample() {
 }
 
 function Song({ score, heading }: { score: ScorePage; heading: string }) {
+  const hasPublicSample = score.title === demo.title && score.artist === demo.artist
+  const trialMaterial = freeLibrary.guidedScores.some((title) => title === score.title)
+    ? 'A partitura guiada está na seleção grátis da Music Library.'
+    : freeLibrary.scores.some((title) => title === score.title)
+      ? 'A partitura e o playback estão na seleção grátis da Music Library.'
+      : null
   const related = scorePages
     .filter((item) => item !== score && item.style === score.style)
     .slice(0, 3)
@@ -109,7 +120,8 @@ function Song({ score, heading }: { score: ScorePage; heading: string }) {
       <header className="intro">
         <h1>{heading}</h1>
         <p className="score-artist">
-          {score.artist} · {score.style}
+          {score.artist ? `${score.artist} · ` : ''}
+          {score.style}
         </p>
         <p>{score.introduction}</p>
       </header>
@@ -134,7 +146,16 @@ function Song({ score, heading }: { score: ScorePage; heading: string }) {
           )}
         </ul>
       </section>
-      {score.title === demo.title && score.artist === demo.artist && <PublicSample />}
+      {hasPublicSample && <PublicSample />}
+      {trialMaterial && !hasPublicSample && (
+        <section aria-labelledby="teste-gratis">
+          <h2 id="teste-gratis">Experimente de graça</h2>
+          <p>{trialMaterial} O acesso é enviado por e-mail.</p>
+          <a className="action" href="/#teste-gratis">
+            Ver opção Grátis
+          </a>
+        </section>
+      )}
       <section aria-labelledby="ensaio">
         <h2 id="ensaio">Como ensaiar no violino</h2>
         <ol className="steps">
@@ -258,10 +279,11 @@ function renderSongPage(score: ScorePage) {
   const format = score.hasScore ? 'partitura para violino' : 'partitura guiada para violino'
   const heading = `${score.title} – ${format}`
   const alternateTitle = score.alternateTitle ? ` (${score.alternateTitle})` : ''
-  const description = `Veja os formatos de ${score.title}${alternateTitle}, de ${score.artist}, para violino. ${availableFormats(score).join(', ')} e dicas de ensaio na Music Library.`
+  const attribution = score.artist ? `, de ${score.artist},` : ''
+  const description = `Conheça ${score.title}${alternateTitle}${attribution} no violino. ${availableFormats(score).join(', ')} e dicas de ensaio na Music Library.`
   return renderPage(
     songPath(score),
-    `${score.title} (${score.artist}) – ${format}`,
+    `${score.title}${score.artist ? ` (${score.artist})` : ''} – ${format}${score.hasPlayback ? ' com playback' : ''}`,
     description,
     <Song score={score} heading={heading} />,
     score,

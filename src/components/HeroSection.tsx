@@ -1,4 +1,4 @@
-import { ArrowDown, Heart, Mic2, Play, UtensilsCrossed } from 'lucide-react'
+import { ArrowDown, Heart, Mic2, Play, Search, UtensilsCrossed } from 'lucide-react'
 import { guidedScoreCount } from '../../shared/guided-scores'
 import { normalScoreCount, playbackCount } from '../../shared/score-catalog'
 import { violinDemonstration } from '../data/demonstration'
@@ -43,6 +43,9 @@ export function HeroSection({ onFree }: { onFree: () => void }) {
           </button>
           <a href="#demonstracao">
             <Play size={14} aria-hidden="true" /> Experimentar {violinDemonstration.title}
+          </a>
+          <a href="/partituras-para-violino">
+            <Search size={14} aria-hidden="true" /> Procurar uma música
           </a>
         </div>
       </Container>

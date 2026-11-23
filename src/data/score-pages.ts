@@ -144,6 +144,186 @@ const scoreNotes: readonly ScoreNotes[] = [
       'Ensaie os acentos da mudança de seção com arcos curtos. Depois toque desde a frase anterior para praticar a transição em contexto.',
     ],
   },
+  {
+    slug: 'hallelujah-leonard-cohen',
+    title: 'Hallelujah',
+    artist: 'Leonard Cohen',
+    alternateTitle: 'Aleluia',
+    introduction:
+      'Em Hallelujah, de Leonard Cohen, as notas sustentadas dão espaço para criar dinâmica. A melodia funciona em cerimônias e recepções quando você deixa o acompanhamento respirar entre as frases.',
+    practice: [
+      'Toque a última nota de cada frase com o metrônomo e planeje quanto arco vai usar até o fim. Mantenha o som presente enquanto a nota diminui de intensidade.',
+      'Compare o verso e o refrão com a base. Use a velocidade do arco para fazer o refrão crescer e repita a volta ao verso sem deixar o andamento cair.',
+    ],
+  },
+  {
+    slug: 'viva-la-vida',
+    title: 'Viva la Vida',
+    artist: 'Coldplay',
+    introduction:
+      'As cordas da gravação de Viva la Vida dão à música um pulso reconhecível. Use a base para manter essa energia quando a melodia passar para o violino.',
+    practice: [
+      'Marque o pulso da introdução com o pé e cante a primeira entrada da melodia. Confira se você entra no mesmo ponto em duas repetições seguidas.',
+      'Em notas repetidas, experimente arcos curtos e concentre o peso nos acentos da frase. Leve essa articulação para o refrão antes de tocar a música inteira.',
+    ],
+  },
+  {
+    slug: 'interstellar-day-one',
+    title: 'Interstellar - Day One',
+    artist: 'Hans Zimmer',
+    alternateTitle: 'Tema de Interestelar',
+    introduction:
+      'Day One vem da trilha de Interestelar. A repetição do acompanhamento dá espaço para fazer a linha do violino crescer aos poucos, como acontece no clima da trilha.',
+    practice: [
+      'Ouça um ciclo inteiro da base e identifique quando o desenho se repete. Ensaie a entrada a partir desse ponto até conseguir localizá-la sem voltar ao início.',
+      'Comece com pouco peso de arco e aumente a velocidade nas frases mais intensas. Grave uma passagem para conferir se o crescimento soa gradual.',
+    ],
+  },
+  {
+    slug: 'la-vie-en-rose',
+    title: 'La Vie en Rose',
+    artist: 'Édith Piaf',
+    introduction:
+      'O fraseado da voz de Édith Piaf é um ponto de partida para tocar La Vie en Rose em um jantar ou recepção. Ouça como a melodia repousa antes de escolher onde ligar ou separar as notas.',
+    practice: [
+      'Cante uma frase e marque onde respiraria. Toque a mesma passagem com uma troca de arco discreta nesse ponto.',
+      'Teste uma leve demora na nota de chegada e volte no pulso da base. Se a próxima entrada ficar apertada, reduza a demora até a linha soar natural.',
+    ],
+  },
+  {
+    slug: 'thinking-out-loud',
+    title: 'Thinking Out Loud',
+    artist: 'Ed Sheeran',
+    introduction:
+      'Thinking Out Loud tem um balanço que funciona na primeira dança ou na recepção. Antes de tocar do início ao fim, combine com quem organiza o evento quanto tempo a música precisa durar.',
+    practice: [
+      'Pratique o início do verso com arcos leves e sem cobrir a pulsação da base. Depois comece diretamente no refrão para conferir a entrada.',
+      'Escolha uma frase de encerramento e pratique os compassos que levam até ela. Se for tocar para uma dança, confira o tempo dessa versão com o playback.',
+    ],
+  },
+  {
+    slug: 'photograph-ed-sheeran',
+    title: 'Photograph',
+    artist: 'Ed Sheeran',
+    introduction:
+      'Em Photograph, de Ed Sheeran, o verso mais contido prepara um refrão que pede mais projeção. O contraste funciona bem em um set de baladas para recepção.',
+    practice: [
+      'Toque o verso perto do meio do arco e guarde espaço para os sons sustentados. Passe ao refrão com um arco mais amplo sem mudar o andamento.',
+      'Mantenha a base tocando nas pausas entre frases. Grave duas passagens e compare se as retomadas coincidem com o pulso.',
+    ],
+  },
+  {
+    slug: 'hotel-california',
+    title: 'Hotel California',
+    artist: 'Eagles',
+    introduction:
+      'A introdução instrumental de Hotel California prepara a entrada da melodia. Para manter o caráter reconhecível da canção no violino, dê atenção ao pulso da base e aos espaços do verso.',
+    practice: [
+      'Ouça a introdução e marque na partitura o momento da sua entrada. Comece o exercício alguns segundos antes para treinar a contagem com a base.',
+      'Trabalhe separadamente as notas curtas do verso e as mais sustentadas do refrão. Ao juntar as duas partes, mantenha a mesma pulsação.',
+    ],
+  },
+  {
+    slug: 'bondade-de-deus',
+    title: 'Bondade de Deus',
+    artist: '',
+    introduction:
+      'Bondade de Deus cabe em repertórios de louvor com violino, voz ou banda. Combine a entrada do instrumento e o tom antes do ensaio, principalmente se todos estiverem usando versões diferentes.',
+    practice: [
+      'Pratique o refrão primeiro com a partitura e depois com o vídeo guiado. Marque em que momento o violino retoma depois de cada respiração.',
+      'Ensaie uma passagem com dinâmica mais baixa para acompanhar o canto. Na passagem em que você assume a melodia, aumente a projeção sem antecipar a entrada.',
+    ],
+  },
+  {
+    slug: 'oceanos',
+    title: 'Oceanos',
+    artist: 'Ana Nóbrega',
+    alternateTitle: 'Oceans',
+    introduction:
+      'Oceanos, na versão de Ana Nóbrega, começa com espaço para frases leves e permite um crescimento gradual. Use esse contraste para tocar em uma celebração sem cobrir as vozes.',
+    practice: [
+      'Ensaie o início com ataques suaves e conte a base nas pausas. Deixe o arco preparado perto da corda para entrar no momento certo.',
+      'Experimente tocar a parte mais intensa com arcos longos. Confira com a base se a pulsação segue regular quando você aumenta o volume.',
+    ],
+  },
+  {
+    slug: 'a-bencao',
+    title: 'A Bênção',
+    artist: '',
+    introduction:
+      'A Bênção pode encerrar um momento de louvor ou uma cerimônia. Se a apresentação tiver canto, defina antes em quais frases o violino dobra a voz e em quais fica em silêncio.',
+    practice: [
+      'Toque a primeira passagem com o playback e marque o fim de cada frase. Volte do meio da música para praticar uma entrada sem depender da introdução.',
+      'Nos trechos repetidos, escolha uma repetição para tocar mais suave. Quando a dinâmica crescer, aumente a velocidade do arco sem apertar a mão direita.',
+    ],
+  },
+  {
+    slug: 'aquarela-toquinho',
+    title: 'Aquarela',
+    artist: 'Toquinho',
+    introduction:
+      'A melodia de Aquarela funciona em eventos de família e apresentações de MPB. O fraseado cantado ajuda a decidir onde o violino deve respirar e onde a linha precisa continuar.',
+    practice: [
+      'Separe a melodia em frases curtas e cante cada uma antes de tocar. Ensaie a troca de arco em uma nota leve, longe da nota de chegada.',
+      'Depois de tocar cada trecho sozinho, use o playback para juntar as frases. Continue contando o pulso quando a melodia parar por um instante.',
+    ],
+  },
+  {
+    slug: 'tocando-em-frente',
+    title: 'Tocando em Frente',
+    artist: 'Almir Sater',
+    introduction:
+      'Tocando em Frente funciona em repertórios de MPB, recepções e apresentações intimistas. Deixe as frases assentarem no pulso da base para preservar o caráter tranquilo da canção.',
+    practice: [
+      'Cante a melodia sobre o playback e observe onde as frases começam em relação ao pulso. Em seguida reproduza os mesmos ataques no violino.',
+      'Pratique o fim do refrão em dinâmica baixa e espere a base completar o trecho antes de recomeçar. Faça a última nota perder intensidade gradualmente.',
+    ],
+  },
+  {
+    slug: 'garota-de-ipanema',
+    title: 'Garota de Ipanema',
+    artist: 'Tom Jobim',
+    alternateTitle: 'The Girl from Ipanema',
+    introduction:
+      'Garota de Ipanema funciona em recepções e repertórios de bossa nova. O vídeo guiado ajuda a perceber como as entradas da melodia se encaixam no balanço do acompanhamento.',
+    practice: [
+      'Antes de tocar, marque uma pulsação regular e fale o ritmo da frase que entra entre as batidas. Repita em andamento lento até o deslocamento ficar natural.',
+      'No trecho central, toque a melodia em dinâmica moderada e escute a mudança de harmonia. Volte à abertura sem perder o pulso da bossa nova.',
+    ],
+  },
+  {
+    slug: 'stand-by-me',
+    title: 'Stand by Me',
+    artist: 'Ben E. King',
+    introduction:
+      'Em Stand by Me, a linha de baixo recorrente ajuda a localizar as entradas da melodia no violino. Use a repetição que você ouve no vídeo guiado para criar pontos de referência.',
+    practice: [
+      'Acompanhe duas voltas do baixo contando o pulso e entre só na terceira. Se perder a referência, encontre o começo da próxima volta.',
+      'Trabalhe os finais de frase longe do início da música. Pause o vídeo em um desses trechos e depois retome para conferir onde a melodia volta.',
+    ],
+  },
+  {
+    slug: 'let-it-be',
+    title: 'Let It Be',
+    artist: 'The Beatles',
+    introduction:
+      'Let It Be tem uma melodia que alterna trechos leves e resoluções mais marcadas no refrão. Na versão guiada, observe onde a linha do violino ganha espaço depois do verso.',
+    practice: [
+      'Toque o fim do verso e a primeira frase do refrão como um único exercício. Reserve parte do arco para as notas que precisam continuar soando.',
+      'Reveja a entrada do refrão no vídeo. Faça um crescendo curto ao se aproximar da nota de chegada e mantenha o pulso durante o crescimento.',
+    ],
+  },
+  {
+    slug: 'yesterday-the-beatles',
+    title: 'Yesterday',
+    artist: 'The Beatles',
+    introduction:
+      'Em Yesterday, o comprimento das frases pede escuta além da contagem. No vídeo guiado, compare o tempo que a melodia leva para repousar na abertura e na seção intermediária.',
+    practice: [
+      'Cante a primeira frase inteira e marque apenas a respiração no fim. No violino, teste duas distribuições de arco para preservar essa linha.',
+      'Comece na seção intermediária e volte à melodia principal sem reiniciar o vídeo. Use a nota de chegada como referência e confira se o pulso continua firme.',
+    ],
+  },
 ]
 
 export type ScorePage = ScoreNotes & {
