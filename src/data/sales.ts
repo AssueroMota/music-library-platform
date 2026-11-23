@@ -2,7 +2,8 @@ import { guidedScoreCount } from '../../shared/guided-scores.js'
 import { normalScoreCount, totalScoreCount, playbackCount } from '../../shared/score-catalog.js'
 import { freeLibrary } from '../../shared/free-library.js'
 
-export const homeSearchDescription = `Temos ${totalScoreCount} partituras para violino e ${playbackCount} playbacks. Procure sua música favorita e experimente agora uma partitura com playback grátis!`
+export const homeSearchDescription =
+  'Procure sua música favorita! Encontre partituras para violino, playbacks para tocar junto e vídeos guiados. Experimente agora uma partitura com playback grátis!'
 
 export const salesFaqs = [
   [
