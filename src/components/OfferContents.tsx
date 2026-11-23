@@ -146,6 +146,11 @@ export function OfferContents() {
               Como montar seu repertório para violino
             </a>
           </p>
+          <p className="contents-note">
+            <a className="contents-guide-link" href="/partituras-para-violino">
+              Explorar partituras para violino por música
+            </a>
+          </p>
         </div>
       </Container>
     </section>

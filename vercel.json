@@ -13,6 +13,11 @@
     {
       "source": "/partituras-guiadas-para-violino",
       "destination": "/partituras-guiadas-para-violino.html"
+    },
+    { "source": "/partituras-para-violino", "destination": "/partituras-para-violino.html" },
+    {
+      "source": "/partituras-para-violino/:slug([a-z0-9-]+)",
+      "destination": "/partituras-para-violino/:slug.html"
     }
   ],
   "headers": [

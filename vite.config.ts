@@ -12,6 +12,10 @@ const { redirects, rewrites } = JSON.parse(
   rewrites: { source: string; destination: string }[]
 }
 
+const songPath = /^\/partituras-para-violino\/[a-z0-9-]+$/
+const catalogPath = '/partituras-para-violino'
+type ScorePageMarkup = { head: string; body: string }
+
 // Mirror the exact Vercel paths during development and local preview.
 const routeHtml: Connect.NextHandleFunction = (request, response, next) => {
   if (request.method !== 'GET' && request.method !== 'HEAD') return next()
@@ -27,6 +31,7 @@ const routeHtml: Connect.NextHandleFunction = (request, response, next) => {
   }
   const rewrite = rewrites.find(({ source }) => source === pathname)
   if (rewrite) request.url = rewrite.destination + suffix
+  else if (songPath.test(pathname)) request.url = `${pathname}.html${suffix}`
   next()
 }
 
@@ -55,6 +60,7 @@ export default defineConfig(({ mode, isSsrBuild }) => {
               'app.html',
               'repertorio-para-violino.html',
               'partituras-guiadas-para-violino.html',
+              'partituras-para-violino.html',
             ],
           },
         },
@@ -65,6 +71,32 @@ export default defineConfig(({ mode, isSsrBuild }) => {
       {
         name: 'music-library-html',
         configureServer(server) {
+          server.middlewares.use(async (request, response, next) => {
+            if (request.method !== 'GET' && request.method !== 'HEAD') return next()
+            const pathname = (request.url ?? '/').split('?', 1)[0].replace(/\.html$/, '')
+            if (pathname !== catalogPath && !songPath.test(pathname)) return next()
+
+            try {
+              const { fillScorePage, renderScorePage } = (await server.ssrLoadModule(
+                '/src/score-pages.tsx',
+              )) as {
+                renderScorePage: (path: string) => ScorePageMarkup | undefined
+                fillScorePage: (template: string, page: ScorePageMarkup) => string
+              }
+              const page = renderScorePage(pathname)
+              if (!page) return next()
+
+              const template = readFileSync(
+                new URL('./partituras-para-violino.html', import.meta.url),
+                'utf8',
+              )
+              const html = await server.transformIndexHtml(pathname, fillScorePage(template, page))
+              response.setHeader('Content-Type', 'text/html; charset=utf-8')
+              response.end(request.method === 'HEAD' ? undefined : html)
+            } catch (error) {
+              next(error)
+            }
+          })
           server.middlewares.use(routeHtml)
         },
         configurePreviewServer(server) {

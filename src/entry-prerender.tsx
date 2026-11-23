@@ -1,6 +1,8 @@
 import { renderToString } from 'react-dom/server'
 import { HomePage } from './HomePage'
 
+export { fillScorePage, renderScorePages } from './score-pages'
+
 export function renderHome(renderedAt: number) {
   // React emits image preload hints before the rendered tree.
   const html = renderToString(<HomePage renderedAt={renderedAt} />)

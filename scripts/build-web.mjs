@@ -17,7 +17,9 @@ try {
       emptyOutDir: false,
     },
   })
-  const { renderHome } = await import(pathToFileURL(join(renderDirectory, 'entry-prerender.js')))
+  const { renderHome, renderScorePages, fillScorePage } = await import(
+    pathToFileURL(join(renderDirectory, 'entry-prerender.js'))
+  )
   const renderedAt = Date.now()
   const { markup, preloads } = renderHome(renderedAt)
 
@@ -30,6 +32,24 @@ try {
     .replace(root, () => `<div id="root" data-rendered-at="${renderedAt}">${markup}</div>`)
     .replace('</head>', () => `${preloads}\n  </head>`)
   await writeFile(output, html)
+
+  const scorePages = renderScorePages()
+  const catalog = scorePages[0]
+  const [scoreTemplate, sitemap] = await Promise.all([
+    readFile(`dist${catalog.path}.html`, 'utf8'),
+    readFile('dist/sitemap.xml', 'utf8'),
+  ])
+  const sitemapEntries = scorePages.map(({ url }) => `  <url>\n    <loc>${url}</loc>\n  </url>`)
+  await mkdir(`dist${catalog.path}`, { recursive: true })
+  await Promise.all([
+    ...scorePages.map((page) =>
+      writeFile(`dist${page.path}.html`, fillScorePage(scoreTemplate, page)),
+    ),
+    writeFile(
+      'dist/sitemap.xml',
+      sitemap.replace('</urlset>', () => `${sitemapEntries.join('\n')}\n</urlset>`),
+    ),
+  ])
 } finally {
   if (dirname(await realpath(renderDirectory)) === cacheDirectory)
     await rm(renderDirectory, { recursive: true, force: true })
