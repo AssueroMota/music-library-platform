@@ -25,6 +25,7 @@ import { SignedViewCache } from './signed-view-cache.js'
 import { violinOffers } from '../shared/products.js'
 import { violinPriceCents } from '../shared/violin-launch.js'
 import { serializeSetlist, setlistNotFound, validateSetlist } from './custom-setlists.js'
+import { sharedSetlist, shareUnavailable } from './setlist-share.js'
 
 export function createApp(service: CheckoutService, logging = true) {
   const signedViews = new SignedViewCache()
@@ -183,12 +184,10 @@ export function createApp(service: CheckoutService, logging = true) {
     async (request, reply) => {
       const { email } = z.object({ email: deliveryEmailSchema }).strict().parse(request.body)
       await requestFreeLibrary(service, email)
-      return reply
-        .code(202)
-        .send({
-          message:
-            'Solicitação recebida! Confira sua caixa de entrada e a pasta de spam para acessar a versão grátis.',
-        })
+      return reply.code(202).send({
+        message:
+          'Solicitação recebida! Confira sua caixa de entrada e a pasta de spam para acessar a versão grátis.',
+      })
     },
   )
   app.post(
@@ -370,6 +369,33 @@ export function createApp(service: CheckoutService, logging = true) {
     const result = await service.db.customSetlist.deleteMany({ where: { id, userId: user.id } })
     if (!result.count) throw setlistNotFound()
     return { deleted: true }
+  })
+  app.get('/api/shared-setlist', async (request) => {
+    const playlist = await sharedSetlist(
+      service.db,
+      request.headers.authorization,
+      service.config.EMAIL_LINK_ENCRYPTION_KEY,
+    )
+    return {
+      title: playlist.title,
+      tracks: playlist.tracks.map(({ id, title, artist, playback }) => ({
+        id,
+        title,
+        artist,
+        playback,
+      })),
+    }
+  })
+  app.get('/api/shared-setlist/tracks/:id', async (request) => {
+    const { id } = z.object({ id: z.string().regex(/^[a-f0-9]{64}$/) }).parse(request.params)
+    const playlist = await sharedSetlist(
+      service.db,
+      request.headers.authorization,
+      service.config.EMAIL_LINK_ENCRYPTION_KEY,
+    )
+    const track = playlist.tracks.find((item) => item.id === id)
+    if (!track?.storageKey) throw shareUnavailable()
+    return { url: await service.providers.signedView(track.storageKey) }
   })
   async function authorizedAsset(
     header: string | undefined,

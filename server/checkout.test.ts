@@ -10,6 +10,7 @@ import type { Providers, RemoteOrder } from './providers.js'
 import { confirmationEmail, freeAccessEmail } from './email.js'
 import { personalLibraryLink } from './library-access.js'
 import { MAX_SETLIST_SONGS } from '../shared/custom-setlists.js'
+import { createSetlistShareToken } from './setlist-share.js'
 
 const config = {
   CHECKOUT_ENABLED: true,
@@ -142,6 +143,86 @@ async function notify(resourceId: string, requestId = randomUUID(), invalid = fa
     payload: { type: 'order', data: { id: resourceId }, status: 'processed' },
   })
 }
+
+it('compartilha apenas os áudios do setlist com um link válido e temporário', async () => {
+  await db.user.create({ data: { id: userId, email: buyerEmail } })
+  const preview = await db.libraryPreviewAccess.create({
+    data: { userId, instrument: 'violin', expiresAt: new Date(Date.now() + 60000) },
+  })
+  const song = (title: string) => ({ title, artist: '', instrument: 'violin' })
+  await db.libraryAsset.createMany({
+    data: [
+      {
+        ...song('Faixa selecionada'),
+        songTitle: 'Faixa selecionada',
+        kind: 'audio',
+        storageKey: 'violin/selected.mp3',
+      },
+      {
+        ...song('Faixa selecionada'),
+        songTitle: 'Faixa selecionada',
+        kind: 'score',
+        storageKey: 'violin/selected.pdf',
+      },
+      {
+        ...song('Faixa particular'),
+        songTitle: 'Faixa particular',
+        kind: 'audio',
+        storageKey: 'violin/private.mp3',
+      },
+    ],
+  })
+  const first = await db.customSetlist.create({
+    data: {
+      userId,
+      title: 'Cerimônia',
+      songs: [song('Faixa selecionada'), song('A Whole New World')],
+    },
+  })
+  const second = await db.customSetlist.create({
+    data: { userId, title: 'Outro setlist', songs: [song('Faixa particular')] },
+  })
+  const access = (id: string, timestamp = Date.now() + 60000) => ({
+    authorization:
+      'Bearer ' +
+      createSetlistShareToken(id, new Date(timestamp), config.EMAIL_LINK_ENCRYPTION_KEY),
+  })
+  const headers = access(first.id)
+  const url = '/api/shared-setlist'
+  const response = await app.inject({ url, headers })
+  const tracks = response.json().tracks
+  expect(response.statusCode).toBe(200)
+  expect(response.headers['cache-control']).toBe('no-store')
+  expect(tracks).toMatchObject([
+    { title: 'Faixa selecionada', playback: { kind: 'library' } },
+    { title: 'A Whole New World', playback: { kind: 'reference' } },
+  ])
+  expect(response.body).not.toContain('storageKey')
+  const privateTrack = (await app.inject({ url, headers: access(second.id) })).json().tracks[0]
+  expect((await app.inject({ url: `${url}/tracks/${privateTrack.id}`, headers })).statusCode).toBe(
+    404,
+  )
+  expect((await app.inject({ url: `${url}/tracks/${tracks[0].id}`, headers })).json()).toEqual({
+    url: 'https://storage.example.test/inline',
+  })
+  expect(providers.signedView).toHaveBeenCalledExactlyOnceWith('violin/selected.mp3')
+  expect(
+    (await app.inject({ url, headers: access(first.id, Date.now() - 60000) })).statusCode,
+  ).toBe(404)
+  expect(
+    (
+      await app.inject({
+        url,
+        headers: { authorization: headers.authorization.replace(first.id, second.id) },
+      })
+    ).statusCode,
+  ).toBe(404)
+  expect((await app.inject({ url })).statusCode).toBe(404)
+  await db.libraryPreviewAccess.delete({ where: { id: preview.id } })
+  expect((await app.inject({ url: `${url}/tracks/${tracks[0].id}`, headers })).statusCode).toBe(404)
+  await db.customSetlist.update({ where: { id: first.id }, data: { status: 'draft' } })
+  expect((await app.inject({ url, headers })).statusCode).toBe(404)
+})
 
 describe('biblioteca grátis com acesso limitado', () => {
   const headers = { authorization: 'Bearer valid-test-session' }

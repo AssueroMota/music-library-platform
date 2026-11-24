@@ -7,6 +7,7 @@
   "rewrites": [
     { "source": "/en", "destination": "/en/index.html" },
     { "source": "/en/biblioteca", "destination": "/en/app.html" },
+    { "source": "/en/playlist", "destination": "/en/app.html" },
     { "source": "/en/checkout/partitura", "destination": "/en/app.html" },
     { "source": "/en/checkout/:status(success|pending|failure)", "destination": "/en/app.html" },
     { "source": "/en/repertorio-para-violino", "destination": "/en/repertorio-para-violino.html" },
@@ -19,6 +20,7 @@
       "destination": "/en/partituras-para-violino/:slug.html"
     },
     { "source": "/biblioteca", "destination": "/app.html" },
+    { "source": "/playlist", "destination": "/app.html" },
     { "source": "/checkout/partitura", "destination": "/app.html" },
     { "source": "/checkout/success", "destination": "/app.html" },
     { "source": "/checkout/pending", "destination": "/app.html" },
