@@ -63,6 +63,7 @@ function rememberPaused(paused: boolean) {
 export function VisitPlaylist() {
   const audioRef = useRef<HTMLAudioElement>(null)
   const shouldPlay = useRef(startsPlaying())
+  const openingTrack = useRef(true)
   const waitingForGesture = useRef(false)
   const currentVolume = useRef(0.2)
   const attempt = useRef({ version: 0 })
@@ -88,6 +89,7 @@ export function VisitPlaylist() {
     const request = ++attempt.current.version
     shouldPlay.current = true
     waitingForGesture.current = false
+    audio.toggleAttribute('data-visit-autoplay', openingTrack.current)
     audio.volume = currentVolume.current
     try {
       await audio.play()
@@ -114,6 +116,7 @@ export function VisitPlaylist() {
   }
 
   function selectTrack(next: number) {
+    openingTrack.current = false
     rememberPaused(false)
     if (next === index) {
       void play()
@@ -192,6 +195,7 @@ export function VisitPlaylist() {
           pause()
           rememberPaused(true)
         } else {
+          openingTrack.current = false
           rememberPaused(false)
           void play()
         }
@@ -212,6 +216,7 @@ export function VisitPlaylist() {
         src={track.src}
         preload="metadata"
         onPlay={(event) => {
+          if (event.currentTarget.paused) return
           waitingForGesture.current = false
           setPlaying(true)
           setStatus(`Ouvindo · ${track.context}`)

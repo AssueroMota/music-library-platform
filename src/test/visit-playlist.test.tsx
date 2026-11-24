@@ -5,17 +5,25 @@ import { AudioPlayer } from '../components/AudioPlayer'
 import { visitPlaylist } from '../data/visit-playlist'
 
 beforeEach(() => {
+  const playing = new WeakSet<HTMLMediaElement>()
   sessionStorage.clear()
   localStorage.clear()
   vi.spyOn(Math, 'random').mockReturnValue(0.999)
+  vi.spyOn(HTMLMediaElement.prototype, 'paused', 'get').mockImplementation(function (
+    this: HTMLMediaElement,
+  ) {
+    return !playing.has(this)
+  })
   vi.spyOn(HTMLMediaElement.prototype, 'play').mockImplementation(async function (
     this: HTMLMediaElement,
   ) {
+    playing.add(this)
     this.dispatchEvent(new Event('play'))
   })
   vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(function (
     this: HTMLMediaElement,
   ) {
+    playing.delete(this)
     this.dispatchEvent(new Event('pause'))
   })
 })

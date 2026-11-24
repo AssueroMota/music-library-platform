@@ -81,6 +81,23 @@
   border-radius: 12px;
 }
 
+.presentation-unmute {
+  position: absolute;
+  inset: 10px 10px auto auto;
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 11px;
+  border: 1px solid #ffffff52;
+  border-radius: 20px;
+  background: #100d13f5;
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .presentation-play-icon {
   display: grid;
   width: clamp(52px, 6vw, 77px);

@@ -1,49 +1,111 @@
-import { useEffect, useRef, useState, type MouseEvent } from 'react'
-import { Play } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react'
+import { Play, Volume2 } from 'lucide-react'
 import { englishSite } from '../lib/site-language'
 
 export function PresentationVideo({ src, poster }: { src: string; poster: string }) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [started, setStarted] = useState(false)
   const [failed, setFailed] = useState(false)
+  const [muted, setMuted] = useState(false)
+
+  const showError = useCallback(() => {
+    setStarted(false)
+    setFailed(true)
+  }, [])
+
+  const play = useCallback(
+    (video: HTMLVideoElement, canRetryMuted?: () => boolean) => {
+      const handleError = (error: unknown) => {
+        if (error instanceof DOMException) {
+          if (error.name === 'AbortError' || (canRetryMuted && error.name === 'NotAllowedError')) {
+            return
+          }
+        }
+        showError()
+      }
+
+      void video.play().catch((error: unknown) => {
+        if (
+          error instanceof DOMException &&
+          error.name === 'NotAllowedError' &&
+          video.paused &&
+          !video.muted &&
+          canRetryMuted?.()
+        ) {
+          video.muted = true
+          return video.play().catch(handleError)
+        }
+        handleError(error)
+      })
+    },
+    [showError],
+  )
 
   useEffect(() => {
     const video = videoRef.current!
-    const pause = () => {
+    let inView = typeof IntersectionObserver === 'undefined'
+    let resumeWhenVisible = true
+    let automaticRequest = 0
+
+    const isVisible = () =>
+      (inView || document.fullscreenElement === video) && document.visibilityState !== 'hidden'
+
+    const syncVisibility = () => {
+      if (!isVisible()) {
+        automaticRequest++
+        if (!video.paused) {
+          resumeWhenVisible = true
+          video.pause()
+        }
+        return
+      }
+      if (!resumeWhenVisible) return
+      resumeWhenVisible = false
+      if (video.getAttribute('src') !== src) video.src = src
+      const request = ++automaticRequest
+      if (video.paused) play(video, () => request === automaticRequest && isVisible())
+    }
+
+    const onOtherMedia = (player: unknown) => {
+      if (!(player instanceof HTMLMediaElement) || player === video) return
+      // The visit playlist can initialize before the video has entered the viewport.
+      if (!video.hasAttribute('src')) return
+      if (player.hasAttribute('data-visit-autoplay') && isVisible() && !video.paused) {
+        if (!player.paused) player.pause()
+        return
+      }
+      automaticRequest++
+      resumeWhenVisible = false
       if (!video.paused) video.pause()
     }
-    const onVisibility = () => {
-      if (document.visibilityState === 'hidden') pause()
-    }
-    const onOtherMedia = (event: Event) => {
-      if (event.target instanceof HTMLMediaElement && event.target !== video) pause()
-    }
-    const onOtherPlayer = (event: Event) => {
-      if ((event as CustomEvent).detail !== video) pause()
-    }
-    const observer =
-      typeof IntersectionObserver === 'undefined'
-        ? null
-        : new IntersectionObserver(([entry]) => {
-            if (!entry.isIntersecting) pause()
-          })
-    observer?.observe(video)
-    document.addEventListener('visibilitychange', onVisibility)
-    document.addEventListener('play', onOtherMedia, true)
-    window.addEventListener('music-library-play', onOtherPlayer)
-    return () => {
-      observer?.disconnect()
-      document.removeEventListener('visibilitychange', onVisibility)
-      document.removeEventListener('play', onOtherMedia, true)
-      window.removeEventListener('music-library-play', onOtherPlayer)
-      pause()
-    }
-  }, [])
+    const onMediaPlay = (event: Event) => onOtherMedia(event.target)
+    const onOtherPlayer = (event: Event) => onOtherMedia((event as CustomEvent).detail)
 
-  function showError() {
-    setStarted(false)
-    setFailed(true)
-  }
+    const observer = inView
+      ? null
+      : new IntersectionObserver(
+          ([entry]) => {
+            inView = entry.isIntersecting && entry.intersectionRatio >= 0.35
+            syncVisibility()
+          },
+          { threshold: 0.35 },
+        )
+    observer?.observe(video)
+    document.addEventListener('visibilitychange', syncVisibility)
+    document.addEventListener('fullscreenchange', syncVisibility)
+    document.addEventListener('play', onMediaPlay, true)
+    window.addEventListener('music-library-play', onOtherPlayer)
+    if (!observer) syncVisibility()
+    return () => {
+      automaticRequest++
+      observer?.disconnect()
+      document.removeEventListener('visibilitychange', syncVisibility)
+      document.removeEventListener('fullscreenchange', syncVisibility)
+      document.removeEventListener('play', onMediaPlay, true)
+      window.removeEventListener('music-library-play', onOtherPlayer)
+      if (!video.paused) video.pause()
+    }
+  }, [play, src])
 
   function start(event: MouseEvent<HTMLAnchorElement>) {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
@@ -55,10 +117,9 @@ export function PresentationVideo({ src, poster }: { src: string; poster: string
     // Attach the source in the interaction so the browser retains playback permission.
     if (video.getAttribute('src') !== src) video.src = src
     else if (video.error) video.load()
+    video.muted = false
     video.focus({ preventScroll: true })
-    void video.play().catch((error: unknown) => {
-      if (!(error instanceof DOMException && error.name === 'AbortError')) showError()
-    })
+    play(video)
   }
 
   return (
@@ -80,10 +141,13 @@ export function PresentationVideo({ src, poster }: { src: string; poster: string
         tabIndex={started ? 0 : -1}
         aria-label="Vídeo de apresentação da Music Library"
         onPlay={(event) => {
+          setMuted(event.currentTarget.muted)
+          setStarted(true)
           window.dispatchEvent(
             new CustomEvent('music-library-play', { detail: event.currentTarget }),
           )
         }}
+        onVolumeChange={(event) => setMuted(event.currentTarget.muted)}
         onError={showError}
       >
         <track
@@ -94,6 +158,20 @@ export function PresentationVideo({ src, poster }: { src: string; poster: string
           default={englishSite}
         />
       </video>
+      {started && muted && (
+        <button
+          className="presentation-unmute"
+          type="button"
+          onClick={() => {
+            const video = videoRef.current!
+            video.muted = false
+            video.focus({ preventScroll: true })
+            if (video.paused) play(video)
+          }}
+        >
+          <Volume2 size={17} aria-hidden="true" /> Ativar som
+        </button>
+      )}
       {!started && (
         <a className="presentation-video-start" href={src} onClick={start}>
           <span className="presentation-play-icon">
