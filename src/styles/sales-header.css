@@ -20,7 +20,7 @@ html:has(.sales-header-stack) {
 }
 .sales-header-stack .sales-nav {
   display: grid;
-  grid-template-columns: auto minmax(170px, 235px) minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(170px, 235px) minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 16px;
   min-height: 88px;
@@ -56,6 +56,11 @@ html:has(.sales-header-stack) {
   align-items: center;
   gap: 16px;
 }
+.sales-header-stack .sales-nav > .language-switch {
+  grid-column: -2 / -1;
+  grid-row: 1;
+  justify-self: end;
+}
 .sales-header-stack .nav-free {
   min-height: 44px;
   padding: 10px 0;
@@ -78,7 +83,7 @@ html:has(.sales-header-stack) {
     scroll-padding-top: calc(var(--sales-header-height, 138px) + 16px);
   }
   .sales-header-stack .sales-nav {
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
     gap: 0 16px;
     padding: 6px 0 0;
   }
@@ -101,7 +106,7 @@ html:has(.sales-header-stack) {
 }
 @media (max-width: 730px) {
   .sales-header-stack .sales-nav {
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: auto minmax(0, 1fr) auto;
   }
   .sales-header-stack .sales-nav-actions {
     grid-column: 2;
@@ -147,6 +152,10 @@ html:has(.sales-header-stack) {
   }
 }
 @media (max-width: 359px) {
+  .sales-header-stack .sales-nav > .language-switch {
+    align-self: start;
+    margin-block-start: 7px;
+  }
   .sales-header-stack .nav-offer {
     max-width: 110px;
     white-space: normal;

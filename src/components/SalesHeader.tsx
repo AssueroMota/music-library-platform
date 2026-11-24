@@ -47,7 +47,6 @@ export function SalesHeader({
             <a href="#perguntas">Dúvidas</a>
           </nav>
           <div className="sales-nav-actions">
-            <LanguageSwitch />
             <button className="nav-free" type="button" onClick={onFree}>
               Testar de graça ↗
             </button>
@@ -55,6 +54,7 @@ export function SalesHeader({
               Escolher meu plano <ArrowDown size={14} />
             </a>
           </div>
+          <LanguageSwitch />
         </header>
       </Container>
     </div>
