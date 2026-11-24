@@ -7,97 +7,152 @@ import { scorePages, type ScorePage } from './data/score-pages'
 
 const origin = 'https://www.partiturasebases.com.br'
 const catalogPath = '/partituras-para-violino'
+const englishCatalogPath = '/violin-sheet-music'
 const catalogName = 'Partituras para violino'
+const englishCatalogName = 'Violin sheet music'
 const logo = '/images/music-library-violinista-transparent.png'
 const image = `${origin}/images/violin-cover.jpg`
 
 const songPath = (score: ScorePage) => `${catalogPath}/${score.slug}`
 
-function availableFormats(score: ScorePage) {
+function availableFormats(score: ScorePage, english = false) {
   return [
-    score.hasScore && 'Partitura',
-    score.hasPlayback && 'Playback',
-    score.hasGuide && 'Partitura guiada em vídeo',
+    score.hasScore && (english ? 'Violin score' : 'Partitura'),
+    score.hasPlayback && (english ? 'Backing track' : 'Playback'),
+    score.hasGuide && (english ? 'Play-along score video' : 'Partitura guiada em vídeo'),
   ].filter(Boolean)
 }
 
-function ScoreLinks({ scores }: { scores: readonly ScorePage[] }) {
+function ScoreLinks({
+  scores,
+  english = false,
+}: {
+  scores: readonly ScorePage[]
+  english?: boolean
+}) {
   return (
     <ul className="examples score-list">
       {scores.map((score) => (
         <li key={score.slug}>
           <h3>
-            <a href={songPath(score)}>{score.title}</a>
+            <a href={songPath(score)} hrefLang={english ? 'pt-BR' : undefined}>
+              {score.title}
+            </a>
           </h3>
-          <p>
-            {score.artist ? `${score.artist} · ` : ''}
-            {score.style}
-          </p>
-          <p className="score-formats">{availableFormats(score).join(' · ')}</p>
+          {english ? (
+            score.artist && <p>{score.artist}</p>
+          ) : (
+            <p>
+              {score.artist ? `${score.artist} · ` : ''}
+              {score.style}
+            </p>
+          )}
+          <p className="score-formats">{availableFormats(score, english).join(' · ')}</p>
         </li>
       ))}
     </ul>
   )
 }
 
-function Catalog() {
+function Catalog({ english }: { english: boolean }) {
   const alphabeticalScores = [...scorePages].sort((first, second) =>
-    first.title.localeCompare(second.title, 'pt-BR'),
+    first.title.localeCompare(second.title, english ? 'en' : 'pt-BR'),
   )
   return (
     <article>
       <header className="intro">
-        <h1>{catalogName} por música</h1>
+        <h1>
+          {english ? 'Violin sheet music with backing tracks' : 'Partituras de violino e playbacks'}
+        </h1>
         <p>
-          Veja uma seleção do acervo da Music Library. Abra a música para conferir os formatos
-          disponíveis e ler dicas de ensaio para violino.
+          {english
+            ? 'Find a violin score by song or artist. Browse wedding favorites, pop songs, Brazilian music and film themes. Check which songs have a backing track or a play-along score video.'
+            : 'Encontre a partitura de violino da sua próxima música. Explore repertório para casamentos, MPB, gospel, pop e trilhas sonoras. Veja quais músicas têm playback ou partitura guiada em vídeo.'}
         </p>
+        <p>
+          <a href="#demonstracao">
+            {english
+              ? 'Try the free score and backing track'
+              : 'Experimente partitura e playback grátis'}
+          </a>
+        </p>
+        <a
+          href={english ? catalogPath : englishCatalogPath}
+          hrefLang={english ? 'pt-BR' : 'en'}
+          lang={english ? 'pt-BR' : 'en'}
+        >
+          {english ? 'Português (Brasil)' : 'English'}
+        </a>
       </header>
       <section aria-labelledby="musicas">
-        <h2 id="musicas">Músicas do acervo</h2>
-        <ScoreLinks scores={alphabeticalScores} />
+        <h2 id="musicas">{english ? 'Browse violin scores by song' : 'Procure uma música'}</h2>
+        {english && <p>Individual song pages are in Brazilian Portuguese.</p>}
+        <ScoreLinks scores={alphabeticalScores} english={english} />
       </section>
+      <PublicSample english={english} />
       <section className="next" aria-labelledby="biblioteca-completa">
-        <h2 id="biblioteca-completa">Explore a biblioteca</h2>
-        <a className="action" href="/#biblioteca">
-          Consultar o acervo por título ou artista
+        <h2 id="biblioteca-completa">{english ? 'Explore the library' : 'Explore a biblioteca'}</h2>
+        <p>
+          {english
+            ? 'The Basic plan includes sheet music. The Complete plan also includes backing tracks and play-along score videos. Membership and checkout are in Brazilian Portuguese.'
+            : 'O Plano Básico inclui partituras. O Completo também inclui playbacks e partituras guiadas em vídeo.'}
+        </p>
+        <a className="action" href="/#biblioteca" hrefLang="pt-BR">
+          {english
+            ? 'Search the full library (Portuguese)'
+            : 'Consultar o acervo por título ou artista'}
         </a>
-        <a href="/repertorio-para-violino">Montar repertório por ocasião</a>
+        <a href="/repertorio-para-violino" hrefLang="pt-BR">
+          {english
+            ? 'Find violin repertoire by occasion (Portuguese)'
+            : 'Montar repertório por ocasião'}
+        </a>
       </section>
     </article>
   )
 }
 
-function PublicSample() {
+function PublicSample({ english = false }: { english?: boolean }) {
   return (
     <section aria-labelledby="demonstracao">
-      <h2 id="demonstracao">Demonstração de A Thousand Years</h2>
+      <h2 id="demonstracao">
+        {english ? 'Free sample: A Thousand Years' : 'Demonstração de A Thousand Years'}
+      </h2>
       <p>
-        {demo.key} · Compasso {demo.meter} · {demo.tempo}
+        {english ? 'B♭ major' : demo.key} · {english ? 'Time signature' : 'Compasso'} {demo.meter} ·{' '}
+        {demo.tempo}
       </p>
       <div className="examples score-demo">
         <div>
-          <h3>Partitura para violino</h3>
+          <h3>{english ? 'Violin score' : 'Partitura para violino'}</h3>
           <a href={demo.score}>
             <img
               src={demo.score}
               width={demo.scoreWidth}
               height={demo.scoreHeight}
               loading="lazy"
-              alt="Página de demonstração da partitura de A Thousand Years para violino"
+              alt={
+                english
+                  ? 'A Thousand Years violin sheet music sample'
+                  : 'Página de demonstração da partitura de A Thousand Years para violino'
+              }
             />
-            Abrir partitura em tamanho original
+            {english
+              ? 'Open the full-size sheet music sample'
+              : 'Abrir partitura em tamanho original'}
           </a>
         </div>
         <div>
-          <h3>Playback de demonstração</h3>
+          <h3>{english ? 'Sample backing track' : 'Playback de demonstração'}</h3>
           <audio
             controls
             preload="none"
             src={demo.backing}
-            aria-label="Playback de A Thousand Years"
+            aria-label={english ? 'A Thousand Years backing track' : 'Playback de A Thousand Years'}
           >
-            <a href={demo.backing}>Ouvir o playback</a>
+            <a href={demo.backing}>
+              {english ? 'Listen to the backing track' : 'Ouvir o playback'}
+            </a>
           </audio>
         </div>
       </div>
@@ -189,9 +244,14 @@ function renderPage(
   score?: ScorePage,
 ) {
   const url = origin + path
+  const english = path === englishCatalogPath
+  const lang = english ? 'en' : 'pt-BR'
   const trail = [
     { name: 'Music Library', path: '/' },
-    { name: catalogName, path: catalogPath },
+    {
+      name: english ? englishCatalogName : catalogName,
+      path: english ? englishCatalogPath : catalogPath,
+    },
     ...(score ? [{ name: score.title, path }] : []),
   ]
   const breadcrumbs = JSON.stringify({
@@ -208,14 +268,21 @@ function renderPage(
   return {
     path,
     url,
+    lang,
     head: renderToStaticMarkup(
       <>
         <title>{title}</title>
         <meta name="description" content={description} />
         <link rel="canonical" href={url} />
+        {!score && (
+          <>
+            <link rel="alternate" hrefLang="pt-BR" href={origin + catalogPath} />
+            <link rel="alternate" hrefLang="en" href={origin + englishCatalogPath} />
+          </>
+        )}
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Music Library" />
-        <meta property="og:locale" content="pt_BR" />
+        <meta property="og:locale" content={english ? 'en_US' : 'pt_BR'} />
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
         <meta property="og:url" content={url} />
@@ -226,20 +293,24 @@ function renderPage(
     body: renderToStaticMarkup(
       <>
         <a className="skip" href="#conteudo">
-          Pular para o conteúdo
+          {english ? 'Skip to content' : 'Pular para o conteúdo'}
         </a>
         <header className="guide-header">
           <div className="wrap">
-            <a href="/" aria-label="Music Library — início">
+            <a
+              href="/"
+              hrefLang="pt-BR"
+              aria-label={english ? 'Music Library home (Portuguese)' : 'Music Library — início'}
+            >
               <img src={logo} alt="Music Library" width="72" height="72" />
             </a>
-            <a className="action" href="/#planos">
-              Ver planos
+            <a className="action" href="/#planos" hrefLang="pt-BR">
+              {english ? 'View plans (Portuguese)' : 'Ver planos'}
             </a>
           </div>
         </header>
         <main id="conteudo" className="wrap" tabIndex={-1}>
-          <nav className="breadcrumbs" aria-label="Você está aqui">
+          <nav className="breadcrumbs" aria-label={english ? 'Breadcrumb' : 'Você está aqui'}>
             <ol>
               {trail.map(({ name, path }, index) =>
                 index === trail.length - 1 ? (
@@ -258,7 +329,9 @@ function renderPage(
         </main>
         <footer className="guide-footer">
           <div className="wrap">
-            <a href={catalogPath}>Partituras para violino por música</a>
+            <a href={catalogPath} hrefLang="pt-BR" lang="pt-BR">
+              Partituras para violino por música
+            </a>
           </div>
         </footer>
       </>,
@@ -266,12 +339,16 @@ function renderPage(
   }
 }
 
-function renderCatalogPage() {
+function renderCatalogPage(english = false) {
   return renderPage(
-    catalogPath,
-    'Partituras para violino por música | Music Library',
-    'Encontre partituras para violino por música e artista. Confira os playbacks, os vídeos guiados e as dicas de ensaio da Music Library.',
-    <Catalog />,
+    english ? englishCatalogPath : catalogPath,
+    english
+      ? 'Violin Sheet Music & Backing Tracks | Music Library'
+      : 'Partituras de violino com playback | Music Library',
+    english
+      ? 'Find a violin score by song or artist. Browse backing tracks and play-along videos, or try the free A Thousand Years sheet music sample.'
+      : 'Encontre a partitura de violino da sua música favorita. Veja playbacks e vídeos guiados e experimente grátis a partitura e o playback de A Thousand Years.',
+    <Catalog english={english} />,
   )
 }
 
@@ -292,16 +369,21 @@ function renderSongPage(score: ScorePage) {
 
 export function renderScorePage(path: string) {
   if (path === catalogPath) return renderCatalogPage()
+  if (path === englishCatalogPath) return renderCatalogPage(true)
   const score = scorePages.find((item) => songPath(item) === path)
   return score && renderSongPage(score)
 }
 
 export function renderScorePages() {
-  return [renderCatalogPage(), ...scorePages.map(renderSongPage)]
+  return [renderCatalogPage(), renderCatalogPage(true), ...scorePages.map(renderSongPage)]
 }
 
-export function fillScorePage(template: string, page: { head: string; body: string }) {
+export function fillScorePage(
+  template: string,
+  page: { head: string; body: string; lang: string },
+) {
   return template
+    .replace('<html lang="pt-BR">', () => `<html lang="${page.lang}">`)
     .replace('<!-- score-page-head -->', () => page.head)
     .replace('<!-- score-page-body -->', () => page.body)
 }

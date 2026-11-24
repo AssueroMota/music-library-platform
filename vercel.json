@@ -15,6 +15,7 @@
       "destination": "/partituras-guiadas-para-violino.html"
     },
     { "source": "/partituras-para-violino", "destination": "/partituras-para-violino.html" },
+    { "source": "/violin-sheet-music", "destination": "/violin-sheet-music.html" },
     {
       "source": "/partituras-para-violino/:slug([a-z0-9-]+)",
       "destination": "/partituras-para-violino/:slug.html"

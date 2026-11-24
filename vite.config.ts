@@ -15,7 +15,8 @@ const { redirects, rewrites } = JSON.parse(
 
 const songPath = /^\/partituras-para-violino\/[a-z0-9-]+$/
 const catalogPath = '/partituras-para-violino'
-type ScorePageMarkup = { head: string; body: string }
+const englishCatalogPath = '/violin-sheet-music'
+type ScorePageMarkup = { head: string; body: string; lang: string }
 
 // Mirror the exact Vercel paths during development and local preview.
 const routeHtml: Connect.NextHandleFunction = (request, response, next) => {
@@ -75,7 +76,9 @@ export default defineConfig(({ mode, isSsrBuild }) => {
           server.middlewares.use(async (request, response, next) => {
             if (request.method !== 'GET' && request.method !== 'HEAD') return next()
             const pathname = (request.url ?? '/').split('?', 1)[0].replace(/\.html$/, '')
-            if (pathname !== catalogPath && !songPath.test(pathname)) return next()
+            if (![catalogPath, englishCatalogPath].includes(pathname) && !songPath.test(pathname)) {
+              return next()
+            }
 
             try {
               const { fillScorePage, renderScorePage } = (await server.ssrLoadModule(
