@@ -3,6 +3,8 @@ import { ArrowDown } from 'lucide-react'
 import { Container, Logo } from './ui'
 import { LaunchOfferHeader } from './LaunchOfferCountdown'
 import { LanguageSwitch } from './LanguageSwitch'
+import { CatalogSearch } from './CatalogSearch'
+import '../styles/catalog-search.css'
 
 export function SalesHeader({
   onFree,
@@ -36,6 +38,7 @@ export function SalesHeader({
       <Container>
         <header className="sales-nav">
           <Logo light />
+          <CatalogSearch />
           <nav aria-label="Navegação principal">
             <a href="#ocasioes">Ocasiões</a>
             <a href="#material">Materiais</a>

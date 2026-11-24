@@ -4,6 +4,9 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { freeLibrary } from '../shared/free-library'
 import { violinDemonstration as demo } from './data/demonstration'
 import { scorePages, type ScorePage } from './data/score-pages'
+import { violinCatalog } from './data/catalog-songs'
+import { CatalogSearch } from './components/CatalogSearch'
+import { localizedStyle } from './lib/site-language'
 
 const origin = 'https://www.partiturasebases.com.br'
 const catalogPath = '/partituras-para-violino'
@@ -15,7 +18,10 @@ const image = `${origin}/images/violin-cover.jpg`
 
 const songPath = (score: ScorePage) => `${catalogPath}/${score.slug}`
 
-function availableFormats(score: ScorePage, english = false) {
+function availableFormats(
+  score: Pick<ScorePage, 'hasScore' | 'hasPlayback' | 'hasGuide'>,
+  english = false,
+) {
   return [
     score.hasScore && (english ? 'Violin score' : 'Partitura'),
     score.hasPlayback && (english ? 'Backing track' : 'Playback'),
@@ -58,7 +64,7 @@ function ScoreLinks({
 }
 
 function Catalog({ english }: { english: boolean }) {
-  const alphabeticalScores = [...scorePages].sort((first, second) =>
+  const alphabeticalScores = [...violinCatalog].sort((first, second) =>
     first.title.localeCompare(second.title, english ? 'en' : 'pt-BR'),
   )
   return (
@@ -79,17 +85,70 @@ function Catalog({ english }: { english: boolean }) {
               : 'Experimente partitura e playback grátis'}
           </a>
         </p>
-        <a
-          href={english ? catalogPath : englishCatalogPath}
-          hrefLang={english ? 'pt-BR' : 'en'}
-          lang={english ? 'pt-BR' : 'en'}
-        >
-          {english ? 'Português (Brasil)' : 'English'}
-        </a>
       </header>
-      <section aria-labelledby="musicas">
+      <section aria-labelledby="musicas" data-catalog-results="">
         <h2 id="musicas">{english ? 'Browse violin scores by song' : 'Procure uma música'}</h2>
-        <ScoreLinks scores={alphabeticalScores} english={english} />
+        <CatalogSearch english={english} />
+        <p
+          className="catalog-result-count"
+          role="status"
+          data-result-count=""
+          data-one={english ? '1 song found' : '1 música encontrada'}
+          data-many={english ? 'songs found' : 'músicas encontradas'}
+        >
+          {alphabeticalScores.length} {english ? 'songs found' : 'músicas encontradas'}
+        </p>
+        <p data-no-results="" hidden>
+          {english ? 'Try a different song or artist.' : 'Tente outro título ou artista.'}
+        </p>
+        <ul className="examples score-list catalog-results">
+          {alphabeticalScores.map((song) => {
+            const details = scorePages.find(
+              (score) =>
+                score.title === song.title && (!song.artist || score.artist === song.artist),
+            )
+            const style = localizedStyle(song.style, english)
+            const format = availableFormats(song, english).join(' · ')
+            return (
+              <li
+                key={song.id}
+                data-song-search={[
+                  song.title,
+                  song.artist,
+                  song.style,
+                  style,
+                  details?.alternateTitle,
+                ].join(' ')}
+              >
+                <h3>
+                  <a
+                    className="catalog-song"
+                    data-song-checkout=""
+                    href={`${english ? '/en' : ''}/checkout/partitura?musica=${song.id}`}
+                  >
+                    {song.title}
+                  </a>
+                </h3>
+                <p>
+                  {song.artist ? `${song.artist} · ` : ''}
+                  {style}
+                </p>
+                <p className="score-formats">{format}</p>
+                <div className="catalog-result-actions">
+                  <span aria-hidden="true">{english ? 'View score ↗' : 'Ver partitura ↗'}</span>
+                  {details && (
+                    <a
+                      href={(english ? '/en' : '') + songPath(details)}
+                      aria-label={english ? `About ${song.title}` : `Sobre ${song.title}`}
+                    >
+                      {english ? 'About the song' : 'Sobre a música'}
+                    </a>
+                  )}
+                </div>
+              </li>
+            )
+          })}
+        </ul>
       </section>
       <PublicSample english={english} />
       <section className="next" aria-labelledby="biblioteca-completa">
@@ -293,7 +352,7 @@ function renderPage(
         <a className="skip" href="#conteudo">
           {english ? 'Skip to content' : 'Pular para o conteúdo'}
         </a>
-        <header className="guide-header">
+        <header className={score ? 'guide-header' : 'guide-header catalog-header'}>
           <div className="wrap">
             <a
               href={english ? '/en' : '/'}
@@ -301,9 +360,22 @@ function renderPage(
             >
               <img src={logo} alt="Music Library" width="72" height="72" />
             </a>
-            <a className="action" href={english ? '/en#planos' : '/#planos'}>
-              {english ? 'View plans' : 'Ver planos'}
-            </a>
+            <div className="catalog-header-actions">
+              {!score && (
+                <a
+                  href={(english ? catalogPath : englishCatalogPath) + '#musicas'}
+                  data-catalog-language=""
+                  hrefLang={english ? 'pt-BR' : 'en'}
+                  lang={english ? 'pt-BR' : 'en'}
+                  aria-label={english ? 'Português (Brasil)' : 'English'}
+                >
+                  {english ? 'PT-BR' : 'English'}
+                </a>
+              )}
+              <a className="action" href={english ? '/en#planos' : '/#planos'}>
+                {english ? 'View plans' : 'Ver planos'}
+              </a>
+            </div>
           </div>
         </header>
         <main id="conteudo" className="wrap" tabIndex={-1}>

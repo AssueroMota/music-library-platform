@@ -1,0 +1,129 @@
+.catalog-checkout {
+  min-height: 100dvh;
+  background: #f8f6f1;
+  color: #161927;
+}
+
+.catalog-checkout-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px max(1rem, calc((100% - 70rem) / 2));
+  background: #0d1019;
+  color: #fff;
+}
+
+.catalog-checkout-header .logo-image {
+  width: 66px;
+  height: 66px;
+  object-fit: contain;
+}
+
+.catalog-checkout-main {
+  width: min(70rem, calc(100% - 2rem));
+  margin-inline: auto;
+  padding-block: 1.4rem 3.5rem;
+}
+
+.catalog-checkout-back {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  margin-block-end: 0.8rem;
+  color: #8a360f;
+  font-weight: 700;
+}
+
+.catalog-checkout-back:hover {
+  text-decoration: underline;
+}
+
+.catalog-checkout-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(1.4rem, 5vw, 4.5rem);
+  align-items: start;
+}
+
+.catalog-checkout-main h1 {
+  margin: 0;
+  font-size: clamp(2.1rem, 6vw, 4rem);
+  line-height: 1.08;
+  font-weight: 850;
+  letter-spacing: -0.04em;
+  overflow-wrap: anywhere;
+}
+
+.catalog-checkout-artist {
+  margin-block-start: 0.55rem;
+  color: #514d5a;
+  font-size: 1.15rem;
+}
+
+.catalog-checkout-formats {
+  display: grid;
+  gap: 0.65rem;
+  margin-block: 1.3rem 1.55rem;
+  padding: 0;
+  list-style: none;
+}
+
+.catalog-checkout-formats li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.catalog-checkout-formats svg {
+  flex-shrink: 0;
+  color: #8a360f;
+}
+
+.catalog-trial {
+  padding: clamp(1rem, 3vw, 1.6rem);
+  border: 1px solid #e4c9b8;
+  border-radius: 14px;
+  background: #fff4e9;
+}
+
+.catalog-trial h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.catalog-trial p {
+  margin-block: 0.35rem 0.85rem;
+}
+
+.catalog-trial small {
+  display: block;
+  margin-block-start: 0.55rem;
+  color: #5f493d;
+}
+
+.catalog-trial .button-primary {
+  gap: 0.65rem;
+}
+
+.catalog-checkout .catalog-payment {
+  width: 100%;
+  max-height: none;
+  margin: 0;
+  box-shadow: 0 9px 30px #26170713;
+}
+
+.catalog-payment .checkout-dialog-body {
+  padding-block-start: 1.55rem;
+}
+
+.catalog-payment h2 {
+  margin-top: 0;
+}
+
+@media (max-width: 780px) {
+  .catalog-checkout-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

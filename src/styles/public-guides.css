@@ -56,7 +56,7 @@ a {
 }
 .skip {
   position: absolute;
-  z-index: 1;
+  z-index: 6;
   padding: 0.65rem 1rem;
   background: #fff;
   transform: translateY(-150%);
@@ -137,6 +137,61 @@ dd {
 .score-formats {
   color: #514d5a;
   font-size: 0.9rem;
+}
+.catalog-search {
+  max-width: 34rem;
+}
+.catalog-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+html:has(.catalog-header) {
+  scroll-padding-top: 6rem;
+}
+.catalog-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.catalog-header-actions [data-catalog-language] {
+  color: #fff;
+  font-size: 0.9rem;
+}
+.catalog-result-count {
+  margin-block: 0.8rem 1rem;
+  color: #514d5a;
+  font-size: 0.9rem;
+}
+.catalog-results {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 21rem), 1fr));
+}
+.catalog-results > li {
+  position: relative;
+}
+.catalog-results > li:has(.catalog-song:hover) {
+  border-color: #c75c2d;
+}
+.catalog-song::after {
+  position: absolute;
+  inset: 0;
+  border-radius: 0.65rem;
+  content: '';
+}
+.catalog-result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.9rem;
+  margin-block-start: 0.65rem;
+  font-size: 0.85rem;
+}
+.catalog-result-actions span {
+  color: #8a360f;
+  font-weight: 750;
+}
+.catalog-result-actions a {
+  position: relative;
 }
 .intro .score-artist {
   font-weight: 650;

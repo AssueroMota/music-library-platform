@@ -12,8 +12,8 @@ const englishStyles: Record<string, string> = {
   'Trilha sonora': 'Soundtrack',
 }
 
-export function localizedStyle(style: string) {
-  return englishSite && Object.hasOwn(englishStyles, style) ? englishStyles[style] : style
+export function localizedStyle(style: string, english = englishSite) {
+  return english && Object.hasOwn(englishStyles, style) ? englishStyles[style] : style
 }
 
 export function localizedProductName(name: string) {
@@ -28,10 +28,14 @@ export function localPathname(pathname: string) {
   return pathname.replace(/^\/en(?=\/|$)/, '') || '/'
 }
 
+export function catalogUrl(english = englishSite) {
+  return english ? '/violin-sheet-music' : '/partituras-para-violino'
+}
+
 export function languageUrl(pathname: string, english: boolean) {
   const local = localPathname(pathname)
   if (local === '/violin-sheet-music' || local === '/partituras-para-violino') {
-    return english ? '/violin-sheet-music' : '/partituras-para-violino'
+    return catalogUrl(english)
   }
   return english ? `/en${local === '/' ? '' : local}` : local
 }
