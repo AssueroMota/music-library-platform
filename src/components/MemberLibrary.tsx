@@ -29,6 +29,7 @@ import { readPersonalAccess } from '../lib/library-access'
 import { PersonalLibraryAccess } from './PersonalLibraryAccess'
 import { Logo } from './BrandLogo'
 import { LibraryLoading } from './LibraryLoading'
+import { englishSite, languageUrl } from '../lib/site-language'
 const LibraryUpgrade = lazy(() =>
   import('./LibraryUpgrade').then((module) => ({ default: module.LibraryUpgrade })),
 )
@@ -42,7 +43,7 @@ export function MemberLibrary() {
     window.history.replaceState(
       {},
       '',
-      basicPreview ? '/biblioteca?visualizar=basico' : '/biblioteca',
+      languageUrl('/biblioteca', englishSite) + (basicPreview ? '?visualizar=basico' : ''),
     )
     setAccess(null)
   }, [basicPreview])
@@ -52,7 +53,7 @@ export function MemberLibrary() {
     <MemberLibraryContent
       basicPreview={basicPreview}
       onComplete={() => {
-        window.history.replaceState({}, '', '/biblioteca')
+        window.history.replaceState({}, '', languageUrl('/biblioteca', englishSite))
         setBasicPreview(false)
       }}
     />

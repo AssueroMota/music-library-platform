@@ -5,6 +5,7 @@ import { defineConfig, loadEnv, type Connect, type HtmlTagDescriptor } from 'vit
 import tailwindcss from '@tailwindcss/vite'
 import { homeSearchDescription } from './src/data/sales.ts'
 import { publicEnv } from './src/lib/public-env.ts'
+import { transformSiteMessages } from './scripts/site-language.mjs'
 
 const { redirects, rewrites } = JSON.parse(
   readFileSync(new URL('./vercel.json', import.meta.url), 'utf8'),
@@ -17,6 +18,13 @@ const songPath = /^\/partituras-para-violino\/[a-z0-9-]+$/
 const catalogPath = '/partituras-para-violino'
 const englishCatalogPath = '/violin-sheet-music'
 type ScorePageMarkup = { head: string; body: string; lang: string }
+const englishPaths: Record<string, string> = {
+  '/': '/en',
+  '/biblioteca': '/en/biblioteca',
+  '/partituras-para-violino': englishCatalogPath,
+  '/repertorio-para-violino': '/en/repertorio-para-violino',
+  '/partituras-guiadas-para-violino': '/en/partituras-guiadas-para-violino',
+}
 
 // Mirror the exact Vercel paths during development and local preview.
 const routeHtml: Connect.NextHandleFunction = (request, response, next) => {
@@ -33,12 +41,22 @@ const routeHtml: Connect.NextHandleFunction = (request, response, next) => {
   }
   const rewrite = rewrites.find(({ source }) => source === pathname)
   if (rewrite) request.url = rewrite.destination + suffix
+  else if (/^\/en\/checkout\/(success|pending|failure)$/.test(pathname))
+    request.url = `/en/app.html${suffix}`
+  else if (pathname.startsWith('/en') && songPath.test(pathname.slice(3)))
+    request.url = `${pathname}.html${suffix}`
   else if (songPath.test(pathname)) request.url = `${pathname}.html${suffix}`
   next()
 }
 
 export default defineConfig(({ mode, isSsrBuild }) => {
-  const publicSettings = loadEnv(mode, process.cwd(), 'VITE_')
+  const english = mode === 'english'
+  const publicSettings = loadEnv(english ? 'production' : mode, process.cwd(), 'VITE_')
+  const messages = english
+    ? (JSON.parse(
+        readFileSync(new URL('./src/data/site-en.json', import.meta.url), 'utf8'),
+      ) as Record<string, string>)
+    : {}
   const connectionOrigins = [
     ...new Set(
       [publicSettings.VITE_API_URL, publicSettings.VITE_SUPABASE_URL].flatMap((value) => {
@@ -52,22 +70,48 @@ export default defineConfig(({ mode, isSsrBuild }) => {
     ),
   ]
   return {
+    base: english && !isSsrBuild ? '/en/' : '/',
     appType: 'mpa',
     build: isSsrBuild
       ? undefined
       : {
           rolldownOptions: {
-            input: [
-              'index.html',
-              'app.html',
-              'repertorio-para-violino.html',
-              'partituras-guiadas-para-violino.html',
-              'partituras-para-violino.html',
-            ],
+            input: english
+              ? ['index.html', 'app.html']
+              : [
+                  'index.html',
+                  'app.html',
+                  'repertorio-para-violino.html',
+                  'partituras-guiadas-para-violino.html',
+                  'partituras-para-violino.html',
+                ],
           },
         },
     server: { proxy: { '/api': 'http://127.0.0.1:3001' } },
     plugins: [
+      english && {
+        name: 'music-library-english-messages',
+        enforce: 'pre',
+        transform(code, id) {
+          const path = id.replaceAll('\\', '/').split('?')[0]
+          if (!/\/(src|shared)\/(?!test\/).+\.tsx?$/.test(path) || path.includes('/node_modules/'))
+            return
+          if (
+            /\/(score-pages\.tsx?|public-repertoire\.ts|guided-scores\.ts|site-language\.ts)$/.test(
+              path,
+            )
+          )
+            return
+          return transformSiteMessages(code, path, (message, kind) => {
+            if (kind === 'attribute' && message.startsWith('/')) {
+              const [destination, fragment] = message.split('#', 2)
+              const localized = englishPaths[destination]
+              if (localized) return fragment === undefined ? localized : `${localized}#${fragment}`
+            }
+            return Object.hasOwn(messages, message) ? messages[message] : undefined
+          })
+        },
+      },
       react(),
       tailwindcss(),
       {

@@ -13,6 +13,7 @@ import {
 import type { MemberAsset, MemberLibraryData } from '../../shared/library'
 import { allInstruments as instruments } from '../data/content'
 import { normalizeSearch } from '../data/library'
+import { localizedStyle } from '../lib/site-language'
 import { LibrarySelect } from './LibrarySelect'
 import { LibrarySetlists } from './LibrarySetlists'
 import { resolveSetlists } from '../data/setlists'
@@ -224,7 +225,7 @@ export function MemberRepertoire({
               <option value="">Todos</option>
               {collectionStyles.map((name) => (
                 <option key={name} value={name}>
-                  {name} ({collection.filter((song) => song.style === name).length})
+                  {localizedStyle(name)} ({collection.filter((song) => song.style === name).length})
                 </option>
               ))}
             </LibrarySelect>
@@ -314,14 +315,14 @@ export function MemberRepertoire({
                                       .join(' · ')}
                                   </small>
                                   <span className="repertoire-inline-style">
-                                    {song.style || 'Sem estilo'}
+                                    {localizedStyle(song.style || 'Sem estilo')}
                                   </span>
                                 </span>
                               </button>
                             </th>
                             <td className="repertoire-style-column">
                               <span className="repertoire-style">
-                                {song.style || 'Não informado'}
+                                {localizedStyle(song.style || 'Não informado')}
                               </span>
                             </td>
                             <td className="repertoire-materials-cell">

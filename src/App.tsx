@@ -16,6 +16,7 @@ import { VisitPlaylist } from './components/VisitPlaylist'
 import { ContactBubble } from './components/ContactBubble'
 import { productCatalog } from './lib/product-catalog'
 import { OfferRenderTime } from './lib/use-offer-pricing'
+import { localPathname } from './lib/site-language'
 import {
   StoriesSection,
   PreparationSection,
@@ -36,7 +37,7 @@ const MemberLibrary = lazy(() =>
 const subscribeToClient = () => () => {}
 
 export default function App({ renderedAt }: { renderedAt?: number } = {}) {
-  const pathname = typeof window === 'undefined' ? '/' : window.location.pathname
+  const pathname = typeof window === 'undefined' ? '/' : localPathname(window.location.pathname)
   // The visit playlist chooses its opening track and settings in the browser.
   const clientReady = useSyncExternalStore(
     subscribeToClient,

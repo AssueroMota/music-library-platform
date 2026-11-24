@@ -1,4 +1,5 @@
 import { trustedCheckoutUrl } from './api'
+import { englishSite, languageUrl } from './site-language'
 
 export interface PaymentDestination {
   checkoutUrl: string
@@ -31,12 +32,16 @@ export function continuePaymentInTab(tab: Window | null, payment: PaymentDestina
   const url = trustedCheckoutUrl(payment.checkoutUrl)
   if (payment.orderId && payment.token)
     sessionStorage.setItem(`ml:order:${payment.orderId}`, payment.token)
+  if (payment.orderId && englishSite)
+    sessionStorage.setItem(`ml:order-language:${payment.orderId}`, 'en')
   if (!tab || tab.closed) return false
   try {
     // sessionStorage is separate in each tab. Seed the return token before leaving
     // this origin so the payment tab can identify the order when Mercado Pago returns.
     if (payment.orderId && payment.token)
       tab.sessionStorage.setItem(`ml:order:${payment.orderId}`, payment.token)
+    if (payment.orderId && englishSite)
+      tab.sessionStorage.setItem(`ml:order-language:${payment.orderId}`, 'en')
     tab.location.replace(url)
     return true
   } catch {
@@ -50,7 +55,7 @@ export function paymentFallbackUrl(payment: PaymentDestination): string {
   if (!payment.orderId || !payment.token) return checkoutUrl
   // Native links with noopener do not inherit sessionStorage. The existing private
   // review page accepts the token in the fragment, never in the server query string.
-  const url = new URL('/checkout/pending', window.location.origin)
+  const url = new URL(languageUrl('/checkout/pending', englishSite), window.location.origin)
   url.searchParams.set('order', payment.orderId)
   url.searchParams.set('iniciar', '1')
   url.hash = new URLSearchParams({ token: payment.token }).toString()

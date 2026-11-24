@@ -3,6 +3,7 @@ import { CheckCircle2, Clock3, Copy, LoaderCircle, Mail, Music2 } from 'lucide-r
 import { api, trustedCheckoutUrl, trustedPersonalLibraryUrl, type OrderResponse } from '../lib/api'
 import { Logo } from './ui'
 import { formatBRL } from '../../shared/products'
+import { localizedProductName } from '../lib/site-language'
 
 export function CheckoutReturn() {
   const [order, setOrder] = useState<OrderResponse | null>(null)
@@ -139,7 +140,7 @@ export function CheckoutReturn() {
         </span>
         <span className="eyebrow">MUSIC LIBRARY</span>
         <h1>{error && !order ? 'Vamos conferir seu pedido.' : title}</h1>
-        {order && <h2>{order.productName}</h2>}
+        {order && <h2>{localizedProductName(order.productName)}</h2>}
         {checkoutUrl && order && (
           <div className="checkout-total" style={{ marginTop: 24 }}>
             <span>Total a pagar</span>

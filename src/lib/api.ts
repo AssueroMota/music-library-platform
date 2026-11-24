@@ -1,6 +1,31 @@
 import { publicEnv } from './public-env'
+import { englishSite, languageUrl } from './site-language'
 
 const apiBase = publicEnv(import.meta.env.VITE_API_URL).replace(/\/$/, '')
+
+const englishErrors: Record<string, string> = {
+  ACCESS_DENIED: 'This material is not included in your access.',
+  ACCESS_LINK_UNAVAILABLE: 'Your access link is unavailable. Request a new copy by email.',
+  ALREADY_COMPLETE: 'You already have the Complete plan.',
+  CHECKOUT_CONFLICT: 'Start a new checkout attempt.',
+  CHECKOUT_UNAVAILABLE: 'Checkout is temporarily unavailable. Try again shortly.',
+  DUPLICATE_SONG: 'Each song can appear once in a setlist.',
+  INVALID_INPUT: 'Check your details and try again.',
+  LOGIN_REQUIRED: 'Sign in again to access your library.',
+  NOT_FOUND: 'File not found.',
+  ORDER_EXPIRED: 'This payment link has expired. Start a new order.',
+  ORDER_FINISHED: 'This order is already closed.',
+  ORDER_NOT_FOUND: 'Order not found in this browser.',
+  PRODUCT_PRICE_CHANGED: 'The price changed. Review the current price before continuing.',
+  PRODUCT_UNAVAILABLE: 'This product is currently unavailable.',
+  RATE_LIMITED: 'Too many requests. Please wait and try again.',
+  SETLIST_NOT_FOUND: 'Setlist not found.',
+  SETLISTS_NOT_INCLUDED: 'The free trial does not include setlists.',
+  SONG_UNAVAILABLE: 'One or more songs are unavailable for this setlist.',
+  UPGRADE_NOT_AVAILABLE: 'This upgrade is currently unavailable for your account.',
+  UPGRADE_PENDING: 'You already have a pending upgrade payment.',
+  UPGRADE_PROCESSING: 'Your upgrade is being processed.',
+}
 
 // Library requests can be the first request after the API has been idle.
 export const LIBRARY_REQUEST_TIMEOUT_MS = 90000
@@ -34,11 +59,18 @@ export async function api<T>(path: string, init?: RequestInit, timeoutMs = 15000
     )
   }
   const body = await response.json().catch(() => null)
-  if (!response.ok)
+  if (!response.ok) {
+    const code = body?.code ?? 'SERVICE_UNAVAILABLE'
+    const fallback = 'Serviço indisponível no momento. Tente novamente.'
     throw new ApiError(
-      body?.message ?? 'Serviço indisponível no momento. Tente novamente.',
-      body?.code ?? 'SERVICE_UNAVAILABLE',
+      englishSite
+        ? Object.hasOwn(englishErrors, code)
+          ? englishErrors[code]
+          : fallback
+        : (body?.message ?? fallback),
+      code,
     )
+  }
   if (body === null)
     throw new ApiError(
       'O serviço retornou uma resposta inválida. Tente novamente.',
@@ -76,7 +108,7 @@ export function trustedPersonalLibraryUrl(value: string) {
   const credentials = new URLSearchParams(url.hash.slice(1))
   if (
     url.origin !== window.location.origin ||
-    url.pathname !== '/biblioteca' ||
+    !['/biblioteca', '/en/biblioteca'].includes(url.pathname) ||
     url.search ||
     url.username ||
     url.password ||
@@ -84,6 +116,7 @@ export function trustedPersonalLibraryUrl(value: string) {
     !/^[a-f0-9]{64}$/.test(credentials.get('acesso') ?? '')
   )
     throw new Error('Link da biblioteca inválido.')
+  url.pathname = languageUrl('/biblioteca', englishSite)
   return url.href
 }
 

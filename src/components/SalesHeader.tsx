@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef } from 'react'
 import { ArrowDown } from 'lucide-react'
 import { Container, Logo } from './ui'
 import { LaunchOfferHeader } from './LaunchOfferCountdown'
+import { LanguageSwitch } from './LanguageSwitch'
 
 export function SalesHeader({
   onFree,
@@ -43,6 +44,7 @@ export function SalesHeader({
             <a href="#perguntas">Dúvidas</a>
           </nav>
           <div className="sales-nav-actions">
+            <LanguageSwitch />
             <button className="nav-free" type="button" onClick={onFree}>
               Testar de graça ↗
             </button>

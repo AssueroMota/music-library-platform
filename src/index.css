@@ -1002,3 +1002,27 @@ em {
     transition-duration: 0.01ms !important;
   }
 }
+.language-switch {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding-inline: 0.6rem;
+  border: 1px solid currentColor;
+  border-radius: 0.4rem;
+  color: inherit;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.language-switch:hover {
+  text-decoration: underline;
+}
+
+.route-language {
+  padding: 0.4rem max(1rem, calc((100% - 74rem) / 2));
+  display: flex;
+  justify-content: flex-end;
+  color: #fff;
+  background: #0d1019;
+}

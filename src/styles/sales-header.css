@@ -48,6 +48,8 @@ html:has(.sales-header-stack) {
 }
 .sales-header-stack .sales-nav-actions {
   flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   align-items: center;
   gap: 16px;
 }

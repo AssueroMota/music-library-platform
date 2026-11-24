@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type MouseEvent } from 'react'
 import { Play } from 'lucide-react'
+import { englishSite } from '../lib/site-language'
 
 export function PresentationVideo({ src, poster }: { src: string; poster: string }) {
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -84,7 +85,15 @@ export function PresentationVideo({ src, poster }: { src: string; poster: string
           )
         }}
         onError={showError}
-      />
+      >
+        <track
+          kind="subtitles"
+          src="/videos/music-library-intro.en.vtt"
+          srcLang="en"
+          label="English"
+          default={englishSite}
+        />
+      </video>
       {!started && (
         <a className="presentation-video-start" href={src} onClick={start}>
           <span className="presentation-play-icon">

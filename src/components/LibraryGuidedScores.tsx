@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Check, Music2, Play, Search, Video, X } from 'lucide-react'
 import type { MemberAsset } from '../../shared/library'
 import { normalizeSearch } from '../data/library'
+import { localizedStyle } from '../lib/site-language'
 import { LibrarySelect } from './LibrarySelect'
 import { ProtectedMedia } from './ProtectedMedia'
 import { StudyDialog } from './StudyDialog'
@@ -74,7 +75,7 @@ export function LibraryGuidedScores({
           <option value="">Todos</option>
           {styles.map((name) => (
             <option key={name} value={name}>
-              {name} ({videos.filter((video) => video.style === name).length})
+              {localizedStyle(name)} ({videos.filter((video) => video.style === name).length})
             </option>
           ))}
         </LibrarySelect>
@@ -144,13 +145,15 @@ export function LibraryGuidedScores({
                             <strong>{video.songTitle || video.title}</strong>
                             <small>{video.artist}</small>
                             <span className="repertoire-inline-style">
-                              {video.style || 'Sem estilo'}
+                              {localizedStyle(video.style || 'Sem estilo')}
                             </span>
                           </span>
                         </button>
                       </th>
                       <td className="repertoire-style-column">
-                        <span className="repertoire-style">{video.style || 'Não informado'}</span>
+                        <span className="repertoire-style">
+                          {localizedStyle(video.style || 'Não informado')}
+                        </span>
                       </td>
                       <td className="repertoire-materials-cell">
                         <div className="repertoire-row-actions">

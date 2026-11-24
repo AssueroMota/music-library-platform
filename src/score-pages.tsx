@@ -35,7 +35,10 @@ function ScoreLinks({
       {scores.map((score) => (
         <li key={score.slug}>
           <h3>
-            <a href={songPath(score)} hrefLang={english ? 'pt-BR' : undefined}>
+            <a
+              href={(english ? '/en' : '') + songPath(score)}
+              hrefLang={english ? 'en' : undefined}
+            >
               {score.title}
             </a>
           </h3>
@@ -86,7 +89,6 @@ function Catalog({ english }: { english: boolean }) {
       </header>
       <section aria-labelledby="musicas">
         <h2 id="musicas">{english ? 'Browse violin scores by song' : 'Procure uma música'}</h2>
-        {english && <p>Individual song pages are in Brazilian Portuguese.</p>}
         <ScoreLinks scores={alphabeticalScores} english={english} />
       </section>
       <PublicSample english={english} />
@@ -94,18 +96,14 @@ function Catalog({ english }: { english: boolean }) {
         <h2 id="biblioteca-completa">{english ? 'Explore the library' : 'Explore a biblioteca'}</h2>
         <p>
           {english
-            ? 'The Basic plan includes sheet music. The Complete plan also includes backing tracks and play-along score videos. Membership and checkout are in Brazilian Portuguese.'
+            ? 'The Basic plan includes sheet music. The Complete plan also includes backing tracks and play-along score videos.'
             : 'O Plano Básico inclui partituras. O Completo também inclui playbacks e partituras guiadas em vídeo.'}
         </p>
-        <a className="action" href="/#biblioteca" hrefLang="pt-BR">
-          {english
-            ? 'Search the full library (Portuguese)'
-            : 'Consultar o acervo por título ou artista'}
+        <a className="action" href={english ? '/en#biblioteca' : '/#biblioteca'}>
+          {english ? 'Search the full library' : 'Consultar o acervo por título ou artista'}
         </a>
-        <a href="/repertorio-para-violino" hrefLang="pt-BR">
-          {english
-            ? 'Find violin repertoire by occasion (Portuguese)'
-            : 'Montar repertório por ocasião'}
+        <a href={english ? '/en/repertorio-para-violino' : '/repertorio-para-violino'}>
+          {english ? 'Find violin repertoire by occasion' : 'Montar repertório por ocasião'}
         </a>
       </section>
     </article>
@@ -298,14 +296,13 @@ function renderPage(
         <header className="guide-header">
           <div className="wrap">
             <a
-              href="/"
-              hrefLang="pt-BR"
-              aria-label={english ? 'Music Library home (Portuguese)' : 'Music Library — início'}
+              href={english ? '/en' : '/'}
+              aria-label={english ? 'Music Library home' : 'Music Library — início'}
             >
               <img src={logo} alt="Music Library" width="72" height="72" />
             </a>
-            <a className="action" href="/#planos" hrefLang="pt-BR">
-              {english ? 'View plans (Portuguese)' : 'Ver planos'}
+            <a className="action" href={english ? '/en#planos' : '/#planos'}>
+              {english ? 'View plans' : 'Ver planos'}
             </a>
           </div>
         </header>

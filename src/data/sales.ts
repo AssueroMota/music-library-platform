@@ -5,10 +5,12 @@ import { freeLibrary } from '../../shared/free-library.js'
 export const homeSearchDescription =
   'Procure sua música favorita! Encontre partituras para violino, playbacks para tocar junto e vídeos guiados. Experimente agora uma partitura com playback grátis!'
 
+const joinTitles = (titles: readonly string[]) => titles.join(' e ')
+
 export const salesFaqs = [
   [
     'Como funciona o acesso grátis?',
-    `Informe seu e-mail na opção Grátis para receber seu link pessoal. A versão de teste libera ${freeLibrary.scoreCount} partituras com playback (${freeLibrary.scores.join(' e ')}) e ${freeLibrary.guidedScoreCount} guiadas em vídeo (${freeLibrary.guidedScores.join(' e ')}). Não inclui setlists prontos ou personalizados. Não pede pagamento nem cartão. Os demais materiais fazem parte dos planos pagos.`,
+    `Informe seu e-mail na opção Grátis para receber seu link pessoal. A versão de teste libera ${freeLibrary.scoreCount} partituras com playback (${joinTitles(freeLibrary.scores)}) e ${freeLibrary.guidedScoreCount} guiadas em vídeo (${joinTitles(freeLibrary.guidedScores)}). Não inclui setlists prontos ou personalizados. Não pede pagamento nem cartão. Os demais materiais fazem parte dos planos pagos.`,
   ],
   [
     'O material é só para violino?',

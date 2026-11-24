@@ -19,6 +19,7 @@ import { formatBRL, violinOffers } from '../../shared/products'
 import { productCatalog } from '../lib/product-catalog'
 import { continuePaymentInTab, reservePaymentTab } from '../lib/payment-tab'
 import { PaymentContinuation, type ReadyPayment } from './PaymentContinuation'
+import { localizedProductName } from '../lib/site-language'
 
 export function CheckoutDialog({ plan, onClose }: { plan: string | null; onClose: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null)
@@ -184,7 +185,7 @@ export function CheckoutDialog({ plan, onClose }: { plan: string | null; onClose
           </span>
           <div>
             <span className="micro-label">SUA ESCOLHA</span>
-            <h3>{product?.name ?? offer.name}</h3>
+            <h3>{localizedProductName(product?.name ?? offer.name)}</h3>
             <p>{offer.description}</p>
           </div>
           <div className="checkout-total">
